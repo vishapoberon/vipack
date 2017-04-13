@@ -1,28 +1,27 @@
 MODULE test;
 
-IMPORT irc;
+IMPORT IRC, Out;
 
 VAR
 
-owner, nick, serv, port, chan: ARRAY 32 OF CHAR;
+owner, nick, host, port, channel: ARRAY 32 OF CHAR;
 
 PROCEDURE testBot;
-
+VAR b : BOOLEAN;
 BEGIN
-irc.nick := nick;
-irc.host := serv;
-irc.port := port;
-irc.channel := chan;
-irc.user := owner;
-irc.connect;
+IF IRC.Connect(host, port) # FALSE THEN
+  
+  b := IRC.Auth("norayr", "norayr");
+
+END;
 END testBot;
 
 BEGIN
 owner := "norayr";
 nick := "norayr";
-serv := "irc.freenode.net";
+host := "irc.freenode.net";
 port := "6667";
-chan := "#oberon";
+channel := "#oberon";
 
 testBot;
 
