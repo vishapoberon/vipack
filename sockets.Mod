@@ -15,7 +15,7 @@ CONST
    SockDccp*   = 6;
    SockPacket* = 10;
 
-   AfUnscec* = 0;      (* Unspecified.  *)
+   AfUnspec* = 0;      (* Unspecified.  *)
    AfLocal*  = 1;      (* Local to host (pipes and file-domain).  *)
    AfUnix*   = 1;      (* POSIX name for PF_LOCAL.  *)
    AfFile*   = 1;      (* Another non-standard name for PF_LOCAL.  *)
