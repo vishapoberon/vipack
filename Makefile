@@ -2,7 +2,7 @@
 VOC = /opt/voc/bin/voc
 
 all:
-	$(VOC) -s types.Mod sockets.Mod s.Mod -m
+	$(VOC) -s types.Mod sockets.Mod netdb.Mod irc.Mod 
 
 clean:
 	rm *.h

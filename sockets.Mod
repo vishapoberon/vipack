@@ -62,7 +62,7 @@ CONST
    InAddrAny* = 0;
 
 TYPE
-
+(*
    (* /usr/include/netinet/in.h *)
    InAddr* = RECORD
     SAddr* : Int32;
@@ -74,13 +74,17 @@ TYPE
     SinAddr*   : InAddr;
     SinZero*   : ARRAY 8 OF CHAR;
    END;
+*)
    (* /usr/include/sys/socket.h *)
   
    SockAddr* = RECORD
     SaFamily* : Int16;
     SaData*   : ARRAY 14 OF CHAR
    END;
-
+(*
+   PROCEDURE -includeSockets
+      "#include <sys/socket.h>";
+*)
    PROCEDURE -socket(domain, type, protocol: Int32): Int32
       "(int)socket(domain, type, protocol)";
 
@@ -114,8 +118,32 @@ TYPE
    END Accept;
     (* int connect(int sockfd, const struct sockaddr *addr,
 	                   socklen_t addrlen); *)
-   PROCEDURE Connect*(sockfd: Int32; VAR addr: SockAddr; addrlen: Int32): Int32      "(socklen_t)(connect(sockfd, addr, addrlen))";
+   PROCEDURE -connect(sockfd: Int32; VAR addr: SYS.ADDRESS; addrlen: Int32): Int32
+     "(INTEGER)(connect(sockfd, addr, addrlen))";
 
+   
+   PROCEDURE Connect*(sockfd: Int32; sockaddr: SYS.ADDRESS; addrlen: Int32): Int32;
+   BEGIN
+     RETURN connect(sockfd, sockaddr, addrlen)
+   END Connect;
+(*
+ PROCEDURE -SizeofSockaddr(): INTEGER
+    "sizeof(sockaddr)";
+
+  PROCEDURE -Error(msg: ARRAY OF CHAR; len: INTEGER)
+    "write(1/*stdout*/, msg, len); char ch = 0xa; write(1, &ch, 1)";
+
+  PROCEDURE sockaddrCheck; (* check for inconsistent usage of sigjmp_buf; better avoid Unix_JmpBuf *)
+    VAR x, y: LONGINT;
+  BEGIN
+    x := SizeofSockaddr();
+    y := SIZE(SockAddr);
+    IF x # y THEN
+      Error("sockets.sockaddrCheck: inconsistent usage of sockaddr", 52);
+      HALT(1);
+    END
+END sockaddrCheck;
+*)
 BEGIN
 
 

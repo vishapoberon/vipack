@@ -1,17 +1,25 @@
 MODULE irc;
-IMPORT sockets, netdb, Unix, Strings;
+IMPORT sockets, netdb, Platform, Strings, types, SYSTEM;
 
 CONST strLen = 1024;
+
+TYPE
+  Int16 = types.Int16;
+  Int32 = types.Int32;
+  Int64 = types.Int64;
+
 
 VAR
 nick*, channel*, host*, port*, user*, command*, where*, message*, sep*, target*: ARRAY strLen OF CHAR;
 
-PROCEDURE write(fd: Int32; VAR buf: ARRAY OF CHAR; len: LONGINT);
+PROCEDURE rawWrite(fd: Int32; VAR buf: ARRAY OF CHAR; len: LONGINT);
 VAR
-   l: LONGINT;
+   l: SYSTEM.ADDRESS;
+   r: INTEGER;
 BEGIN
-  Unix.Write(fd, buf, len);
-END raw;
+  l := SYSTEM.ADR(buf);
+  r := Platform.Write(fd, l, len);
+END rawWrite;
 
 PROCEDURE connect;
 VAR hints : netdb.addrInfo;
@@ -29,15 +37,19 @@ BEGIN
 
 	tmp32 := netdb.getAddrInfo(host, port, hints, res);
     conn := sockets.Socket(res^.aiFamily, res^.aiSockType, res^.aiProtocol);
-	tmp32 := sockets.Connect(conn, res^.aiAddr, res^.aiAddrlen);
+	tmp32 := sockets.Connect(conn, res^.aiAddr, res^.aiAddrLen);
 
 (* "USER test 0 0 :test\r\n" *)
 (* "NICK test\r\n\000\060 :test\r\n"*)
     COPY("USER ", str0);
-	Strings.Append(user, str0)
+	Strings.Append(user, str0);
     Strings.Append(" 0 0 :", str0);
 	Strings.Append(nick, str0);
 	str1[0] := 0AX; str1[1] := 0DX; str1[2] := 0X;
 	Strings.Append(str1, str0);
-	write(conn, str0, Strings.Length(str0));
+	rawWrite(conn, str0, Strings.Length(str0));
 END connect;
+
+BEGIN
+
+END irc.
