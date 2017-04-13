@@ -28,36 +28,40 @@ BEGIN
 END rawWrite;
 
 PROCEDURE connect*;
-VAR hints : netdb.addrInfo;
-    res: netdb.PaddrInfo;
+VAR hints, res : netdb.addrInfo;
+    pres, pres2, phints: netdb.PaddrInfo;
 	tmp32 : netdb.Int32;
 	conn : netdb.Int32;
 	str0, str1: ARRAY 255 OF CHAR;
 BEGIN
-  (*hints.aiFamily := sockets.AfInet;*)
-  hints.aiFamily := sockets.AfUnspec;
+  (*NEW(phints);*)
+  hints.aiFamily := sockets.AfInet;
+  (*hints.aiFamily := sockets.AfUnspec;*)
 	hints.aiSockType := sockets.SockStream;
 	hints.aiFlags := 0;
 	hints.aiProtocol := netdb.ipprotoTCP;
 	hints.aiAddrLen := 0;
 	hints.aiAddr := 0; hints.aiCanonName := 0; hints.aiNext := 0;
 
-  NEW(res);
-	tmp32 := netdb.getAddrInfo(host, port, hints, res);
+  (*NEW(pres);*)
+  phints := SYSTEM.VAL(netdb.PaddrInfo, SYSTEM.ADR(hints));
+  pres := SYSTEM.VAL(netdb.PaddrInfo, SYSTEM.ADR(res));
+  pres2 := SYSTEM.VAL(netdb.PaddrInfo, SYSTEM.ADR(pres));
+	tmp32 := netdb.getAddrInfo(host, port, phints, pres2);
   IF tmp32 # 0 THEN
     Out.String("getaddrinfo() failed"); Out.Ln;
     HALT(1);
   ELSE
     Out.String("getaddrinfo() returned 0, success"); Out.Ln;
   END;
-  conn := sockets.Socket(res^.aiFamily, res^.aiSockType, res^.aiProtocol);
+  conn := sockets.Socket(pres^.aiFamily, pres^.aiSockType, pres^.aiProtocol);
   IF conn = -1 THEN
     Out.String("socket() returned -1, error"); Out.Ln;
     HALT(1);
   ELSE
     Out.String("socket() succeeded."); Out.Ln;
   END;
-	tmp32 := sockets.Connect(conn, res^.aiAddr, res^.aiAddrLen);
+	tmp32 := sockets.Connect(conn, pres^.aiAddr, pres^.aiAddrLen);
   IF tmp32 = 0 THEN
     Out.String("connect() succeeded."); Out.Ln;
   ELSE

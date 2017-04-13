@@ -70,7 +70,7 @@ TYPE
    END;
 
 
-PROCEDURE -getAddrInfo*(VAR node, service: ARRAY OF CHAR; VAR hints: addrInfo; res: PaddrInfo): Int32
+PROCEDURE -getAddrInfo*(VAR node, service: ARRAY OF CHAR; hints: PaddrInfo; res: PaddrInfo): Int32
 "getaddrinfo (node, service, hints, res)";
 
 PROCEDURE -freeAddrInfo*(VAR res: addrInfo)
