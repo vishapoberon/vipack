@@ -118,7 +118,7 @@ TYPE
    END Accept;
     (* int connect(int sockfd, const struct sockaddr *addr,
 	                   socklen_t addrlen); *)
-   PROCEDURE -connect(sockfd: Int32; VAR addr: SYS.ADDRESS; addrlen: Int32): Int32
+   PROCEDURE -connect(sockfd: Int32; addr: SYS.ADDRESS; addrlen: Int32): Int32
      "(INTEGER)(connect(sockfd, addr, addrlen))";
 
    

@@ -30,13 +30,14 @@ END rawWrite;
 PROCEDURE connect*;
 VAR hints, res : netdb.addrInfo;
     pres, pres2, phints: netdb.PaddrInfo;
+    tmpaddr : SYSTEM.ADDRESS;
 	tmp32 : netdb.Int32;
 	conn : netdb.Int32;
 	str0, str1: ARRAY 255 OF CHAR;
 BEGIN
   (*NEW(phints);*)
-  hints.aiFamily := sockets.AfInet;
-  (*hints.aiFamily := sockets.AfUnspec;*)
+  (*hints.aiFamily := sockets.AfInet;*)
+  hints.aiFamily := sockets.AfUnspec;
 	hints.aiSockType := sockets.SockStream;
 	hints.aiFlags := 0;
 	hints.aiProtocol := netdb.ipprotoTCP;
@@ -61,6 +62,7 @@ BEGIN
   ELSE
     Out.String("socket() succeeded."); Out.Ln;
   END;
+  tmpaddr := SYSTEM.ADR(pres^.aiAddr);
 	tmp32 := sockets.Connect(conn, pres^.aiAddr, pres^.aiAddrLen);
   IF tmp32 = 0 THEN
     Out.String("connect() succeeded."); Out.Ln;
