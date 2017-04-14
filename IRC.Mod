@@ -84,33 +84,29 @@ BEGIN
   END; 
 END terminateLine;
 
-PROCEDURE formUserLine(VAR user, owner, result: ARRAY OF CHAR);
+PROCEDURE formUserNickLine(VAR user, owner, nick, res: ARRAY OF CHAR);
 BEGIN
-(* "USER test 0 * :test\r\n" *)
-  COPY(cmdUser, result);
-	Strings.Append(" ", result);
-	Strings.Append(user, result);
-  Strings.Append(" 0 * :", result);
-	Strings.Append(owner, result);
+  COPY(cmdUser, res);
+	Strings.Append(" ", res);
+	Strings.Append(user, res);
+  Strings.Append(" 0 * :", res);
+	Strings.Append(owner, res);
   (* by the spec the command is terminated by \r\n *)
-	Strings.Append(eol, result);
-END formUserLine;
+	Strings.Append(eol, res);
 
-PROCEDURE formNickLine(VAR nick, result: ARRAY OF CHAR);
-BEGIN
-(* "NICK test\r\n\000\060 :test\r\n"*)
-  COPY (cmdNick, result);
-  Strings.Append(" ", result);
-  Strings.Append (nick, result);
-	Strings.Append(eol, result);
-END formNickLine;
+  Strings.Append (cmdNick, res);
+  Strings.Append(" ", res);
+  Strings.Append (nick, res);
+	Strings.Append(eol, res);
+
+END formUserNickLine;
 
 PROCEDURE formModeLine(VAR str, nick: ARRAY OF CHAR);
 BEGIN
         COPY (cmdMode, str);
         Strings.Append(" ", str);
         Strings.Append(nick, str);
-        Strings.Append(" +B", str);
+        Strings.Append(" +C", str);
         Strings.Append(eol, str);
 END formModeLine;
 
@@ -196,19 +192,13 @@ END Send;
 
 PROCEDURE Auth*(inst: instance): BOOLEAN;
 VAR
-	userRequest, nickRequest: ARRAY 255 OF CHAR;
+	line: ARRAY 255 OF CHAR;
   b : BOOLEAN;
 BEGIN
+  formUserNickLine(inst.user, inst.owner, inst.nick, line);
 
-  formUserLine(inst.user, inst.owner, userRequest);
+  b := Internet.Write(inst.connection, line);
 
-  b := Send(inst, userRequest);
-
-  IF b THEN
-    formNickLine(inst.nick, nickRequest);
-
-    b := Send(inst, nickRequest); 
-  END;
   RETURN b
 END Auth;
 
