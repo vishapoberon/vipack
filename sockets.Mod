@@ -126,6 +126,12 @@ TYPE
    BEGIN
      RETURN connect(sockfd, sockaddr, addrlen)
    END Connect;
+
+  (* ssize_t recv(int sockfd, void *buf, size_t len, int flags); *)
+
+  PROCEDURE -recv(sockfd: Int32; buf: SYS.ADDRESS; len: Int64; flags: Int32):Int64
+    "(HUGEINT)recv(sockfd, buf, len, flags)";
+
 (*
  PROCEDURE -SizeofSockaddr(): INTEGER
     "sizeof(sockaddr)";
