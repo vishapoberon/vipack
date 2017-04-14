@@ -2,32 +2,41 @@ MODULE test;
 
 IMPORT IRC, Out, Strings := ooc2Strings;
 
-VAR
 
-owner, user, nick, host, port, channel: ARRAY 32 OF CHAR;
+PROCEDURE clbk(VAR in: ARRAY OF CHAR);
+BEGIN
+Out.String("callback procedure is running, youhoo!"); Out.Ln; 
+Out.String("input:"); Out.Ln;
+Out.String(in); Out.Ln;
+Out.Ln;
+
+
+
+END clbk;
 
 PROCEDURE testBot;
 VAR 
-  b: BOOLEAN;
+  inst: IRC.instance;
   channels : IRC.chnlist;
+  b: BOOLEAN;
 BEGIN
+  inst.owner := "norayr_shimamoto";
+  inst.user := "nakata_san";
+  inst.nick := "oshima";
+  inst.host := "irc.freenode.net";
+  inst.port := "6667";
+  inst.callback := clbk;
   NEW(channels, 1);
-  channels[0] := channel;
-  IRC.setChannelList(channels);
+  channels[0] := "#oberon";
+  IRC.setChannelList(inst, channels);
 
-  IF IRC.Connect(host, port) # FALSE THEN
-    b := IRC.Auth(user, nick, owner);
-    IRC.Loop;
+  IF IRC.Connect(inst) # FALSE THEN
+    b := IRC.Auth(inst);
+    IRC.Loop(inst);
   END;
 END testBot;
 
 BEGIN
-owner := "norayr_tanakian";
-user := "norayr_tanakian";
-nick := "vocbot";
-host := "irc.freenode.net";
-port := "6667";
-channel := "#oberon";
 
 testBot;
 
