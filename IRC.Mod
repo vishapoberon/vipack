@@ -241,6 +241,7 @@ VAR
 BEGIN
   formJoinLine(str, inst.channelList^[0]);
   b := Send(inst, str);
+  (*b := Internet.Write(inst.connection, str);*)
 END Join;
 
 PROCEDURE processResponse(VAR inst: instance; VAR line: ARRAY OF CHAR): BOOLEAN;
