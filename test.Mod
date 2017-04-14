@@ -20,9 +20,9 @@ VAR
   channels : IRC.chnlist;
   b: BOOLEAN;
 BEGIN
-  inst.owner := "norayr_shimamoto";
-  inst.user := "nakata_san";
-  inst.nick := "oshima";
+  inst.owner := "norayr_tanakian";
+  inst.user := "norayr_tanakian";
+  inst.nick := "vocbot";
   inst.host := "irc.freenode.net";
   inst.port := "6667";
   inst.callback := clbk;

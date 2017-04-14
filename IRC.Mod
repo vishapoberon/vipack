@@ -17,6 +17,8 @@ CONST
   numRPLCREATED = "003";
   numRPLMYINFO = "004";
 
+  errClosingLink = "ERROR :Closing Link:";
+
   TYPE 
     chn* = ARRAY 32 OF CHAR;
     chnlist* = POINTER TO ARRAY OF chn;
@@ -37,17 +39,27 @@ VAR
 
 (* string operations *)
 
+PROCEDURE findChar(ch: CHAR; VAR line: ARRAY OF CHAR; VAR b: BOOLEAN; VAR pos: INTEGER);
+VAR
+  i : INTEGER;
+BEGIN
+  i := -1; pos := -1;
+  b := FALSE;
+  REPEAT
+    INC(i);
+    IF line[i] = ch THEN b := TRUE; pos := i END;
+  UNTIL b OR (i = LEN(line) - 1);
+END findChar;
+
 (* cuts line, takes the part till the eol *)
 PROCEDURE cutLine(VAR src, dst: ARRAY OF CHAR);
 VAR
  found: BOOLEAN;
  pos : INTEGER;
  i : INTEGER;
- pattern : ARRAY 1 OF CHAR;
 BEGIN
-  pattern[0] := LF;
   COPY("", dst);
-  Strings.FindNext(pattern, src, 0, found, pos);
+  findChar(LF, src, found, pos);
   IF found THEN
     i := 0;
     REPEAT
@@ -63,10 +75,8 @@ PROCEDURE terminateLine(VAR str: ARRAY OF CHAR);
 VAR
  found: BOOLEAN;
  pos : INTEGER;
- pattern : ARRAY 1 OF CHAR;
 BEGIN
-  pattern[0] := LF;
-  Strings.FindNext(pattern, str, 0, found, pos);
+  findChar(LF, str, found, pos);
   IF found THEN
     IF (pos + 1) < LEN(str) THEN
       str[pos + 1] := 0X
@@ -139,6 +149,14 @@ BEGIN
   IF found THEN RETURN TRUE ELSE RETURN FALSE END
 END rplWelcome;
 
+PROCEDURE error(VAR line: ARRAY OF CHAR): BOOLEAN;
+VAR
+  b : BOOLEAN;
+  pos: INTEGER;
+BEGIN
+  Strings.FindNext(errClosingLink, line, 0, b, pos);
+  RETURN b
+END error;
 
 (* instance functions *)
 
@@ -235,29 +253,37 @@ BEGIN
   b := Send(inst, str);
 END Join;
 
-PROCEDURE processResponse(VAR inst: instance; VAR line: ARRAY OF CHAR);
+PROCEDURE processResponse(VAR inst: instance; VAR line: ARRAY OF CHAR): BOOLEAN;
+VAR
+  b : BOOLEAN;
 BEGIN
+  b := TRUE;
   IF isPing(line) THEN Pong(inst, line) END;
-
-  IF serverMsg(line) THEN
-    IF rplWelcome(line) THEN
-       Mode(inst);
-       Join(inst);
-    ELSE
-       inst.callback(line); 
+  IF error(line) THEN
+    Disconnect(inst);
+    b := FALSE;
+  ELSE
+    IF serverMsg(line) THEN
+      IF rplWelcome(line) THEN
+         Mode(inst);
+         Join(inst);
+      ELSE
+         inst.callback(line); 
+      END;
     END;
   END;
+  RETURN b;
 END processResponse;
 
 PROCEDURE Loop*(VAR inst: instance);
 VAR
-  b : BOOLEAN;
+  b, b2 : BOOLEAN;
   str : ARRAY msgLen OF CHAR;
 BEGIN
   REPEAT
     b := Receive(inst, str);
-    processResponse(inst, str);
-  UNTIL ~b;
+    b2 := processResponse(inst, str);
+  UNTIL ~b OR ~b2;
 END Loop;
 
 BEGIN
