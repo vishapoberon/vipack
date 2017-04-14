@@ -73,7 +73,7 @@ TYPE
 PROCEDURE -getAddrInfo*(VAR node, service: ARRAY OF CHAR; hints: PaddrInfo; res: PaddrInfo): Int32
 "getaddrinfo (node, service, hints, res)";
 
-PROCEDURE -freeAddrInfo*(VAR res: addrInfo)
+PROCEDURE -freeAddrInfo*( res: PaddrInfo)
 "freeaddrinfo(res)";
 
 END netdb.
