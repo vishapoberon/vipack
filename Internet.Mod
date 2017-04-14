@@ -9,13 +9,13 @@ TYPE
   Int32 = types.Int32;
   Int64 = types.Int64;
 
-PROCEDURE Write*(fd: Socket; VAR buf: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE Write*(fd: Socket; buf: ARRAY OF CHAR): BOOLEAN;
 VAR
    l: SYSTEM.ADDRESS;
    r: INTEGER;
  len: LONGINT;
 BEGIN
-  l := SYSTEM.ADR(buf);
+  l := SYSTEM.ADR(buf[0]);
   len := Strings.Length(buf)-1;
   r := Platform.Write(fd, l, len);
   IF r = -1 THEN
@@ -33,11 +33,11 @@ VAR
   l, f: LONGINT;
   r: INTEGER;
 BEGIN
-  p := SYSTEM.ADR(buf);
-  l := LEN(buf);
+  p := SYSTEM.ADR(buf[0]);
+  l := LEN(buf)-1;
   f := 0;
   r := Platform.Read(fd, p, l, f);
-  
+  IF r >= 0 THEN RETURN TRUE ELSE RETURN FALSE END
 END Read;
 
 PROCEDURE Connect*(host, port: ARRAY OF CHAR; VAR conn: Socket): BOOLEAN;
