@@ -1,5 +1,5 @@
 MODULE Internet;
-IMPORT sockets, netdb, Platform, types, Out, SYSTEM;
+IMPORT sockets, netdb, types, Strings, Out, Platform, SYSTEM;
 
 TYPE 
 
@@ -9,12 +9,14 @@ TYPE
   Int32 = types.Int32;
   Int64 = types.Int64;
 
-PROCEDURE Write*(fd: Socket; VAR buf: ARRAY OF CHAR; len: LONGINT): BOOLEAN;
+PROCEDURE Write*(fd: Socket; VAR buf: ARRAY OF CHAR): BOOLEAN;
 VAR
    l: SYSTEM.ADDRESS;
    r: INTEGER;
+ len: LONGINT;
 BEGIN
   l := SYSTEM.ADR(buf);
+  len := Strings.Length(buf)-1;
   r := Platform.Write(fd, l, len);
   IF r = -1 THEN
     (*Out.String("write() failed."); Out.Ln;*)
@@ -25,6 +27,18 @@ BEGIN
   END;
 END Write;
 
+PROCEDURE Read*(fd: Socket; VAR buf: ARRAY OF CHAR): BOOLEAN;
+VAR
+  p: SYSTEM.ADDRESS;
+  l, f: LONGINT;
+  r: INTEGER;
+BEGIN
+  p := SYSTEM.ADR(buf);
+  l := LEN(buf);
+  f := 0;
+  r := Platform.Read(fd, p, l, f);
+  
+END Read;
 
 PROCEDURE Connect*(host, port: ARRAY OF CHAR; VAR conn: Socket): BOOLEAN;
 VAR
