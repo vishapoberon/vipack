@@ -3,45 +3,99 @@ IMPORT Internet, Out, Strings := ooc2Strings, types;
 
 CONST 
   msgLen* = 512; (* message length not more than 512 characters *)
-  ping* = "PING";
-  pong* = "PONG";
+  cmdPing* = "PING";
+  cmdPong* = "PONG";
   zzo*  = "001";
-  mode*  = "MODE";
-  join* =  "JOIN";
+  cmdMode*  = "MODE";
+  cmdJoin* =  "JOIN";
+  cmdUser* =  "USER";
+  cmdNick* =  "NICK";
+  CR* = 0DX;
+  LF* = 0AX;
+
+  TYPE 
+    chn* = ARRAY 32 OF CHAR;
+    chnlist* = POINTER TO ARRAY OF chn;
+
 
 VAR
   connection : Internet.Socket;
   eol* : ARRAY 3 OF CHAR;
+  channelList: chnlist;
 
-PROCEDURE Auth*(user, nick, owner: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE setChannelList*(VAR chnl: chnlist);
+BEGIN
+  channelList := chnl;
+END setChannelList;
+
+(* cuts line, takes the part till the eol *)
+PROCEDURE cutLine(VAR src, dst: ARRAY OF CHAR);
 VAR
-	str0, str1: ARRAY 255 OF CHAR;
-  b : BOOLEAN;
+ found: BOOLEAN;
+ pos : INTEGER;
+ i : INTEGER;
+ pattern : ARRAY 1 OF CHAR;
+BEGIN
+  pattern[0] := LF;
+  COPY("", dst);
+  Strings.FindNext(pattern, src, 0, found, pos);
+  IF found THEN
+    i := 0;
+    REPEAT
+      dst[i] := src[i];
+      INC(i);
+    UNTIL i = pos; 
+    dst[i] := src[i];
+    INC(i);
+    dst[i] := 0X;
+  END; 
+END cutLine;
+
+
+PROCEDURE formUserLine(VAR user, owner, result: ARRAY OF CHAR);
 BEGIN
 (* "USER test 0 * :test\r\n" *)
-(* "NICK test\r\n\000\060 :test\r\n"*)
-
-
-  COPY("USER ", str0);
-	Strings.Append(user, str0);
-  Strings.Append(" 0 * :", str0);
-	Strings.Append(owner, str0);
+  COPY(cmdUser, result);
+	Strings.Append(" ", result);
+	Strings.Append(user, result);
+  Strings.Append(" 0 * :", result);
+	Strings.Append(owner, result);
   (* by the spec the command is terminated by \r\n *)
-	Strings.Append(eol, str0);
+	Strings.Append(eol, result);
+END formUserLine;
 
-  Strings.Append ("NICK ", str0);
-  Strings.Append (nick, str0);
-	Strings.Append(eol, str0);
-	Strings.Append(0X, str0);
+PROCEDURE formNickLine(VAR nick, result: ARRAY OF CHAR);
+BEGIN
+(* "NICK test\r\n\000\060 :test\r\n"*)
+  COPY (cmdNick, result);
+  Strings.Append(" ", result);
+  Strings.Append (nick, result);
+	Strings.Append(eol, result);
+END formNickLine;
 
-  Out.String("sending:"); Out.Ln;
-  Out.String(str0); Out.Ln;
-	b := Internet.Write(connection, str0);
+PROCEDURE Auth*(user, owner, nick: ARRAY OF CHAR): BOOLEAN;
+VAR
+	userRequest, nickRequest: ARRAY 255 OF CHAR;
+  b : BOOLEAN;
+BEGIN
+
+  formUserLine(user, owner, userRequest);
+
+    Out.String("sending:"); Out.Ln;
+    Out.String(userRequest); Out.Ln;
+
+  b := Internet.Write(connection, userRequest);
 
   IF b THEN Out.String("wrote!"); Out.Ln ELSE Out.String("write failed"); Out.Ln END;
   
-  RETURN b
+  formNickLine(nick, nickRequest);
 
+    Out.String("sending:"); Out.Ln;
+    Out.String(nickRequest); Out.Ln;
+
+  IF b THEN Out.String("wrote!"); Out.Ln ELSE Out.String("write failed"); Out.Ln END;
+
+  RETURN b
 END Auth;
 
 PROCEDURE Receive*(VAR str: ARRAY OF CHAR): BOOLEAN;
@@ -80,15 +134,73 @@ BEGIN
   RETURN res
 END Connect;
 
-PROCEDURE Loop*;
-
+PROCEDURE Disconnect*;
 BEGIN
+  Internet.Disconnect(connection);
+END Disconnect;
 
+PROCEDURE isPing(VAR line: ARRAY OF CHAR): BOOLEAN;
+VAR
+ tmp: ARRAY 5 OF CHAR;
+BEGIN
+    Strings.Extract(line, 0, 4, tmp);
+    IF Strings.Equal(tmp, cmdPing) THEN
+      RETURN TRUE
+    ELSE
+      RETURN FALSE
+    END
+END isPing;
 
+PROCEDURE Pong(VAR line: ARRAY OF CHAR);
+VAR
+  tmp: ARRAY msgLen OF CHAR;
+  b : BOOLEAN;
+BEGIN
+      cutLine(line, tmp);
+      tmp[1] := 'O'; (* replace "PING" by "PONG" *)
+      b := Send(tmp);
+END Pong;
+
+PROCEDURE processResponse(VAR line: ARRAY OF CHAR);
+BEGIN
+  IF isPing(line) THEN Pong(line) END;
+(*
+    IF line[0] = ':' THEN
+      IF contains001(line) THEN
+         sendMode(line);
+         sendJoin;
+      END;
+      Strings.FindNext(IRC.zzo, str, 0, patternFound, patternPos);
+      IF patternFound THEN
+        Out.String("001 found"); Out.Ln;
+        COPY ("MODE ", str3);
+        Strings.Append(nick, str3);
+        Strings.Append(" +B", str3);
+        Strings.Append(eol, str3);
+        Strings.Append(0X, str3);
+        b2 := IRC.Send(str3);
+        COPY("JOIN ", str3);
+        Strings.Append("#oberon", str3);
+        Strings.Append(eol, str3);
+        Strings.Append(0X, str3);
+        b2 := IRC.Send(str3);
+      END;
+    END;*)
+END processResponse;
+
+PROCEDURE Loop*;
+VAR
+  b : BOOLEAN;
+  str : ARRAY msgLen OF CHAR;
+BEGIN
+  REPEAT
+    b := Receive(str);
+    processResponse(str);
+  UNTIL ~b;
 END Loop;
 
 BEGIN
-  eol[0] := 0AX; eol[1] := 0DX; eol[2] := 0X;
+  eol[0] := LF; eol[1] := CR; eol[2] := 0X;
 
 
 END IRC.

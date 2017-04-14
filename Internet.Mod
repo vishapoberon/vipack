@@ -92,5 +92,11 @@ BEGIN
 
 END Connect;
 
+PROCEDURE Disconnect*(VAR fd: Socket);
+VAR
+  i : INTEGER;
+BEGIN
+i := Platform.Close(fd);
+END Disconnect;
 
 END Internet.
