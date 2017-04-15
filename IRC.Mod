@@ -17,6 +17,7 @@ CONST
   numRPLCREATED = "003";
   numRPLMYINFO = "004";
 
+  eofMOTD="End of /MOTD";
   errClosingLink = "ERROR :Closing Link:";
 
   TYPE 
@@ -116,8 +117,21 @@ BEGIN
         Strings.Append(" ", ln);
         Strings.Append(chan, ln);
         Strings.Append(eol, ln);
-        Out.String("JOIN LINE FORMED: "); Out.String(ln); Out.Ln;
 END formJoinLine;
+
+PROCEDURE formModeJoinLine(VAR str, nick, chan: ARRAY OF CHAR);
+BEGIN
+        COPY (cmdMode, str);
+        Strings.Append(" ", str);
+        Strings.Append(nick, str);
+        Strings.Append(" +C", str);
+        Strings.Append(eol, str);
+
+        Strings.Append(cmdJoin, str);
+        Strings.Append(" ", str);
+        Strings.Append(chan, str);
+        Strings.Append(eol, str);
+END formModeJoinLine;
 
 PROCEDURE isPing(VAR line: ARRAY OF CHAR): BOOLEAN;
 VAR
@@ -136,11 +150,31 @@ BEGIN
   IF line[0] = ':' THEN RETURN TRUE ELSE RETURN FALSE END
 END serverMsg;
 
-PROCEDURE rplWelcome(VAR line : ARRAY OF CHAR): BOOLEAN;
+PROCEDURE contains (VAR line : ARRAY OF CHAR; pattern: ARRAY OF CHAR): BOOLEAN;
 VAR
  found: BOOLEAN;
  pos : INTEGER;
  i : INTEGER;
+ patternLength: INTEGER;
+ tmpline: POINTER TO ARRAY OF CHAR;
+BEGIN
+  i := 0;
+  patternLength := Strings.Length(pattern);
+  NEW(tmpline, patternLength+1);
+  found := FALSE;
+  REPEAT
+    Strings.Extract(line, i, patternLength, tmpline^);
+    Out.String("COMPARING: "); Out.String(pattern); Out.String (" "); Out.String (tmpline^); Out.Ln;
+    found := Strings.Equal(pattern, tmpline^);
+    INC(i);
+UNTIL found OR (i = LEN(line) - patternLength - 1);
+  IF found THEN RETURN TRUE ELSE RETURN FALSE END
+END contains;
+
+PROCEDURE rplWelcome(VAR line : ARRAY OF CHAR): BOOLEAN;
+VAR
+ found: BOOLEAN;
+ pos : INTEGER;
 BEGIN
   Strings.FindNext(numRPLWELCOME, line, 0, found, pos);
   IF found THEN RETURN TRUE ELSE RETURN FALSE END
@@ -235,6 +269,14 @@ BEGIN
         b := Send(inst, str);
 END Mode;
 
+PROCEDURE ModeAndJoin*(VAR inst : instance);
+VAR str: ARRAY msgLen OF CHAR;
+    b: BOOLEAN;
+BEGIN
+         formModeJoinLine(str, inst.nick, inst.channelList^[0]);
+         b := Send(inst, str);
+END ModeAndJoin;
+
 PROCEDURE Join*(VAR inst: instance);
 VAR
   str: ARRAY msgLen OF CHAR;
@@ -251,19 +293,23 @@ VAR
   b : BOOLEAN;
 BEGIN
   b := TRUE;
-  IF isPing(line) THEN Pong(inst, line) END;
+  IF isPing(line) THEN 
+    Pong(inst, line);
+  END;
   IF error(line) THEN
     Disconnect(inst);
     b := FALSE;
   ELSE
-    IF serverMsg(line) THEN
+    (*IF serverMsg(line) THEN*)
       IF rplWelcome(line) THEN
-         Mode(inst);
-         Join(inst);
+      (*IF contains(line, eofMOTD) THEN*)
+         (*Mode(inst);
+         Join(inst);*)
+         ModeAndJoin(inst);
       ELSE
          inst.callback(line); 
       END;
-    END;
+    (*END;*)
   END;
   RETURN b;
 END processResponse;
@@ -281,6 +327,4 @@ END Loop;
 
 BEGIN
   eol[0] := LF; eol[1] := CR; eol[2] := 0X;
-
-
 END IRC.
