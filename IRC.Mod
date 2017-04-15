@@ -116,6 +116,7 @@ BEGIN
         Strings.Append(" ", ln);
         Strings.Append(chan, ln);
         Strings.Append(eol, ln);
+        Out.String("JOIN LINE FORMED: "); Out.String(ln); Out.Ln;
 END formJoinLine;
 
 PROCEDURE isPing(VAR line: ARRAY OF CHAR): BOOLEAN;
@@ -225,7 +226,7 @@ BEGIN
       b := Send(inst, tmp);
 END Pong;
 
-PROCEDURE Mode(VAR inst: instance);
+PROCEDURE Mode*(VAR inst: instance);
 VAR
   str : ARRAY msgLen OF CHAR;
   b : BOOLEAN;
@@ -234,12 +235,13 @@ BEGIN
         b := Send(inst, str);
 END Mode;
 
-PROCEDURE Join(VAR inst: instance);
+PROCEDURE Join*(VAR inst: instance);
 VAR
   str: ARRAY msgLen OF CHAR;
   b: BOOLEAN;
 BEGIN
   formJoinLine(str, inst.channelList^[0]);
+  Out.String("SENDING JOIN LINE"); Out.Ln;
   b := Send(inst, str);
   (*b := Internet.Write(inst.connection, str);*)
 END Join;
