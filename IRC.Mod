@@ -40,6 +40,18 @@ VAR
 
 (* string operations *)
 
+PROCEDURE zeroStr(VAR str: ARRAY OF CHAR);
+VAR
+  i, j : LONGINT;
+BEGIN
+  i := LEN(str);
+  j := 0;
+  REPEAT
+    str[j] := 0X;
+    INC(j)
+  UNTIL j = i;
+END zeroStr;
+
 PROCEDURE findChar(ch: CHAR; VAR line: ARRAY OF CHAR; VAR b: BOOLEAN; VAR pos: INTEGER);
 VAR
   i : INTEGER;
@@ -215,6 +227,8 @@ PROCEDURE Receive*(VAR inst: instance; VAR str: ARRAY OF CHAR): BOOLEAN;
 VAR
   b: BOOLEAN;
 BEGIN
+  (*COPY ("", str);*)
+  zeroStr(str);
   b := Internet.Read(inst.connection, str);
   IF b THEN
     Out.String("received:"); Out.Ln;
