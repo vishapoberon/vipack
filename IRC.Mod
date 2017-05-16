@@ -243,7 +243,6 @@ PROCEDURE Send*(VAR inst: instance; str: ARRAY OF CHAR): BOOLEAN;
 VAR
   b : BOOLEAN;
 BEGIN
-  (*terminateLine(str);*)
   b := Internet.Write(inst.connection, str);
   IF b THEN
     Out.String("sent:"); Out.Ln;
@@ -294,6 +293,7 @@ VAR
   str : ARRAY msgLen OF CHAR;
   b : BOOLEAN;
 BEGIN
+        zeroStr(str);
         formModeLine(str, inst.nick);
         b := Send(inst, str);
 END Mode;
@@ -302,6 +302,7 @@ PROCEDURE ModeAndJoin*(VAR inst : instance);
 VAR str: ARRAY msgLen OF CHAR;
     b: BOOLEAN;
 BEGIN
+         zeroStr(str);
          formModeJoinLine(str, inst.nick, inst.channelList^[0]);
          b := Send(inst, str);
 END ModeAndJoin;
@@ -311,6 +312,7 @@ VAR
   str: ARRAY msgLen OF CHAR;
   b: BOOLEAN;
 BEGIN
+  zeroStr(str);
   formJoinLine(str, inst.channelList^[0]);
   Out.String("SENDING JOIN LINE"); Out.Ln;
   b := Send(inst, str);
@@ -328,11 +330,8 @@ BEGIN
     Disconnect(inst);
     b := FALSE;
   ELSE
-    IF serverMsg(line) THEN
-      IF rplWelcome(line) THEN
-      (*IF contains(line, eofMOTD) THEN*)
-         (*Mode(inst);
-         Join(inst);*)
+    IF serverMsg(line) THEN (* string starts with ':' *)
+      IF rplWelcome(line) THEN (* strting contains '001' *)
          ModeAndJoin(inst);
       ELSE
          inst.callback(line); 
