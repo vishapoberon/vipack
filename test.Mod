@@ -32,7 +32,6 @@ BEGIN
 
   IF IRC.Connect(inst) # FALSE THEN
     b := IRC.Auth(inst);
-
     IRC.Loop(inst);
   END;
 END testBot;

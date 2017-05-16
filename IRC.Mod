@@ -86,6 +86,8 @@ BEGIN
 END terminateLine;
 
 PROCEDURE formUserNickLine(VAR user, owner, nick, res: ARRAY OF CHAR);
+VAR
+  l : INTEGER;
 BEGIN
   COPY(cmdUser, res);
 	Strings.Append(" ", res);
@@ -93,7 +95,12 @@ BEGIN
   Strings.Append(" 0 * :", res);
 	Strings.Append(owner, res);
   (* by the spec the command is terminated by \r\n *)
-	Strings.Append(eol, res);
+
+  l := Strings.Length(res);
+  res[l] := LF;
+  res[l+1] := CR;
+  res[l+2] := 0X;
+	(*Strings.Append(eol, res);*)
 
   Strings.Append (cmdNick, res);
   Strings.Append(" ", res);
@@ -120,12 +127,19 @@ BEGIN
 END formJoinLine;
 
 PROCEDURE formModeJoinLine(VAR str, nick, chan: ARRAY OF CHAR);
+VAR
+  l: INTEGER;
 BEGIN
         COPY (cmdMode, str);
         Strings.Append(" ", str);
         Strings.Append(nick, str);
         Strings.Append(" +C", str);
-        Strings.Append(eol, str);
+
+        l := Strings.Length(str);
+        str[l] := LF;
+        str[l+1] := CR;
+        str[l+2] := 0X;
+        (*Strings.Append(eol, str);*)
 
         Strings.Append(cmdJoin, str);
         Strings.Append(" ", str);
@@ -175,6 +189,7 @@ PROCEDURE rplWelcome(VAR line : ARRAY OF CHAR): BOOLEAN;
 VAR
  found: BOOLEAN;
  pos : INTEGER;
+ tmp: ARRAY 128 OF CHAR;
 BEGIN
   Strings.FindNext(numRPLWELCOME, line, 0, found, pos);
   IF found THEN RETURN TRUE ELSE RETURN FALSE END
@@ -214,7 +229,7 @@ PROCEDURE Send*(VAR inst: instance; str: ARRAY OF CHAR): BOOLEAN;
 VAR
   b : BOOLEAN;
 BEGIN
-  terminateLine(str);
+  (*terminateLine(str);*)
   b := Internet.Write(inst.connection, str);
   IF b THEN
     Out.String("sent:"); Out.Ln;
@@ -285,7 +300,6 @@ BEGIN
   formJoinLine(str, inst.channelList^[0]);
   Out.String("SENDING JOIN LINE"); Out.Ln;
   b := Send(inst, str);
-  (*b := Internet.Write(inst.connection, str);*)
 END Join;
 
 PROCEDURE processResponse(VAR inst: instance; VAR line: ARRAY OF CHAR): BOOLEAN;
@@ -300,7 +314,7 @@ BEGIN
     Disconnect(inst);
     b := FALSE;
   ELSE
-    (*IF serverMsg(line) THEN*)
+    IF serverMsg(line) THEN
       IF rplWelcome(line) THEN
       (*IF contains(line, eofMOTD) THEN*)
          (*Mode(inst);
@@ -309,7 +323,7 @@ BEGIN
       ELSE
          inst.callback(line); 
       END;
-    (*END;*)
+    END;
   END;
   RETURN b;
 END processResponse;
@@ -326,5 +340,5 @@ BEGIN
 END Loop;
 
 BEGIN
-  eol[0] := LF; eol[1] := CR; eol[2] := 0X;
+  eol[0] := LF; eol[1] := CR;
 END IRC.
