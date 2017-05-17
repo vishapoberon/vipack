@@ -28,9 +28,9 @@ CONST
     chnlist* = POINTER TO ARRAY OF chn;
     msg* = ARRAY msgLen OF CHAR;
     cbMessage* = PROCEDURE(VAR msg : ARRAY OF CHAR); (* cb stands for callback *)
-    cbPrivateMessage* = PROCEDURE (VAR msg, fromUser, fromIdent, ip: ARRAY OF CHAR);
-    cbPublicMessage*  = PROCEDURE (VAR msg, fromUser, fromIdent, room, ip: ARRAY OF CHAR);
-    cbPublicMessageWithMention* = PROCEDURE(VAR msg, fromUser, fromIdent, room, ip: ARRAY OF CHAR);
+    cbPrivateMessage* = PROCEDURE (VAR msg, user, ident, host: ARRAY OF CHAR);
+    cbPublicMessage*  = PROCEDURE (VAR msg, user, ident, rcpt, host: ARRAY OF CHAR);
+    cbPublicMessageWithMention* = PROCEDURE(VAR msg, user, ident, rcpt, host: ARRAY OF CHAR); (* rcpt is usually the room in case of public messages *)
 
 
     instance* = RECORD
@@ -458,6 +458,25 @@ BEGIN
   RETURN b;
 END getHost;
 
+PROCEDURE isMention(VAR nick, line: ARRAY OF CHAR): BOOLEAN;
+VAR
+  i : INTEGER;
+  str: ARRAY 32 OF CHAR;
+BEGIN
+  Strings.Extract(line, 0, Strings.Length(nick), str);
+  Out.String("str: "); Out.String(str); Out.Ln;
+  IF str = nick THEN
+    RETURN TRUE
+  ELSE
+    RETURN FALSE
+  END;
+END isMention;
+
+PROCEDURE cutMentionFromMessage(VAR nick, msg: ARRAY OF CHAR);
+BEGIN
+ Strings.Delete(msg, 0, Strings.Length(nick) + 2);
+END cutMentionFromMessage;
+
 PROCEDURE  parse(VAR inst: instance; VAR line: ARRAY OF CHAR);
 VAR
   message: ARRAY msgLen OF CHAR;
@@ -466,32 +485,32 @@ VAR
   messagetype: ARRAY 16 OF CHAR;
   rcpt: ARRAY 64 OF CHAR;
   b: BOOLEAN;
+  mn: BOOLEAN;
 BEGIN
 
   b := getUser(line, user);
-  
- 
   b := getMsgType(line, messagetype);
-
   b := getRecipient(line, rcpt);
   b := getMsg(line, message);
+
 
   IF messagetype = msgPRIVMSG THEN
      b := getUserName(user, username);
      b := getIdentName(user, identname);
      b := getHost(user, host);
-
-     Out.String("username: "); Out.String(username); Out.String("|"); Out.Ln;
-     Out.String("identname: "); Out.String(identname); Out.String("|"); Out.Ln;
-     Out.String("host: "); Out.String(host); Out.String("|"); Out.Ln;
   END;
 
-  Out.String("user: "); Out.String(user); Out.String("|"); Out.Ln;
-  Out.String("message type: "); Out.String(messagetype); Out.String("|"); Out.Ln;
-  Out.String("recipient: "); Out.String(rcpt); Out.String("|"); Out.Ln;
-  Out.String("message: "); Out.String(message); Out.String("|"); Out.Ln;
-
-  inst.callbackSimple(line);  
+  IF rcpt = inst.nick THEN (* private message *)
+    inst.callbackPrivate(message, username, identname, host);
+  ELSE
+    mn := isMention(inst.nick, message); 
+    IF mn THEN
+      cutMentionFromMessage(inst.nick, message); 
+      inst.callbackPublicMention(message, username, identname, rcpt, host);
+    ELSE
+    inst.callbackPublic(message, username, identname, rcpt, host);
+    END;
+  END;
 END parse;
 
 
@@ -508,7 +527,7 @@ BEGIN
     b := FALSE;
   ELSE
     IF serverMsg(line) THEN (* string starts with ':' *)
-      IF rplWelcome(line) THEN (* strting contains '001' *)
+      IF rplWelcome(line) THEN (* string contains '001' *)
          ModeAndJoin(inst);
       ELSE
          parse(inst, line);
