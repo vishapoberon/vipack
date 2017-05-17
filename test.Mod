@@ -3,15 +3,12 @@ MODULE test;
 IMPORT IRC, Out, Strings := ooc2Strings;
 
 
-PROCEDURE clbk(VAR in: ARRAY OF CHAR);
+PROCEDURE clbk(VAR msg : ARRAY OF CHAR);
 BEGIN
 Out.String("callback procedure is running, youhoo!"); Out.Ln; 
 Out.String("input:"); Out.Ln;
-Out.String(in); Out.Ln;
+Out.String(msg); Out.String("|"); Out.Ln;
 Out.Ln;
-
-
-
 END clbk;
 
 PROCEDURE testBot;
@@ -25,7 +22,10 @@ BEGIN
   inst.nick := "vocbot";
   inst.host := "irc.freenode.net";
   inst.port := "6667";
-  inst.callback := clbk;
+  inst.callbackSimple := clbk;
+
+
+
   NEW(channels, 1);
   channels[0] := "#oberon";
   IRC.setChannelList(inst, channels);

@@ -9,13 +9,16 @@ CONST
   cmdJoin* =  "JOIN";
   cmdUser* =  "USER";
   cmdNick* =  "NICK";
+  msgPRIVMSG* = "PRIVMSG";
+  msgNOTICE*  = "NOTICE";
+  msg001 = "001";
+  msg002 = "002";
+  msg003 = "003";
+  msg004 = "004";
+  msg005 = "005";
+  
   CR* = 0DX;
   LF* = 0AX;
-
-  numRPLWELCOME = "001";
-  numRPLYOURHOST = "002";
-  numRPLCREATED = "003";
-  numRPLMYINFO = "004";
 
   eofMOTD="End of /MOTD";
   errClosingLink = "ERROR :Closing Link:";
@@ -24,14 +27,20 @@ CONST
     chn* = ARRAY 32 OF CHAR;
     chnlist* = POINTER TO ARRAY OF chn;
     msg* = ARRAY msgLen OF CHAR;
-    callBack* = PROCEDURE(VAR in: ARRAY OF CHAR);
+    cbMessage* = PROCEDURE(VAR msg : ARRAY OF CHAR); (* cb stands for callback *)
+    cbPrivateMessage* = PROCEDURE (VAR msg, fromUser, fromIdent, ip: ARRAY OF CHAR);
+    cbPublicMessage*  = PROCEDURE (VAR msg, fromUser, fromIdent, room, ip: ARRAY OF CHAR);
+    cbPublicMessageWithMention* = PROCEDURE(VAR msg, fromUser, fromIdent, room, ip: ARRAY OF CHAR);
 
 
     instance* = RECORD
      owner*, user*, nick*, host*, port*: chn;
      connection*: Internet.Socket;
      channelList*: chnlist;
-     callback*: callBack;
+     callbackSimple*: cbMessage;
+     callbackPrivate*: cbPrivateMessage;
+     callbackPublic*: cbPublicMessage;
+     callbackPublicMention*: cbPublicMessageWithMention;
     END;
 
 
@@ -203,7 +212,7 @@ VAR
  pos : INTEGER;
  tmp: ARRAY 128 OF CHAR;
 BEGIN
-  Strings.FindNext(numRPLWELCOME, line, 0, found, pos);
+  Strings.FindNext(msg001, line, 0, found, pos);
   IF found THEN RETURN TRUE ELSE RETURN FALSE END
 END rplWelcome;
 
@@ -232,7 +241,7 @@ BEGIN
   b := Internet.Read(inst.connection, str);
   IF b THEN
     Out.String("received:"); Out.Ln;
-    Out.String(str); Out.Ln;
+    Out.String(str); Out.String("|"); Out.Ln;
   ELSE
     Out.String("receive failed"); Out.Ln;
   END;
@@ -318,6 +327,174 @@ BEGIN
   b := Send(inst, str);
 END Join;
 
+PROCEDURE getUser(VAR line, user: ARRAY OF CHAR): BOOLEAN;
+VAR
+  pos: INTEGER;
+  found: BOOLEAN;
+BEGIN
+  zeroStr(user);
+  Strings.FindNext(" ", line, 1, found, pos);
+  IF found THEN
+    Strings.Extract(line, 1, pos - 1, user);
+  END;
+  RETURN found
+END getUser;
+
+PROCEDURE getMsgType(VAR line, mtype: ARRAY OF CHAR): BOOLEAN;
+VAR
+  pos0, pos1: INTEGER;
+  found: BOOLEAN;
+BEGIN
+  zeroStr(mtype);
+  Strings.FindNext(" ", line, 0, found, pos0);
+  IF found THEN
+     Strings.FindNext(" ", line, pos0+1, found, pos1);
+     IF found THEN
+       Strings.Extract(line, pos0 + 1, pos1 - pos0 - 1, mtype);
+     END;
+  END;
+  RETURN found
+END getMsgType;
+
+PROCEDURE getNextWord(VAR src: ARRAY OF CHAR; spos: INTEGER; VAR dst: ARRAY OF CHAR);
+VAR
+  i, j: INTEGER;
+BEGIN
+  zeroStr(dst);
+  i := 0;
+  j := spos+1;
+  REPEAT
+    dst[i] := src[i+j]; 
+  INC(i); 
+  UNTIL (i+j = Strings.Length(src)) OR (src[i+j] <= ' ');
+END getNextWord;
+
+PROCEDURE getTillEOL(VAR src: ARRAY OF CHAR; spos: INTEGER; VAR dst: ARRAY OF CHAR); (* actually get till any character < ' ' *)
+VAR
+  i, j: INTEGER;
+BEGIN
+  zeroStr(dst);
+  i := 0;
+  j := spos+1;
+  REPEAT
+    dst[i] := src[i+j]; 
+  INC(i); 
+  UNTIL (i+j = Strings.Length(src)) OR (src[i+j] < ' ');
+END getTillEOL;
+
+
+PROCEDURE getRecipient(VAR line, room: ARRAY OF CHAR): BOOLEAN;
+VAR
+  pos0, pos1: INTEGER;
+  found: BOOLEAN;
+BEGIN
+  zeroStr(room);
+  Strings.FindNext(" ", line, 0, found, pos1);
+  IF found THEN
+     Strings.FindNext(" ", line, pos1+1, found, pos0);
+     IF found THEN
+       getNextWord(line, pos0, room);
+     END;
+  END;
+  RETURN found
+END getRecipient;
+
+PROCEDURE getMsg(VAR line, msg: ARRAY OF CHAR): BOOLEAN;
+VAR
+  pos0, pos1: INTEGER;
+  found: BOOLEAN;
+BEGIN
+  zeroStr(msg);
+  Strings.FindNext(" ", line, 0, found, pos0);
+  IF found THEN
+     Strings.FindNext(" ", line, pos0+1, found, pos1);
+     IF found THEN
+        Strings.FindNext(" ", line, pos1+1, found, pos0);
+        getTillEOL(line, pos0+1, msg);
+     END;
+  END;
+  RETURN found
+END getMsg;
+
+PROCEDURE getUserName(VAR user, username: ARRAY OF CHAR): BOOLEAN;
+VAR
+  i: INTEGER;
+  b: BOOLEAN;
+BEGIN
+  zeroStr(username);
+  Strings.FindNext("!", user, 0, b, i);
+  IF b THEN
+    Strings.Extract(user, 0, i, username);
+  END;
+  RETURN b
+END getUserName;
+
+PROCEDURE getIdentName(VAR user, ident: ARRAY OF CHAR): BOOLEAN;
+VAR
+  i, j: INTEGER;
+  b: BOOLEAN;
+BEGIN
+  zeroStr(ident);
+  Strings.FindNext("~", user, 0, b, i);
+  IF b THEN
+    Strings.FindNext("@", user, i, b, j);
+    IF b THEN
+      Strings.Extract(user, i+1, j-i-1, ident);
+    END;
+  END;
+  RETURN b;
+END getIdentName;
+
+PROCEDURE getHost(VAR user, host: ARRAY OF CHAR): BOOLEAN;
+VAR
+  i: INTEGER;
+  b: BOOLEAN;
+BEGIN
+  zeroStr(host);
+  Strings.FindNext("@", user, 0, b, i);
+  IF b THEN
+    Strings.Extract(user, i+1, Strings.Length(user)-i-1, host);
+  END;
+  RETURN b;
+END getHost;
+
+PROCEDURE  parse(VAR inst: instance; VAR line: ARRAY OF CHAR);
+VAR
+  message: ARRAY msgLen OF CHAR;
+  user, username, identname   : ARRAY 64 OF CHAR;
+  host: ARRAY 64 OF CHAR;
+  messagetype: ARRAY 16 OF CHAR;
+  rcpt: ARRAY 64 OF CHAR;
+  b: BOOLEAN;
+BEGIN
+
+  b := getUser(line, user);
+  
+ 
+  b := getMsgType(line, messagetype);
+
+  b := getRecipient(line, rcpt);
+  b := getMsg(line, message);
+
+  IF messagetype = msgPRIVMSG THEN
+     b := getUserName(user, username);
+     b := getIdentName(user, identname);
+     b := getHost(user, host);
+
+     Out.String("username: "); Out.String(username); Out.String("|"); Out.Ln;
+     Out.String("identname: "); Out.String(identname); Out.String("|"); Out.Ln;
+     Out.String("host: "); Out.String(host); Out.String("|"); Out.Ln;
+  END;
+
+  Out.String("user: "); Out.String(user); Out.String("|"); Out.Ln;
+  Out.String("message type: "); Out.String(messagetype); Out.String("|"); Out.Ln;
+  Out.String("recipient: "); Out.String(rcpt); Out.String("|"); Out.Ln;
+  Out.String("message: "); Out.String(message); Out.String("|"); Out.Ln;
+
+  inst.callbackSimple(line);  
+END parse;
+
+
 PROCEDURE processResponse(VAR inst: instance; VAR line: ARRAY OF CHAR): BOOLEAN;
 VAR
   b : BOOLEAN;
@@ -334,7 +511,7 @@ BEGIN
       IF rplWelcome(line) THEN (* strting contains '001' *)
          ModeAndJoin(inst);
       ELSE
-         inst.callback(line); 
+         parse(inst, line);
       END;
     END;
   END;
