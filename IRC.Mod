@@ -11,6 +11,8 @@ CONST
   cmdNick* =  "NICK";
   msgPRIVMSG* = "PRIVMSG";
   msgNOTICE*  = "NOTICE";
+  msgQUIT*    = "QUIT";
+  msgJOIN*    = "JOIN";
   msg001 = "001";
   msg002 = "002";
   msg003 = "003";
