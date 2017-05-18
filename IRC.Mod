@@ -165,7 +165,7 @@ BEGIN
   sh.zeroStr(str);
   b := Internet.Read(inst.connection, str);
   IF b THEN
-    Out.String("received: '"); Out.Ln;
+    Out.String("received: '"); 
     Out.String(str); Out.String("'"); Out.Ln;
   ELSE
     Out.String("receive failed"); Out.Ln;
@@ -377,36 +377,69 @@ END cutMentionFromMessage;
 PROCEDURE  parse(VAR inst: instance; VAR line: ARRAY OF CHAR);
 VAR
   message: ARRAY msgLen OF CHAR;
-  user, username, identname   : ARRAY 64 OF CHAR;
+  userpart, username, identname   : ARRAY 64 OF CHAR;
   host: ARRAY 64 OF CHAR;
   messagetype: ARRAY 16 OF CHAR;
   rcpt: ARRAY 64 OF CHAR;
   b: BOOLEAN;
   mn: BOOLEAN;
+  i: INTEGER;
 BEGIN
-
-  b := getUser(line, user);
+  i := 0; mn := FALSE; b := FALSE;
+  b := getUser(line, userpart);
   b := getMsgType(line, messagetype);
-  b := getRecipient(line, rcpt);
-  b := getMsg(line, message);
 
+  IF (messagetype = msgNOTICE) OR (messagetype = msgJOIN) OR
+     (messagetype = msgQUIT)   OR (messagetype = msgPRIVMSG) THEN
 
-  IF messagetype = msgPRIVMSG THEN
-     b := getUserName(user, username);
-     b := getIdentName(user, identname);
-     b := getHost(user, host);
-  END;
+     IF messagetype = msgPRIVMSG THEN
+        b := getUserName(userpart, username);
+        b := getIdentName(userpart, identname);
+        b := getHost(userpart, host);
+        b := getRecipient(line, rcpt);
+        b := getMsg(line, message);
+     END;
+     
+     IF messagetype = msgNOTICE THEN
+        username := "";
+        identname := "";
+        host := userpart;
+        Strings.Delete(host, 0, 1);
+        b := getRecipient(line, rcpt);
+        b := getMsg(line, message);
+     END;
 
-  IF rcpt = inst.nick THEN (* private message *)
-    inst.callbackPrivate(message, messagetype, username, identname, host);
+     IF messagetype = msgJOIN THEN
+        b := getUserName(userpart, username);
+        b := getIdentName(userpart, identname);
+        b := getHost(userpart, host);
+        b := getRecipient(line, rcpt);
+        message := "";
+     END;
+
+     IF messagetype = msgQUIT THEN
+        b := getUserName(userpart, username);
+        b := getIdentName(userpart, identname);
+        b := getHost(userpart, host);
+        rcpt := "";
+        message := "";
+        Strings.FindNext(":", line, 1, b, i);
+        sh.getTillEOL(line, i, message);
+     END;
+
+     IF rcpt = inst.nick THEN (* private message *)
+       inst.callbackPrivate(message, messagetype, username, identname, host);
+     ELSE
+       mn := isMention(inst.nick, message); 
+       IF mn THEN
+         cutMentionFromMessage(inst.nick, message); 
+         inst.callbackPublicMention(message, messagetype, username, identname, rcpt, host);
+       ELSE
+         inst.callbackPublic(message, messagetype, username, identname, rcpt, host);
+       END;
+     END;
   ELSE
-    mn := isMention(inst.nick, message); 
-    IF mn THEN
-      cutMentionFromMessage(inst.nick, message); 
-      inst.callbackPublicMention(message, messagetype, username, identname, rcpt, host);
-    ELSE
-    inst.callbackPublic(message, messagetype, username, identname, rcpt, host);
-    END;
+     Out.String("unknown msg type: '"); Out.String(message); Out.String("' - ignoring!"); Out.Ln; 
   END;
 END parse;
 
