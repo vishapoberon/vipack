@@ -62,8 +62,9 @@ BEGIN
 
 
 
-  NEW(channels, 1);
+  NEW(channels, 2);
   channels[0] := "#oberon";
+  channels[1] := "#pascal";
   IRC.setChannelList(inst, channels);
 
   IF IRC.Connect(inst) # FALSE THEN

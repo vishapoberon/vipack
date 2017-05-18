@@ -61,6 +61,16 @@ BEGIN
   UNTIL j = i;
 END zeroStr;
 
+PROCEDURE appendLFCR(VAR str: ARRAY OF CHAR);
+VAR
+  l : INTEGER;
+BEGIN
+        l := Strings.Length(str);
+        str[l] := LF;
+        str[l+1] := CR;
+        str[l+2] := 0X;
+END appendLFCR;
+
 PROCEDURE findChar(ch: CHAR; VAR line: ARRAY OF CHAR; VAR b: BOOLEAN; VAR pos: INTEGER);
 VAR
   i : INTEGER;
@@ -147,25 +157,29 @@ BEGIN
         Strings.Append(eol, ln);
 END formJoinLine;
 
-PROCEDURE formModeJoinLine(VAR str, nick, chan: ARRAY OF CHAR);
+PROCEDURE formModeJoinLine(VAR str, nick: ARRAY OF CHAR; channels: chnlist);
 VAR
-  l: INTEGER;
+  i: LONGINT;
 BEGIN
         COPY (cmdMode, str);
         Strings.Append(" ", str);
         Strings.Append(nick, str);
         Strings.Append(" +C", str);
-
-        l := Strings.Length(str);
-        str[l] := LF;
-        str[l+1] := CR;
-        str[l+2] := 0X;
+        appendLFCR(str);
         (*Strings.Append(eol, str);*)
-
-        Strings.Append(cmdJoin, str);
-        Strings.Append(" ", str);
-        Strings.Append(chan, str);
-        Strings.Append(eol, str);
+        
+        i := 0;
+        REPEAT
+          Strings.Append(cmdJoin, str);
+          Strings.Append(" ", str);
+          Strings.Append(channels[i], str);
+          INC(i);
+          IF i = LEN(channels^) THEN
+            Strings.Append(eol, str);
+          ELSE
+            appendLFCR(str);
+          END;
+        UNTIL  i = LEN(channels^);
 END formModeJoinLine;
 
 PROCEDURE isPing(VAR line: ARRAY OF CHAR): BOOLEAN;
@@ -312,7 +326,7 @@ VAR str: ARRAY msgLen OF CHAR;
     b: BOOLEAN;
 BEGIN
          zeroStr(str);
-         formModeJoinLine(str, inst.nick, inst.channelList^[0]);
+         formModeJoinLine(str, inst.nick, inst.channelList);
          b := Send(inst, str);
 END ModeAndJoin;
 
@@ -464,7 +478,6 @@ VAR
   str: ARRAY 32 OF CHAR;
 BEGIN
   Strings.Extract(line, 0, Strings.Length(nick), str);
-  Out.String("str: "); Out.String(str); Out.Ln;
   IF str = nick THEN
     RETURN TRUE
   ELSE
