@@ -29,17 +29,17 @@ CONST
     chn* = ARRAY 32 OF CHAR;
     chnlist* = POINTER TO ARRAY OF chn;
     msg* = ARRAY msgLen OF CHAR;
-    cbMessage* = PROCEDURE(VAR msg : ARRAY OF CHAR); (* cb stands for callback *)
-    cbPrivateMessage* = PROCEDURE (VAR msg, user, ident, host: ARRAY OF CHAR);
-    cbPublicMessage*  = PROCEDURE (VAR msg, user, ident, rcpt, host: ARRAY OF CHAR);
-    cbPublicMessageWithMention* = PROCEDURE(VAR msg, user, ident, rcpt, host: ARRAY OF CHAR); (* rcpt is usually the room in case of public messages *)
+    (*cbMessage* = PROCEDURE(VAR msg : ARRAY OF CHAR);*) (* cb stands for callback *)
+    cbPrivateMessage* = PROCEDURE (VAR msg, msgtype, user, ident, host: ARRAY OF CHAR);
+    cbPublicMessage*  = PROCEDURE (VAR msg, msgtype, user, ident, rcpt, host: ARRAY OF CHAR);
+    cbPublicMessageWithMention* = PROCEDURE(VAR msg, msgtype, user, ident, rcpt, host: ARRAY OF CHAR); (* rcpt is usually the room in case of public messages *)
 
 
     instance* = RECORD
      owner*, user*, nick*, host*, port*: chn;
      connection*: Internet.Socket;
      channelList*: chnlist;
-     callbackSimple*: cbMessage;
+     (*callbackSimple*: cbMessage;*)
      callbackPrivate*: cbPrivateMessage;
      callbackPublic*: cbPublicMessage;
      callbackPublicMention*: cbPublicMessageWithMention;
@@ -398,14 +398,14 @@ BEGIN
   END;
 
   IF rcpt = inst.nick THEN (* private message *)
-    inst.callbackPrivate(message, username, identname, host);
+    inst.callbackPrivate(message, messagetype, username, identname, host);
   ELSE
     mn := isMention(inst.nick, message); 
     IF mn THEN
       cutMentionFromMessage(inst.nick, message); 
-      inst.callbackPublicMention(message, username, identname, rcpt, host);
+      inst.callbackPublicMention(message, messagetype, username, identname, rcpt, host);
     ELSE
-    inst.callbackPublic(message, username, identname, rcpt, host);
+    inst.callbackPublic(message, messagetype, username, identname, rcpt, host);
     END;
   END;
 END parse;
