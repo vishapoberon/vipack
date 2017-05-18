@@ -1,4 +1,4 @@
-MODULE netdb;
+MODULE netdb; (*noch 23.2.2017 / 14.4.2017*)
 
 IMPORT SYSTEM;
 

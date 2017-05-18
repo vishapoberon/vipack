@@ -1,4 +1,4 @@
-MODULE Internet;
+MODULE Internet; (*noch 14.4.2017 / 14.4.2017*)
 IMPORT sockets, netdb, types, Strings, Out, Platform, SYSTEM;
 
 TYPE 

@@ -1,4 +1,4 @@
-MODULE test;
+MODULE test; (* noch 13.4.2017 / 18.5.2017*)
 
 IMPORT IRC, Out, Strings := ooc2Strings;
 

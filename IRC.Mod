@@ -1,5 +1,5 @@
-MODULE IRC;
-IMPORT Internet, Out, Strings := ooc2Strings, types;
+MODULE IRC; (*noch 23.2.2017 / 18.5.2017*)
+IMPORT Internet, Out, Strings := ooc2Strings, sh := stringHelpers, types;
 
 CONST 
   msgLen* = 512; (* message length not more than 512 characters *)
@@ -48,75 +48,6 @@ CONST
 
 VAR
   eol* : ARRAY 3 OF CHAR;
-
-(* string operations *)
-
-PROCEDURE zeroStr(VAR str: ARRAY OF CHAR);
-VAR
-  i, j : LONGINT;
-BEGIN
-  i := LEN(str);
-  j := 0;
-  REPEAT
-    str[j] := 0X;
-    INC(j)
-  UNTIL j = i;
-END zeroStr;
-
-PROCEDURE appendLFCR(VAR str: ARRAY OF CHAR);
-VAR
-  l : INTEGER;
-BEGIN
-        l := Strings.Length(str);
-        str[l] := LF;
-        str[l+1] := CR;
-        str[l+2] := 0X;
-END appendLFCR;
-
-PROCEDURE findChar(ch: CHAR; VAR line: ARRAY OF CHAR; VAR b: BOOLEAN; VAR pos: INTEGER);
-VAR
-  i : INTEGER;
-BEGIN
-  i := -1; pos := -1;
-  b := FALSE;
-  REPEAT
-    INC(i);
-    IF line[i] = ch THEN b := TRUE; pos := i END;
-  UNTIL b OR (i = LEN(line) - 1);
-END findChar;
-
-(* cuts line, takes the part till the eol *)
-PROCEDURE cutLine(VAR src, dst: ARRAY OF CHAR);
-VAR
- found: BOOLEAN;
- pos : INTEGER;
- i : INTEGER;
-BEGIN
-  COPY("", dst);
-  findChar(LF, src, found, pos);
-  IF found THEN
-    i := 0;
-    REPEAT
-      dst[i] := src[i];
-      INC(i);
-    UNTIL (i = pos) OR (i = LEN(dst)-2); 
-    dst[i] := src[i];
-    dst[i+1] := 0X
-  END; 
-END cutLine;
-
-PROCEDURE terminateLine(VAR str: ARRAY OF CHAR);
-VAR
- found: BOOLEAN;
- pos : INTEGER;
-BEGIN
-  findChar(LF, str, found, pos);
-  IF found THEN
-    IF (pos + 1) < LEN(str) THEN
-      str[pos + 1] := 0X
-    END
-  END; 
-END terminateLine;
 
 PROCEDURE formUserNickLine(VAR user, owner, nick, res: ARRAY OF CHAR);
 VAR
@@ -167,7 +98,7 @@ BEGIN
         Strings.Append(" ", str);
         Strings.Append(nick, str);
         Strings.Append(" +C", str);
-        appendLFCR(str);
+        sh.appendLFCR(str);
         (*Strings.Append(eol, str);*)
         
         i := 0;
@@ -179,7 +110,7 @@ BEGIN
           IF i = LEN(channels^) THEN
             Strings.Append(eol, str);
           ELSE
-            appendLFCR(str);
+            sh.appendLFCR(str);
           END;
         UNTIL  i = LEN(channels^);
 END formModeJoinLine;
@@ -200,27 +131,6 @@ PROCEDURE serverMsg(VAR line: ARRAY OF CHAR): BOOLEAN;
 BEGIN
   IF line[0] = ':' THEN RETURN TRUE ELSE RETURN FALSE END
 END serverMsg;
-
-PROCEDURE contains (VAR line : ARRAY OF CHAR; pattern: ARRAY OF CHAR): BOOLEAN;
-VAR
- found: BOOLEAN;
- pos : INTEGER;
- i : INTEGER;
- patternLength: INTEGER;
- tmpline: POINTER TO ARRAY OF CHAR;
-BEGIN
-  i := 0;
-  patternLength := Strings.Length(pattern);
-  NEW(tmpline, patternLength+1);
-  found := FALSE;
-  REPEAT
-    Strings.Extract(line, i, patternLength, tmpline^);
-    Out.String("COMPARING: "); Out.String(pattern); Out.String (" "); Out.String (tmpline^); Out.Ln;
-    found := Strings.Equal(pattern, tmpline^);
-    INC(i);
-UNTIL found OR (i = LEN(line) - patternLength - 1);
-  IF found THEN RETURN TRUE ELSE RETURN FALSE END
-END contains;
 
 PROCEDURE rplWelcome(VAR line : ARRAY OF CHAR): BOOLEAN;
 VAR
@@ -252,12 +162,11 @@ PROCEDURE Receive*(VAR inst: instance; VAR str: ARRAY OF CHAR): BOOLEAN;
 VAR
   b: BOOLEAN;
 BEGIN
-  (*COPY ("", str);*)
-  zeroStr(str);
+  sh.zeroStr(str);
   b := Internet.Read(inst.connection, str);
   IF b THEN
-    Out.String("received:"); Out.Ln;
-    Out.String(str); Out.String("|"); Out.Ln;
+    Out.String("received: '"); Out.Ln;
+    Out.String(str); Out.String("'"); Out.Ln;
   ELSE
     Out.String("receive failed"); Out.Ln;
   END;
@@ -308,7 +217,7 @@ VAR
   tmp: ARRAY msgLen OF CHAR;
   b : BOOLEAN;
 BEGIN
-      cutLine(line, tmp);
+      sh.cutLine(line, tmp);
       tmp[1] := 'O'; (* replace "PING" by "PONG" *)
       b := Send(inst, tmp);
 END Pong;
@@ -318,7 +227,7 @@ VAR
   str : ARRAY msgLen OF CHAR;
   b : BOOLEAN;
 BEGIN
-        zeroStr(str);
+        sh.zeroStr(str);
         formModeLine(str, inst.nick);
         b := Send(inst, str);
 END Mode;
@@ -327,7 +236,7 @@ PROCEDURE ModeAndJoin*(VAR inst : instance);
 VAR str: ARRAY msgLen OF CHAR;
     b: BOOLEAN;
 BEGIN
-         zeroStr(str);
+         sh.zeroStr(str);
          formModeJoinLine(str, inst.nick, inst.channelList);
          b := Send(inst, str);
 END ModeAndJoin;
@@ -337,7 +246,7 @@ VAR
   str: ARRAY msgLen OF CHAR;
   b: BOOLEAN;
 BEGIN
-  zeroStr(str);
+  sh.zeroStr(str);
   formJoinLine(str, inst.channelList^[0]);
   Out.String("SENDING JOIN LINE"); Out.Ln;
   b := Send(inst, str);
@@ -348,7 +257,7 @@ VAR
   pos: INTEGER;
   found: BOOLEAN;
 BEGIN
-  zeroStr(user);
+  sh.zeroStr(user);
   Strings.FindNext(" ", line, 1, found, pos);
   IF found THEN
     Strings.Extract(line, 1, pos - 1, user);
@@ -361,7 +270,7 @@ VAR
   pos0, pos1: INTEGER;
   found: BOOLEAN;
 BEGIN
-  zeroStr(mtype);
+  sh.zeroStr(mtype);
   Strings.FindNext(" ", line, 0, found, pos0);
   IF found THEN
      Strings.FindNext(" ", line, pos0+1, found, pos1);
@@ -372,44 +281,17 @@ BEGIN
   RETURN found
 END getMsgType;
 
-PROCEDURE getNextWord(VAR src: ARRAY OF CHAR; spos: INTEGER; VAR dst: ARRAY OF CHAR);
-VAR
-  i, j: INTEGER;
-BEGIN
-  zeroStr(dst);
-  i := 0;
-  j := spos+1;
-  REPEAT
-    dst[i] := src[i+j]; 
-  INC(i); 
-  UNTIL (i+j = Strings.Length(src)) OR (src[i+j] <= ' ');
-END getNextWord;
-
-PROCEDURE getTillEOL(VAR src: ARRAY OF CHAR; spos: INTEGER; VAR dst: ARRAY OF CHAR); (* actually get till any character < ' ' *)
-VAR
-  i, j: INTEGER;
-BEGIN
-  zeroStr(dst);
-  i := 0;
-  j := spos+1;
-  REPEAT
-    dst[i] := src[i+j]; 
-  INC(i); 
-  UNTIL (i+j = Strings.Length(src)) OR (src[i+j] < ' ');
-END getTillEOL;
-
-
 PROCEDURE getRecipient(VAR line, room: ARRAY OF CHAR): BOOLEAN;
 VAR
   pos0, pos1: INTEGER;
   found: BOOLEAN;
 BEGIN
-  zeroStr(room);
+  sh.zeroStr(room);
   Strings.FindNext(" ", line, 0, found, pos1);
   IF found THEN
      Strings.FindNext(" ", line, pos1+1, found, pos0);
      IF found THEN
-       getNextWord(line, pos0, room);
+       sh.getNextWord(line, pos0, room);
      END;
   END;
   RETURN found
@@ -420,13 +302,13 @@ VAR
   pos0, pos1: INTEGER;
   found: BOOLEAN;
 BEGIN
-  zeroStr(msg);
+  sh.zeroStr(msg);
   Strings.FindNext(" ", line, 0, found, pos0);
   IF found THEN
      Strings.FindNext(" ", line, pos0+1, found, pos1);
      IF found THEN
         Strings.FindNext(" ", line, pos1+1, found, pos0);
-        getTillEOL(line, pos0+1, msg);
+        sh.getTillEOL(line, pos0+1, msg);
      END;
   END;
   RETURN found
@@ -437,7 +319,7 @@ VAR
   i: INTEGER;
   b: BOOLEAN;
 BEGIN
-  zeroStr(username);
+  sh.zeroStr(username);
   Strings.FindNext("!", user, 0, b, i);
   IF b THEN
     Strings.Extract(user, 0, i, username);
@@ -450,7 +332,7 @@ VAR
   i, j: INTEGER;
   b: BOOLEAN;
 BEGIN
-  zeroStr(ident);
+  sh.zeroStr(ident);
   Strings.FindNext("~", user, 0, b, i);
   IF b THEN
     Strings.FindNext("@", user, i, b, j);
@@ -466,7 +348,7 @@ VAR
   i: INTEGER;
   b: BOOLEAN;
 BEGIN
-  zeroStr(host);
+  sh.zeroStr(host);
   Strings.FindNext("@", user, 0, b, i);
   IF b THEN
     Strings.Extract(user, i+1, Strings.Length(user)-i-1, host);
@@ -527,7 +409,6 @@ BEGIN
     END;
   END;
 END parse;
-
 
 PROCEDURE processResponse(VAR inst: instance; VAR line: ARRAY OF CHAR): BOOLEAN;
 VAR
