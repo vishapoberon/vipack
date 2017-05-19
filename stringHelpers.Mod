@@ -1,4 +1,4 @@
-MODULE stringHelpers; (*noch 18.5.2017 / 18.5.2017*)
+MODULE stringHelpers; (*noch 18.5.2017 / 19.5.2017*)
 IMPORT Strings := ooc2Strings, Out;
 
 CONST
