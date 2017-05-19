@@ -1,6 +1,13 @@
 MODULE test; (* noch 13.4.2017 / 18.5.2017*)
 
-IMPORT IRC, Out, Strings := ooc2Strings;
+IMPORT IRC, Out, Strings := ooc2Strings, Platform;
+
+(* i am moving these to global section to make possible for interrupt handler to access instance *)
+VAR 
+  inst: IRC.instance;
+  channels : IRC.Channels;
+  b: BOOLEAN;
+
 
 (*
 PROCEDURE onMessage(VAR msg : ARRAY OF CHAR);
@@ -46,19 +53,19 @@ BEGIN
   Out.String("*** that's it ***"); Out.Ln;
 END onPublicMessageWithMention;
 
+PROCEDURE interrupt(i: LONGINT);
+BEGIN
+(* here we need to flush files to disk before exiting. and probably close the irc connection *)
+   IRC.finalize(inst);
+   HALT(0);
+END interrupt;
 
-PROCEDURE testBot;
-VAR 
-  inst: IRC.instance;
-  channels : IRC.chnlist;
-  b: BOOLEAN;
 BEGIN
   inst.owner := "norayr_tanakian";
   inst.user := "norayr_tanakian";
   inst.nick := "vocbot";
   inst.host := "irc.freenode.net";
   inst.port := "6667";
-  (*inst.callbackSimple := onMessage;*)
   inst.callbackPrivate := onPrivateMessage;
   inst.callbackPublic := onPublicMessage;
   inst.callbackPublicMention := onPublicMessageWithMention;
@@ -66,18 +73,16 @@ BEGIN
 
 
   NEW(channels, 2);
-  channels[0] := "#oberon";
-  channels[1] := "#pascal";
-  IRC.setChannelList(inst, channels);
+  channels[0].channel := "#oberon-test";
+  channels[1].channel := "#pascal-test";
+  inst.doLog := TRUE;
+  IRC.initChannelList(inst, channels);
+
+  Platform.SetInterruptHandler(interrupt);
 
   IF IRC.Connect(inst) # FALSE THEN
     b := IRC.Auth(inst);
     IRC.Loop(inst);
   END;
-END testBot;
-
-BEGIN
-
-testBot;
 
 END test.
