@@ -3,22 +3,26 @@ IMPORT Internet, Out, Files, Strings := ooc2Strings, sh := stringHelpers, types,
 
 CONST 
   msgLen* = 512; (* message length not more than 512 characters *)
-  cmdPing* = "PING";
-  cmdPong* = "PONG";
-  cmdMode*  = "MODE";
-  cmdJoin* =  "JOIN";
-  cmdUser* =  "USER";
-  cmdNick* =  "NICK";
-  msgPRIVMSG* = "PRIVMSG";
-  msgNOTICE*  = "NOTICE";
-  msgQUIT*    = "QUIT";
-  msgJOIN*    = "JOIN";
-  msgPART*    = "PART";
-  msg001 = "001";
-  msg002 = "002";
-  msg003 = "003";
-  msg004 = "004";
-  msg005 = "005";
+  (* irc commands *)
+  cmdPing*			=	"PING";
+  cmdPong*			=	"PONG";
+  cmdMode*			=	"MODE";
+  cmdJoin*			= "JOIN";
+  cmdUser*			= "USER";
+  cmdNick*			= "NICK";
+  msgPRIVMSG*		=	"PRIVMSG";
+  msgNOTICE*  	= "NOTICE";
+  msgQUIT*    	= "QUIT";
+  msgJOIN*    	= "JOIN";
+  msgPART*    	= "PART";
+  (* irc replies rfc1459 from https://www.alien.net.au/irc/irc2numerics.html *)
+  rplWelcome		= "001";
+  rplYourHost 	= "002";
+  rplCreated 		= "003";
+  rplMyInfo 		= "004";
+  rplBounce 		= "005";
+  rplNameReply 	= "353";
+  rplEndOfNames = "366";
   
   CR* = 0DX;
   LF* = 0AX;
@@ -136,20 +140,10 @@ BEGIN
     END
 END isPing;
 
-PROCEDURE serverMsg(VAR line: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE isServerMsg(VAR line: ARRAY OF CHAR): BOOLEAN;
 BEGIN
   IF line[0] = ':' THEN RETURN TRUE ELSE RETURN FALSE END
-END serverMsg;
-
-PROCEDURE rplWelcome(VAR line : ARRAY OF CHAR): BOOLEAN;
-VAR
- found: BOOLEAN;
- pos : INTEGER;
- tmp: ARRAY 128 OF CHAR;
-BEGIN
-  Strings.FindNext(msg001, line, 0, found, pos);
-  IF found THEN RETURN TRUE ELSE RETURN FALSE END
-END rplWelcome;
+END isServerMsg;
 
 PROCEDURE error(VAR line: ARRAY OF CHAR): BOOLEAN;
 VAR
@@ -622,27 +616,41 @@ BEGIN
        END;
      END;
   ELSE
-     Out.String("unknown msg type: '"); Out.String(message); Out.String("' - ignoring!"); Out.Ln; 
+     Out.String("unknown msg type: '"); Out.String(messagetype); Out.String("' - ignoring!"); Out.Ln; 
   END;
 END processFurther;
 
-PROCEDURE processResponse(VAR inst: instance; VAR line: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE processLineByLine(VAR inst: instance; VAR text: ARRAY OF CHAR);
+VAR
+  i : INTEGER;
+  pstrs: sh.pstrings;
+BEGIN
+  pstrs := sh.textToPstrings(text);
+  i := 0;
+  REPEAT
+     Out.Int(i, 0); Out.String(": '"); Out.String(pstrs^[i]^); Out.String("'"); Out.Ln;
+     processFurther(inst, pstrs^[i]^); 
+     INC(i)
+  UNTIL i = LEN(pstrs^);
+END processLineByLine;
+
+PROCEDURE processResponse(VAR inst: instance; VAR text: ARRAY OF CHAR): BOOLEAN;
 VAR
   b : BOOLEAN;
 BEGIN
   b := TRUE;
-  IF isPing(line) THEN 
-    Pong(inst, line);
+  IF isPing(text) THEN 
+    Pong(inst, text);
   END;
-  IF error(line) THEN
+  IF error(text) THEN
     Disconnect(inst);
     b := FALSE;
   ELSE
-    IF serverMsg(line) THEN (* string starts with ':' *)
-      IF rplWelcome(line) THEN (* string contains '001' *)
+    IF isServerMsg(text) THEN (* string starts with ':' *)
+      IF sh.contains1(text, rplWelcome) THEN (* string contains '001' *)
          ModeAndJoin(inst);
       ELSE
-         processFurther(inst, line);
+         processLineByLine(inst, text);
       END;
     END;
   END;
@@ -652,11 +660,11 @@ END processResponse;
 PROCEDURE Loop*(VAR inst: instance);
 VAR
   b, b2 : BOOLEAN;
-  str : ARRAY msgLen OF CHAR;
+  txt : ARRAY msgLen OF CHAR;
 BEGIN
   REPEAT
-    b := Receive(inst, str);
-    b2 := processResponse(inst, str);
+    b := Receive(inst, txt);
+    b2 := processResponse(inst, txt);
   UNTIL ~b OR ~b2;
 END Loop;
 

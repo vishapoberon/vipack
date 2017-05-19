@@ -1,11 +1,15 @@
 MODULE stringHelpers; (*noch 18.5.2017 / 18.5.2017*)
-IMPORT Strings := ooc2Strings;
+IMPORT Strings := ooc2Strings, Out;
 
 CONST
   CR* = 0DX;
   LF* = 0AX;
 
-(** feels whole array with zeroes, useful when one needs to get several strings which contain characters < ' ' and not necessarily end with 0X *)
+TYPE 
+  pstring* = POINTER TO ARRAY OF CHAR;
+  pstrings* = POINTER TO ARRAY OF pstring;
+
+(** fills whole array with zeroes, useful when one needs to get several strings which contain characters < ' ' and not necessarily end with 0X *)
 PROCEDURE zeroStr*(VAR str: ARRAY OF CHAR);
 VAR
   i, j : LONGINT;
@@ -121,5 +125,54 @@ UNTIL found OR (i = LEN(line) - patternLength - 1);
   IF found THEN RETURN TRUE ELSE RETURN FALSE END
 END contains;
 
+PROCEDURE contains1*(VAR line: ARRAY OF CHAR; pat : ARRAY OF CHAR): BOOLEAN;
+VAR
+ found: BOOLEAN;
+ pos : INTEGER;
+BEGIN
+  Strings.FindNext(pat, line, 0, found, pos);
+  IF found THEN RETURN TRUE ELSE RETURN FALSE END
+END contains1;
+
+PROCEDURE dumpText(VAR text: ARRAY OF CHAR);
+VAR
+  i : INTEGER;
+BEGIN
+  i := 0;
+  REPEAT
+    Out.Int(i, 3); Out.String("   | ord: "); Out.Int(ORD(text[i]), 15); Out.String(", char: '"); Out.Char(text[i]); Out.Char("'"); Out.Ln;
+    INC(i)
+  UNTIL i = LEN(text);
+END dumpText;
+
+PROCEDURE textToPstrings*(VAR text: ARRAY OF CHAR): pstrings;
+VAR
+  i, j, lineNum, start, number: INTEGER;
+  pstrs: pstrings;
+  pstr:  pstring;
+BEGIN
+  i := 0;
+  j := 0;
+  REPEAT
+    IF text[i] = 0AX THEN INC(j) END;
+    INC(i);
+  UNTIL (i = LEN(text)) OR (text[i] = 0X); (* now in j we have count of lines *)
+  (* and in i we have position of the end of the text *)
+  NEW(pstrs, j); (*creating ptsrs array with that count *)
+  lineNum := 0;         (* current line number, will inc until j*)
+  number := 0;    (* character index in the text *)
+  REPEAT            (* now we have to fill it line by line *)
+    WHILE (text[number] = 0AX) OR (text[number] = 0DX) DO INC(number) END;
+    start := number;
+    REPEAT
+      INC(number)
+    UNTIL (number = LEN(text) - 1) OR (text[number] = 0AX) OR (text[number] = 0DX) OR (text[number] = 0X); (* reached eol *)
+    NEW(pstr, number - start + 1);
+    Strings.Extract(text, start, number - start, pstr^);
+    pstrs^[lineNum] := pstr;
+    INC(lineNum);
+  UNTIL (lineNum = j) OR (number = i);
+  RETURN pstrs
+END textToPstrings;
 
 END stringHelpers.
