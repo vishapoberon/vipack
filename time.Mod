@@ -1,4 +1,4 @@
-MODULE time; (*noch 19.5.2017 / 19.5.2017*)
+MODULE time;
 IMPORT SYSTEM;
 
 PROCEDURE -Aincludesystime  '#include <sys/time.h>';  (* for gettimeofday *)
