@@ -1,5 +1,5 @@
-MODULE IRC; (*noch 23.2.2017 / 18.5.2017*)
-IMPORT Internet, Out, Files, Strings := ooc2Strings, sh := stringHelpers, types;
+MODULE IRC; (*noch 23.2.2017 / 19.5.2017*)
+IMPORT Internet, Out, Files, Strings := ooc2Strings, sh := stringHelpers, types, time;
 
 CONST 
   msgLen* = 512; (* message length not more than 512 characters *)
@@ -398,6 +398,86 @@ BEGIN
  Strings.Delete(msg, 0, Strings.Length(nick) + 2);
 END cutMentionFromMessage;
 
+   (* IntToStr routine taken from
+   https://github.com/romiras/Oberon-F-components/blob/master/Ott/Mod/IntStr.cp
+   and modified to work on 64bit system by dcwbrown,
+   in order to avoid using oocIntStr, which has many dependencies *)
+   PROCEDURE Reverse0 (VAR str : ARRAY OF CHAR; start, end : INTEGER);
+   (* Reverses order of characters in the interval [start..end]. *)
+   VAR
+     h : CHAR;
+   BEGIN
+     WHILE start < end DO
+       h := str[start]; str[start] := str[end]; str[end] := h;
+       INC(start); DEC(end)
+     END
+   END Reverse0;
+
+   PROCEDURE IntToStr*(int: LONGINT; VAR str: ARRAY OF CHAR);
+   (* Converts the value of `int' to string form and copies the possibly truncated
+   result to `str'. *)
+   VAR
+     b : ARRAY 21 OF CHAR;
+     s, e: INTEGER;
+     maxLength : SHORTINT; (* maximum number of digits representing a LONGINT value *)
+   BEGIN
+     IF SIZE(LONGINT) = 4 THEN maxLength := 11 END;
+     IF SIZE(LONGINT) = 8 THEN maxLength := 20 END;
+     (* build representation in string 'b' *)
+     IF int = MIN(LONGINT) THEN (* smallest LONGINT, -int is an overflow *)
+       IF SIZE(LONGINT) = 4 THEN
+          b := "-2147483648";
+          e := 11
+       ELSE (* SIZE(LONGINT) = 8 *)
+          b := "-9223372036854775808";
+          e := 20
+       END
+     ELSE
+       IF int < 0 THEN (* negative sign *)
+         b[0] := "-"; int := -int; s := 1
+       ELSE (* no sign *)
+         s := 0
+       END;
+       e := s; (* 's' holds starting position of string *)
+       REPEAT
+         b[e] := CHR(int MOD 10+ORD("0"));
+         int := int DIV 10;
+         INC(e)
+       UNTIL int = 0;
+       b[e] := 0X;
+       Reverse0(b, s, e-1);
+     END;
+       COPY(b, str) (* truncate output if necessary *)
+   END IntToStr;
+
+PROCEDURE formTimeString(VAR str: ARRAY OF CHAR);
+VAR
+  year, month, day, hour, minute, second: LONGINT;
+  syear, smonth, sday, shour, sminute, ssecond: ARRAY 8 OF CHAR;
+BEGIN
+
+  time.Now(year, month, day, hour, minute, second);
+  IntToStr(year, syear);
+  IntToStr(month, smonth);
+  IntToStr(day, sday);
+  IntToStr(hour, shour);
+  IntToStr(minute, sminute);
+  IntToStr(second, ssecond);
+
+  COPY(syear, str);
+  Strings.Append("-", str);
+  Strings.Append(smonth, str);
+  Strings.Append("-", str);
+  Strings.Append(sday, str);
+  Strings.Append(" (", str);
+  Strings.Append(shour, str);
+  Strings.Append(":", str);
+  Strings.Append(sminute, str);
+  Strings.Append(":", str);
+  Strings.Append(ssecond, str);
+  Strings.Append(") ", str);
+END formTimeString;
+
 PROCEDURE log(VAR inst: instance; message, messagetype, username, identname, rcpt: ARRAY OF CHAR);
 VAR
   i : INTEGER;
@@ -405,6 +485,7 @@ VAR
   str: ARRAY msgLen OF CHAR;
   tmp: ARRAY 16 OF CHAR;
 BEGIN
+  sh.zeroStr(str);
   Out.String("logging about: "); Out.String(username); Out.String(", "); Out.String(messagetype); Out.String(", "); Out.String(rcpt); Out.Ln;
   i := 0; b := FALSE;
   REPEAT
@@ -415,7 +496,8 @@ BEGIN
   IF b THEN Out.String("yes!") ELSE Out.String("no!") END; Out.Ln;
   IF b OR (messagetype = msgPART) THEN (* we don't know from which channel user quits so we only write to log about it when he parts. *)
     DEC(i);
-    str := username;
+    formTimeString(str);
+    Strings.Append(username, str);
     IF messagetype = msgPRIVMSG THEN
       tmp := ": ";
       Strings.Append(tmp, str);
