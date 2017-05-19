@@ -87,7 +87,7 @@ BEGIN
   j := spos+1;
   REPEAT
     dst[i] := src[i+j];
-  INC(i);
+    INC(i);
   UNTIL (i+j = Strings.Length(src)) OR (src[i+j] < ' ');
 END getTillEOL;
 
@@ -134,7 +134,7 @@ BEGIN
   IF found THEN RETURN TRUE ELSE RETURN FALSE END
 END contains1;
 
-PROCEDURE dumpText(VAR text: ARRAY OF CHAR);
+PROCEDURE dumpText*(VAR text: ARRAY OF CHAR);
 VAR
   i : INTEGER;
 BEGIN
@@ -144,6 +144,18 @@ BEGIN
     INC(i)
   UNTIL i = LEN(text);
 END dumpText;
+
+PROCEDURE dumpTextTill0*(VAR text: ARRAY OF CHAR);
+VAR
+  i : INTEGER;
+BEGIN
+  i := 0;
+  REPEAT
+    Out.Int(i, 3); Out.String("   | ord: "); Out.Int(ORD(text[i]), 15); Out.String(", char: '"); Out.Char(text[i]); Out.Char("'"); Out.Ln;
+    INC(i)
+  UNTIL (text[i] = 0X) OR (i = LEN(text));
+END dumpTextTill0;
+
 
 PROCEDURE textToPstrings*(VAR text: ARRAY OF CHAR): pstrings;
 VAR
