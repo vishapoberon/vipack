@@ -187,4 +187,57 @@ BEGIN
   RETURN pstrs
 END textToPstrings;
 
+   (* IntToStr routine taken from
+   https://github.com/romiras/Oberon-F-components/blob/master/Ott/Mod/IntStr.cp
+   and modified to work on 64bit system by dcwbrown,
+   in order to avoid using oocIntStr, which has many dependencies *)
+   PROCEDURE Reverse0 (VAR str : ARRAY OF CHAR; start, end : INTEGER);
+   (* Reverses order of characters in the interval [start..end]. *)
+   VAR
+     h : CHAR;
+   BEGIN
+     WHILE start < end DO
+       h := str[start]; str[start] := str[end]; str[end] := h;
+       INC(start); DEC(end)
+     END
+   END Reverse0;
+
+   PROCEDURE IntToStr*(int: LONGINT; VAR str: ARRAY OF CHAR);
+   (* Converts the value of `int' to string form and copies the possibly truncated
+   result to `str'. *)
+   VAR
+     b : ARRAY 21 OF CHAR;
+     s, e: INTEGER;
+     maxLength : SHORTINT; (* maximum number of digits representing a LONGINT value *)
+   BEGIN
+     IF SIZE(LONGINT) = 4 THEN maxLength := 11 END;
+     IF SIZE(LONGINT) = 8 THEN maxLength := 20 END;
+     (* build representation in string 'b' *)
+     IF int = MIN(LONGINT) THEN (* smallest LONGINT, -int is an overflow *)
+       IF SIZE(LONGINT) = 4 THEN
+          b := "-2147483648";
+          e := 11
+       ELSE (* SIZE(LONGINT) = 8 *)
+          b := "-9223372036854775808";
+          e := 20
+       END
+     ELSE
+       IF int < 0 THEN (* negative sign *)
+         b[0] := "-"; int := -int; s := 1
+       ELSE (* no sign *)
+         s := 0
+       END;
+       e := s; (* 's' holds starting position of string *)
+       REPEAT
+         b[e] := CHR(int MOD 10+ORD("0"));
+         int := int DIV 10;
+         INC(e)
+       UNTIL int = 0;
+       b[e] := 0X;
+       Reverse0(b, s, e-1);
+     END;
+       COPY(b, str) (* truncate output if necessary *)
+   END IntToStr;
+
+
 END stringHelpers.
