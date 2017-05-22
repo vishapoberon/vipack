@@ -55,12 +55,17 @@ CONST
      callbackPrivate*: cbPrivateMessage;
      callbackPublic*: cbPublicMessage;
      callbackPublicMention*: cbPublicMessageWithMention;
-     doLog* : BOOLEAN;
+     doLog : BOOLEAN;
     END;
 
 
 VAR
   eol* : ARRAY 3 OF CHAR;
+
+PROCEDURE setLogging*(VAR inst: instance; state: BOOLEAN);
+BEGIN
+  inst.doLog := state;
+END setLogging;
 
 PROCEDURE formUserNickLine(VAR user, owner, nick, res: ARRAY OF CHAR);
 VAR

@@ -40,6 +40,7 @@ BEGIN
   Out.String("recipient: '"); Out.String(rcpt); Out.Char("'"); Out.Ln;
   Out.String("host: '"); Out.String(host); Out.Char("'"); Out.Ln;
   Out.String("*** that's it ***"); Out.Ln;
+  IF msgtype # IRC.msgJOIN THEN IRC.sendMsgToDst(inst, rcpt, "test back") END;
 END onPublicMessage;
 
 PROCEDURE onPublicMessageWithMention(VAR msg, msgtype, user, ident, rcpt, host: ARRAY OF CHAR);
@@ -76,7 +77,7 @@ BEGIN
   NEW(channels, 2);
   channels[0].channel := "#oberon-test";
   channels[1].channel := "#pascal-test";
-  inst.doLog := TRUE;
+  IRC.setLogging(inst, TRUE);
   IRC.initChannelList(inst, channels);
 
   Platform.SetInterruptHandler(interrupt);
