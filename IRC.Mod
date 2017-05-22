@@ -110,7 +110,7 @@ BEGIN
         COPY (cmdMode, str);
         Strings.Append(" ", str);
         Strings.Append(nick, str);
-        Strings.Append(" +C", str);
+        Strings.Append(" +i", str);
         sh.appendLFCR(str);
         (*Strings.Append(eol, str);*)
         
