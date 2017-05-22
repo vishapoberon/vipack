@@ -540,6 +540,25 @@ BEGIN
   Out.String("exiting."); Out.Ln;
 END finalize;
 
+PROCEDURE sendMsgToDst*(VAR inst: instance; VAR dst: ARRAY OF CHAR; msg: ARRAY OF CHAR);
+VAR 
+  s: POINTER TO ARRAY OF CHAR;
+  i, j: LONGINT;
+  b: BOOLEAN;
+BEGIN
+  i := Strings.Length(msg);
+  j := Strings.Length(dst);
+  NEW(s, i + j + Strings.Length(msgPRIVMSG) + 6(* to fit a colon and two spaces  and eol *));   
+  COPY(msgPRIVMSG, s^);
+  Strings.Append(' ', s^);
+  Strings.Append(dst, s^);
+  Strings.Append(' :', s^);
+  Strings.Append(msg, s^);
+  sh.appendLFCR(s^);
+  Out.String("sending: "); Out.String(s^); Out.Ln;
+  b := Send(inst, s^);
+END sendMsgToDst;
+
 PROCEDURE  processFurther(VAR inst: instance; VAR line: ARRAY OF CHAR);
 VAR
   message: ARRAY msgLen OF CHAR;

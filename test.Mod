@@ -27,6 +27,7 @@ BEGIN
   Out.String("ident: '"); Out.String(ident); Out.Char("'"); Out.Ln;
   Out.String("host: '"); Out.String(host); Out.Char("'"); Out.Ln;
   Out.String("*** that's it ***"); Out.Ln;
+  IRC.sendMsgToDst(inst, user, "hello, nice to meet you");
 END onPrivateMessage;
 
 PROCEDURE onPublicMessage(VAR msg, msgtype, user, ident, rcpt, host: ARRAY OF CHAR);
