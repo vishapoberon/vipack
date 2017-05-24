@@ -453,6 +453,7 @@ BEGIN
       DEC(i);
       formTimeString(str);
         IF messagetype = msgPRIVMSG THEN
+          b0 := FALSE;
           Strings.FindNext(msgACTION, message, 1, b0, j);
           IF b0 THEN (* handle actions *)
             Strings.Append("***", str);
