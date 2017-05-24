@@ -474,7 +474,6 @@ VAR
   b: BOOLEAN;
   msg: ARRAY 23 OF CHAR;
 BEGIN
-  Out.String("interrupt caught."); Out.Ln;
   IF inst.doLog THEN
   i := 0;
   REPEAT
@@ -618,7 +617,7 @@ BEGIN
     Pong(inst, text);
   END;
   IF error(text) THEN
-    Disconnect(inst);
+    finalize(inst);
     b := FALSE;
   ELSE
     IF isServerMsg(text) THEN (* string starts with ':' *)

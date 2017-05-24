@@ -58,6 +58,7 @@ END onPublicMessageWithMention;
 PROCEDURE interrupt(i: LONGINT);
 BEGIN
 (* here we need to flush files to disk before exiting. and probably close the irc connection *)
+   Out.String("interrupt caught."); Out.Ln;
    IRC.finalize(inst);
    HALT(0);
 END interrupt;
