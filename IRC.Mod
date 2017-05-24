@@ -15,6 +15,8 @@ CONST
   msgQUIT*    	= "QUIT";
   msgJOIN*    	= "JOIN";
   msgPART*    	= "PART";
+  ctcpChar*     = 01X;
+  msgACTION*    = "ACTION";
   (* irc replies rfc1459 from https://www.alien.net.au/irc/irc2numerics.html *)
   rplWelcome		= "001";
   rplYourHost 	= "002";
@@ -429,9 +431,13 @@ END formTimeString;
 PROCEDURE log(VAR inst: instance; message, messagetype, username, identname, rcpt: ARRAY OF CHAR);
 VAR
   i : INTEGER;
-  b: BOOLEAN;
+  b : BOOLEAN;
   str: ARRAY msgLen OF CHAR;
   tmp: ARRAY 16 OF CHAR;
+  (* for searching for ACTION *)
+  b0: BOOLEAN;
+  j:  INTEGER;
+  str0: ARRAY msgLen OF CHAR;
 BEGIN
   IF inst.doLog THEN
     sh.zeroStr(str);
@@ -446,16 +452,27 @@ BEGIN
     IF b OR (messagetype = msgPART) THEN (* we don't know from which channel user quits so we only write to log about it when he parts. *)
       DEC(i);
       formTimeString(str);
-      Strings.Append(username, str);
-      IF messagetype = msgPRIVMSG THEN
-        tmp := ": ";
-        Strings.Append(tmp, str);
-        Strings.Append(message, str);
+        IF messagetype = msgPRIVMSG THEN
+          Strings.FindNext(msgACTION, message, 1, b0, j);
+          IF b0 THEN (* handle actions *)
+            Strings.Append("***", str);
+            Strings.Append(username, str);
+            Strings.Append(" ", str);
+            sh.getTillEOL(message, j+Strings.Length(msgACTION), str0); 
+            Strings.Append(str0, str);
+          ELSE
+            Strings.Append(username, str);
+            tmp := ": ";
+            Strings.Append(tmp, str);
+            Strings.Append(message, str);
+          END;
       ELSIF messagetype = msgJOIN THEN
+        Strings.Append(username, str);
         tmp := " joined ";
         Strings.Append (tmp, str);
         Strings.Append (rcpt, str);
       ELSIF (messagetype = msgPART) THEN
+        Strings.Append(username, str);
         tmp := " has quit";
         Strings.Append(tmp, str);
       END;
