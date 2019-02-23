@@ -1,12 +1,14 @@
 MODULE http;
 IMPORT Internet, Out;
-PROCEDURE get(host, port: ARRAY OF CHAR, VAR buff: ARRAY 1000 OF CHAR);
+VAR
+  buff: ARRAY 1000 OF CHAR;
+PROCEDURE get(host, port: ARRAY OF CHAR; VAR buff: ARRAY OF CHAR);
 VAR 
     socket : Internet.Socket;
-    connected: BOOLEAN;
+    connectionFlag: BOOLEAN;
     send: ARRAY 7 OF CHAR;
 BEGIN
-    connected := Internet.Connect(host, port, socket);
+    connectionFlag := Internet.Connect(host, port, socket);
     send[0] := "G";
     send[1] := "E";
     send[2] := "T";
@@ -15,15 +17,13 @@ BEGIN
     send[5] := " ";
     (* Somewhy it's ignoring the last byte *)
 
-    connected := Internet.Write(socket, send);
-    connected := Internet.Read(socket, buff);
+    connectionFlag := Internet.Write(socket, send);
+    connectionFlag := Internet.Read(socket, buff);
     Internet.Disconnect(socket);
-
 END get;
-VAR
-  buff: ARRAY 1000 OF CHAR
+
 BEGIN
-  get("google.am", "80", buff);
+  get("voto.am", "80", buff);
   Out.String(buff);
   Out.Ln;
 END http.

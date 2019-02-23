@@ -12,6 +12,7 @@ clean:
 	rm *.c
 	rm *.o
 	rm *.sym
+	rm http
 
 test: http
 	./http
