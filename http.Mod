@@ -1,5 +1,5 @@
 MODULE http;
-IMPORT Internet, Out;
+IMPORT Internet, Logger;
 VAR
   buff: ARRAY 1000 OF CHAR;
 PROCEDURE get(host, port: ARRAY OF CHAR; VAR buff: ARRAY OF CHAR);
@@ -24,6 +24,5 @@ END get;
 
 BEGIN
   get("voto.am", "80", buff);
-  Out.String(buff);
-  Out.Ln;
+  Logger.Log(buff);
 END http.
