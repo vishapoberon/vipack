@@ -3,10 +3,14 @@ IMPORT List, Out, Sys;
 
 TYPE 
     integer* = Sys.integer;
+    TObject* = Sys.TObject;
+
+    Node* = POINTER TO NodeDesc;
+    NodeDesc* = List.NodeDesc;
 
     TChar* = POINTER TO TCharDesc;
     
-    TCharDesc = RECORD (List.NodeDesc)
+    TCharDesc = RECORD (Sys.TObjectDesc)
         char* : CHAR
     END;
 
@@ -20,30 +24,48 @@ TYPE
         top: PROCEDURE(self: CharacterStackType) : CHAR;
     END;
 
-PROCEDURE pop(self: CharacterStackType): CHAR;
 VAR
-    ch: TChar;
-BEGIN
-    NEW(ch);
-    ch := self.Get(self, self.Count);
-    self.Delete(self, self.Count);
-    RETURN ch.char;
-END pop;
+ characterStack: CharacterStackType;
 
 PROCEDURE push(self: CharacterStackType; char: CHAR);
 VAR
-    int: integer;
     ch: TChar;
+    int: integer;
 BEGIN
     NEW(ch);
     ch.char := char;
     int := self.Add(self, ch);
 END push;
 
+PROCEDURE pop(self: CharacterStackType): CHAR;
+VAR
+    n: Node;
+BEGIN
+    NEW(n);
+    
+    IF self.Count = 0 THEN RETURN 0AX END;
+    
+    n := self.Get(self, self.Count - 1);
+    self.Delete(self, self.Count - 1);
+    RETURN n.obj(TChar).char;
+END pop;
+
+PROCEDURE top(self: CharacterStackType): CHAR;
+VAR
+    n: Node;
+BEGIN
+    NEW(n);
+    
+    IF self.Count = 0 THEN RETURN 0AX END;
+    
+    n := self.Get(self, self.Count - 1);
+    RETURN n.obj(TChar).char;
+END top;
 
 PROCEDURE Create* () : CharacterStackType;
-    VAR l : CharacterStackType;
- BEGIN
+VAR
+    l : CharacterStackType;
+BEGIN
     NEW(l);
     l.First   := NIL;
     l.Last    := NIL;
@@ -61,22 +83,38 @@ PROCEDURE Create* () : CharacterStackType;
     
     l.pop := pop;
     l.push:= push;
-    (* l.top := top; *)
+    l.top := top;
     RETURN(l);
 END Create;
 
-VAR
- characterStack: CharacterStackType;
 BEGIN
     NEW(characterStack);
+    characterStack := Create();
     characterStack.push(characterStack, 'a');
     characterStack.push(characterStack, 'b');
     characterStack.push(characterStack, 'c');
-    Out.Char(characterStack.pop(characterStack));
+    
+    Out.Char(characterStack.top(characterStack));
     Out.Ln();
     Out.Char(characterStack.pop(characterStack));
     Out.Ln();
+    Out.Char(characterStack.top(characterStack));
+    Out.Ln();
     Out.Char(characterStack.pop(characterStack));
+    Out.Ln();
+    Out.Char(characterStack.top(characterStack));
+    Out.Ln();
+    Out.Char(characterStack.pop(characterStack));
+    Out.Ln();
+    Out.Char(characterStack.top(characterStack));
+    Out.Ln();
+    Out.Char(characterStack.pop(characterStack));
+    Out.Ln();
+    Out.Char(characterStack.top(characterStack));
+    Out.Ln();
+    Out.Char(characterStack.pop(characterStack));
+    Out.Ln();
+    Out.Char(characterStack.top(characterStack));
     Out.Ln();
     Out.Char(characterStack.pop(characterStack));
     Out.Ln();
