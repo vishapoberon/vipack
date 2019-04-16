@@ -1,59 +1,68 @@
 MODULE HashMap;
-IMPORT Logger;
+IMPORT Logger, CharacterStack, Strings;
+CONST
+    ArrayMaxNumber = 5000;
 TYPE
+    TString = ARRAY ArrayMaxNumber OF CHAR;
+    
     JsonTypePointer* = POINTER TO JsonType;
+
+
+    
     JsonType* = RECORD
-        GetTerminal* : PROCEDURE(self : JsonTypePointer, string : STRING): STRING;
-        GetNonTerminal* : PROCEDURE(self : JsonTypePointer, key : STRING): JsonTypePointer;
-        HasKey* : PROCEDURE(self : JsonTypePointer, key : STRING): BOOLEAN;
-        TypeOfTheKey* : PROCEDURE(self : JsonTypePointer, key : STRING): STRING;
-        Create* : PROCEDURE(self : JsonTypePointer, key : STRING): BOOLEAN;
+        GetTerminal* : PROCEDURE(self : JsonTypePointer; string : ARRAY OF CHAR; VAR returnValue : ARRAY OF CHAR);
+        GetNonTerminal* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR): JsonTypePointer;
+        HasKey* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR): BOOLEAN;
+        TypeOfTheKey* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR; VAR returnValue : ARRAY OF CHAR);
 
-        TerminalsValues : ARRAY OF STRING;
-        TerminalKeys : ARRAY OF STRING;
+        TerminalsValues : ARRAY ArrayMaxNumber OF TString;
+        TerminalKeys : ARRAY ArrayMaxNumber OF TString;
 
-        NonTerminalValues : ARRAY OF JsonTypePointer;
-        NonTerminalKeys : ARRAY OF STRING;
+        NonTerminalValues : POINTER TO ARRAY OF JsonTypePointer;
+        NonTerminalKeys : ARRAY ArrayMaxNumber OF TString;
     END;
     
-    PROCEDURE makeACopy(VAR STR1, STR2: ARRAY OF CHAR):
-    BEGIN
-    (* TODO *)
-    END;
+VAR
+    jsonRecord :JsonTypePointer;
 
-    PROCEDURE Create*(VAR self : JsonTypePointer, text: ARRAY OF CHAR): BOOLEAN;
-    VAR
-        everethingIsOK: BOOLEAN;
-        i,j: INTEGER;
-        stack, key, val: ARRAY OF CHAR;
-        symbolBracketStart, symbolBracketEnd, symbolStart: CHAR;
-    BEGIN
-        symbolBracketStart := "{";
-        symbolBracketEnd := "}";
-        symbol := "\"";
-        j := 0;
 
-        i := 0;
-        REPEAT
-        
-            symbol := text[i];
-            INC(i);
+PROCEDURE Create*(text: ARRAY OF CHAR): JsonTypePointer;
+VAR
+    jsonRecord: JsonTypePointer; 
+    everethingIsOK: BOOLEAN;
+    i,j: INTEGER;
+    characterStack: CharacterStack.CharacterStackType;
+    key, val: ARRAY ArrayMaxNumber OF CHAR;
+    symbol: CHAR;
+    symbolBracketStart, symbolBracketEnd, symbolStart: CHAR;
+BEGIN
+    NEW(jsonRecord);
+    NEW(characterStack);
+    characterStack := CharacterStack.Create();
 
-            IF symbol = symbolBracketStart THEN
-                Logger.out("Starting Parse Json")
-            END;
+    symbolBracketStart := "{";
+    symbolBracketEnd := "}";
+    
+    i := 0;
+    j := 0;
 
-            IF symbol = symbolBracketStart THEN
-                Logger.out("End Parsing Json")
-            END;
+    REPEAT
+        symbol := text[i];
+        INC(i);
 
-            makeACopy(key, self.TerminalKeys[j]);
-            makeACopy(value, self.TerminalsValues[j]);
+        IF symbol = symbolBracketStart THEN
+            Logger.Log("Starting Parse Json");
+        END;
 
-        UNTIL i = LEN(text);
+        IF symbol = symbolBracketStart THEN
+            Logger.Log("End Parsing Json");
+        END;
+    UNTIL text[i] = 0AX;
 
-        RETURN everethingIsOK;
-    END;
+    RETURN jsonRecord;
+END Create;
 
-END;
+BEGIN
+    NEW(jsonRecord);
+    jsonRecord := Create('{"asdasd": "test"}');
 END HashMap.

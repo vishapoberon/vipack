@@ -13,6 +13,8 @@ clean:
 	rm *.o &
 	rm *.sym &
 	rm http &
+	rm CharaterStack &
 
 test: clean http
 	./http
+	

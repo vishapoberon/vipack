@@ -1,4 +1,4 @@
-MODULE CharaterStack;
+MODULE CharacterStack;
 IMPORT List, Out, Sys;
 
 TYPE 
@@ -16,9 +16,9 @@ TYPE
 
     string = Sys.string;
 
-    CharacterStackType = POINTER TO CharacterStackTypeDesc;
+    CharacterStackType* = POINTER TO CharacterStackTypeDesc;
     
-    CharacterStackTypeDesc = RECORD (List.TListDesc)
+    CharacterStackTypeDesc* = RECORD (List.TListDesc)
         pop: PROCEDURE(self: CharacterStackType): CHAR;
         push: PROCEDURE(self: CharacterStackType; char: CHAR);
         top: PROCEDURE(self: CharacterStackType) : CHAR;
@@ -118,4 +118,4 @@ BEGIN
     Out.Ln();
     Out.Char(characterStack.pop(characterStack));
     Out.Ln();
-END CharaterStack.
+END CharacterStack.
