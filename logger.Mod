@@ -1,17 +1,42 @@
 MODULE Logger;
 IMPORT time, Out;
 
-PROCEDURE LogInt*(number: LONGINT);
+CONST
+    deca = 10;
+
+PROCEDURE GetDecas(number: LONGINT): LONGINT;
 VAR 
     i: LONGINT;
 BEGIN
-    WHILE number>10 DO
-        number := number DIV 10;
+    i := 1;
+
+    WHILE number > deca DO
+        number := number DIV deca;
         INC(i);
     END;
-    
-    Out.Int(number, i);
+
+    RETURN i;
+END GetDecas;
+
+PROCEDURE LogInt*(number: LONGINT);
+BEGIN      
+    Out.Int(number, GetDecas(number));
 END LogInt;
+
+
+PROCEDURE LogNormalized*(number, normal: LONGINT);
+VAR
+    decimals, i: LONGINT;
+BEGIN   
+    i:=0; 
+    decimals := GetDecas(number);
+    WHILE decimals + i < normal DO 
+        INC(i);
+        Out.Int(0, 1)
+    END;
+
+    LogInt(number);
+END LogNormalized;
 
 PROCEDURE Log*(buff: ARRAY OF CHAR);
 VAR 
@@ -19,17 +44,17 @@ VAR
 BEGIN
     time.Now(year, month, day, hour, min, sec);
     
-    LogInt(year);
+    LogNormalized(year, 4);
     Out.String("/");
-    LogInt(month);
+    LogNormalized(month, 2);
     Out.String("/");
-    LogInt(day);
+    LogNormalized(day, 2);
     Out.String(" "); 
-    LogInt(hour);
+    LogNormalized(hour, 2);
     Out.String("-"); 
-    LogInt(min);
+    LogNormalized(min, 2);
     Out.String("-");
-    LogInt(sec);
+    LogNormalized(sec, 2);
     Out.String(" ");
     Out.String(buff);
     Out.Ln;
