@@ -1,5 +1,5 @@
 MODULE HashMap;
-IMPORT Logger, CharacterStack, Strings;
+IMPORT Logger, CharacterStack, Strings, Out;
 CONST
     ArrayMaxNumber = 5000;
 TYPE
@@ -22,13 +22,23 @@ TYPE
     
 VAR
     jsonRecord: JsonTypePointer;
-    testValue: ARRAY OF CHAR;
+    testValue: ARRAY ArrayMaxNumber OF CHAR;
     keyFound: BOOLEAN;
+    
+PROCEDURE GetTerminal *(self: JsonTypePointer; key: ARRAY OF CHAR; VAR returnValue: ARRAY OF CHAR): BOOLEAN;
+VAR
+    i: LONGINT;
+BEGIN
+    FOR i := 0 TO LEN(self.TerminalKeys) - 1 DO
+        IF Strings.Match(key, self.TerminalKeys[i]) THEN COPY(self.TerminalsValues[i], returnValue); RETURN TRUE END;
+    END;
+    RETURN FALSE;
+END GetTerminal;
 
 PROCEDURE Create*(text: ARRAY OF CHAR): JsonTypePointer;
 VAR
     self: JsonTypePointer; 
-    i,j,k,s: INTEGER;
+    i,j,k,s: LONGINT;
     characterStack: CharacterStack.CharacterStackType;
     key, val, string: ARRAY ArrayMaxNumber OF CHAR;
     symbol: CHAR;
@@ -44,8 +54,7 @@ BEGIN
 
     NEW(self);
     NEW(self.NonTerminalValues, ArrayMaxNumber);
-    self.GetTerminal = GetTerminal;
-
+    self.GetTerminal := GetTerminal;
 
     NEW(characterStack);
     characterStack := CharacterStack.Create();
@@ -53,6 +62,8 @@ BEGIN
     i := 0;
     j := 0;
     k := 0;
+    
+    quoteStart := FALSE;
 
     REPEAT
         symbol := text[i];
@@ -64,59 +75,50 @@ BEGIN
             Logger.Log("End Parsing Json");
         END;
         
-        IF quoteStart = FALSE & symbol = quote THEN quoteStart = TRUE
-        ELSE IF quoteStart & symbol #= quote THEN characterStack.push(symbol)
-        ELSE IF quoteStart & symbol = quote THEN
-            j := 0;
-            WHILE characterStack.top #= 0AX DO
-                str[j] = characterStack.pop;
+        IF ~quoteStart & (symbol = quote) THEN quoteStart := TRUE
+        ELSIF quoteStart & (symbol # quote) THEN characterStack.push(characterStack, symbol)
+        ELSIF quoteStart & (symbol = quote) THEN
+            j := characterStack.Count;
+            WHILE characterStack.top(characterStack) # 0AX DO
+                DEC(j);
+                string[j] := characterStack.pop(characterStack);
             END;
             quoteStart := FALSE;
-        ELSE.
-        
-
-        IF Strings.Length(string) & quoteStart #= FALSE THEN
-            
-            IF Strings.Length(key) #= 0 THEN COPY(string, val)
-            ELSE COPY(string, val) #= 0 END;
-            
-            COPY([], string);
         END;
 
-        IF Strings.Length(key) #= 0 & Strings.Length(val) #= 0 THEN
+        IF (Strings.Length(string) > 0) & ~quoteStart THEN
+            
+            IF Strings.Length(key) > 0 THEN
+                COPY(string, val)
+            ELSE
+                COPY(string, key) 
+            END;
+            
+            COPY("", string);
+        END;
+
+        IF (Strings.Length(key) > 0) & (Strings.Length(val) > 0) THEN
             COPY(key, self.TerminalKeys[k]);
             COPY(val, self.TerminalsValues[k]);
             INC(k);
-            COPY([], key);
-            COPY([], val);
-        END.
+            COPY("", key);
+            COPY("", val);
+        END;
 
         INC(i);
     UNTIL i > LEN(text) - 1;
-    (* UNTIL text[i] = 0AX; TODO: Ask Norayr *)    
-    (* WHY you write AND as & and OR as OR? *)
 
-    RETURN jsonRecord;
+    RETURN self;
 END Create;
-
-PROCEDURE *GetTerminal(self: JsonTypePointer, key: ARRAY OF CHAR, VAR returnValue ARRAY OF CHAR): BOOLEAN
-VAR
-    i: LONGINT;
-BEGIN
-    FOR i := 0 TO LEN(self.TerminalKeys): DO
-        IF Strings.Match(key, self.TerminalKeys[i]) THEN COPY(self.TerminalsValues[i], val) RETURN TRUE;
-    END
-    RETURN FALSE;
-END GetTerminal;
 
 BEGIN
     NEW(jsonRecord);
-    jsonRecord := Create("{'asdasd': 'test'}");
-    keyFound := jsonRecord.GetNonTerminal("asdasd", testValue);
+    jsonRecord := Create("{'foo': 'bar', 'test': 'test1'}");
+    keyFound := jsonRecord.GetTerminal(jsonRecord, "test", testValue);
 
     IF keyFound THEN
         Logger.Log('found KEY');
         Logger.Log(testValue);
-    ELSE Logger.Log('VAlue for the Key is not found') END;
+    ELSE Logger.Log('Value for the Key is not found') END;
 
 END HashMap.

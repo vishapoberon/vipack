@@ -19,9 +19,9 @@ TYPE
     CharacterStackType* = POINTER TO CharacterStackTypeDesc;
     
     CharacterStackTypeDesc* = RECORD (List.TListDesc)
-        pop: PROCEDURE(self: CharacterStackType): CHAR;
-        push: PROCEDURE(self: CharacterStackType; char: CHAR);
-        top: PROCEDURE(self: CharacterStackType) : CHAR;
+        pop*: PROCEDURE(self: CharacterStackType): CHAR;
+        push*: PROCEDURE(self: CharacterStackType; char: CHAR);
+        top*: PROCEDURE(self: CharacterStackType) : CHAR;
     END;
 
 VAR
