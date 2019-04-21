@@ -1,23 +1,35 @@
 MODULE Logger;
 IMPORT time, Out;
 
+PROCEDURE LogInt*(number: LONGINT);
+VAR 
+    i: LONGINT;
+BEGIN
+    WHILE number>10 DO
+        number := number DIV 10;
+        INC(i);
+    END;
+    
+    Out.Int(number, i);
+END LogInt;
+
 PROCEDURE Log*(buff: ARRAY OF CHAR);
 VAR 
     year, month, day, hour, min, sec: LONGINT;
 BEGIN
     time.Now(year, month, day, hour, min, sec);
     
-    Out.Int(year, 4);
+    LogInt(year);
     Out.String("/");
-    Out.Int(month, 2);
+    LogInt(month);
     Out.String("/");
-    Out.Int(day, 2);
+    LogInt(day);
     Out.String(" "); 
-    Out.Int(hour, 2);
+    LogInt(hour);
     Out.String("-"); 
-    Out.Int(min, 2);
+    LogInt(min);
     Out.String("-");
-    Out.Int(sec, 2);
+    LogInt(sec);
     Out.String(" ");
     Out.String(buff);
     Out.Ln;

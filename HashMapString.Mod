@@ -1,5 +1,5 @@
 MODULE HashMap;
-IMPORT Logger, CharacterStack, Strings;
+IMPORT Logger, CharacterStack, Strings, Out;
 CONST
     ArrayMaxNumber = 5000;
 TYPE
@@ -48,8 +48,6 @@ BEGIN
 
     REPEAT
         symbol := text[i];
-        INC(i);
-
         IF symbol = symbolBracketStart THEN
             Logger.Log("Starting Parse Json");
         END;
@@ -57,8 +55,12 @@ BEGIN
         IF symbol = symbolBracketStart THEN
             Logger.Log("End Parsing Json");
         END;
+        INC(i);
+        Logger.LogInt(i);
     UNTIL text[i] = 0AX;
-
+    
+    Out.String(" test");
+    
     RETURN jsonRecord;
 END Create;
 

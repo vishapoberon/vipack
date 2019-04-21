@@ -88,7 +88,7 @@ BEGIN
 END Create;
 
 BEGIN
-    NEW(characterStack);
+    (* NEW(characterStack);
     characterStack := Create();
     characterStack.push(characterStack, 'a');
     characterStack.push(characterStack, 'b');
@@ -117,5 +117,5 @@ BEGIN
     Out.Char(characterStack.top(characterStack));
     Out.Ln();
     Out.Char(characterStack.pop(characterStack));
-    Out.Ln();
+    Out.Ln(); *)
 END CharacterStack.

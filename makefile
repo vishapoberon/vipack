@@ -2,19 +2,20 @@
 VOC = /opt/voc/bin/voc
 
 all:
-	$(VOC) -s types.Mod sockets.Mod netdb.Mod Internet.Mod stringHelpers.Mod time.Mod IRC.Mod test.Mod -m
-
-http:
-	$(VOC) -s types.Mod sockets.Mod netdb.Mod Internet.Mod time.Mod logger.Mod http.Mod -m
+	cd builds && \
+	$(VOC) -s \
+		../time.Mod \
+		../logger.Mod \
+		../diaspora2hugo/src/lists/Sys.Mod \
+		../diaspora2hugo/src/lists/List.Mod \
+		../CharacterStack.Mod \
+		../HashMapString.Mod -m
 
 clean:
-	rm *.h &
-	rm *.c &
-	rm *.o &
-	rm *.sym &
-	rm http &
-	rm CharaterStack &
+		cd builds && rm * &
 
-test: clean http
-	./http
+run:
+	./builds/HashMap
+
+test: clean all run
 	
