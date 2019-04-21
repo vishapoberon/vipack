@@ -23,6 +23,11 @@ BEGIN
     Out.Int(number, GetDecas(number));
 END LogInt;
 
+PROCEDURE LogIntLn*(number: LONGINT);
+BEGIN      
+    LogInt(number);
+    Out.Ln();
+END LogIntLn;
 
 PROCEDURE LogNormalized*(number, normal: LONGINT);
 VAR
@@ -55,9 +60,17 @@ BEGIN
     LogNormalized(min, 2);
     Out.String("-");
     LogNormalized(sec, 2);
-    Out.String(" ");
+    Out.String(" :- ");
     Out.String(buff);
     Out.Ln;
 END Log;
+
+PROCEDURE Char*(char: CHAR);
+VAR 
+    string :ARRAY 1 OF CHAR;
+BEGIN
+    string[0] :=char;
+    Log(string);
+END Char;
 
 END Logger.

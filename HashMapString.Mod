@@ -1,14 +1,14 @@
 MODULE HashMap;
-IMPORT Logger, CharacterStack, Strings, Out;
+IMPORT Logger, CharacterStack, Strings;
 CONST
     ArrayMaxNumber = 5000;
+    symbolBracketStart = "{";
+    symbolBracketEnd = "}";
 TYPE
     TString = ARRAY ArrayMaxNumber OF CHAR;
     
     JsonTypePointer* = POINTER TO JsonType;
 
-
-    
     JsonType* = RECORD
         GetTerminal* : PROCEDURE(self : JsonTypePointer; string : ARRAY OF CHAR; VAR returnValue : ARRAY OF CHAR);
         GetNonTerminal* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR): JsonTypePointer;
@@ -26,22 +26,20 @@ VAR
     jsonRecord :JsonTypePointer;
 
 
+
+
 PROCEDURE Create*(text: ARRAY OF CHAR): JsonTypePointer;
 VAR
     jsonRecord: JsonTypePointer; 
-    everethingIsOK: BOOLEAN;
     i,j: INTEGER;
     characterStack: CharacterStack.CharacterStackType;
     key, val: ARRAY ArrayMaxNumber OF CHAR;
     symbol: CHAR;
-    symbolBracketStart, symbolBracketEnd, symbolStart: CHAR;
+    symbolStart: CHAR;
 BEGIN
     NEW(jsonRecord);
     NEW(characterStack);
     characterStack := CharacterStack.Create();
-
-    symbolBracketStart := "{";
-    symbolBracketEnd := "}";
     
     i := 0;
     j := 0;
@@ -56,10 +54,8 @@ BEGIN
             Logger.Log("End Parsing Json");
         END;
         INC(i);
-        Logger.LogInt(i);
-    UNTIL text[i] = 0AX;
-    
-    Out.String(" test");
+    UNTIL i > LEN(text) - 1;
+    (* UNTIL text[i] = 0AX; TODO: Ask Norayr *)
     
     RETURN jsonRecord;
 END Create;
