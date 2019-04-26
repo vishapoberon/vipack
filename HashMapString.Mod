@@ -2,6 +2,12 @@ MODULE HashMap;
 IMPORT Logger, CharacterStack, Strings, Out;
 CONST
     ArrayMaxNumber = 5000;
+    (* Const *)
+    symbolBracketStart = "{";
+    symbolBracketEnd = "}";
+    (* TODO: Reverse " and ' *)
+    quote = "'";
+    coma = ",";
 TYPE
     TString = ARRAY ArrayMaxNumber OF CHAR;
     
@@ -35,23 +41,48 @@ BEGIN
     RETURN FALSE;
 END GetTerminal;
 
+PROCEDURE PushDownString(
+    string: ARRAY OF CHAR; 
+    startCharacter: CHAR; 
+    endCharacter: CHAR; 
+    i: LONGINT; 
+    VAR returnString: ARRAY OF CHAR): LONGINT;
+VAR
+    characterStack: CharacterStack.CharacterStackType;
+    j , k: LONGINT;
+BEGIN
+    NEW(characterStack);
+    j := i;
+    characterStack := CharacterStack.Create();
+    
+    REPEAT
+        characterStack.push(characterStack, string[j]);
+
+        IF characterStack.top(characterStack) = endCharacter THEN 
+            REPEAT
+            UNTIL characterStack.pop(characterStack) = startCharacter;
+        END;
+        
+        INC(j);
+    UNTIL characterStack.top(characterStack) = 0AX;
+    
+    FOR k := i TO j DO
+        returnString[k - i] := string[k];
+    END;
+
+    RETURN j;
+END PushDownString;
+
 PROCEDURE Create*(text: ARRAY OF CHAR): JsonTypePointer;
 VAR
     self: JsonTypePointer; 
-    i,j,k,s: LONGINT;
+    i, j, terminalIterator, noneTerminalIterator: LONGINT;
     characterStack: CharacterStack.CharacterStackType;
-    key, val, string: ARRAY ArrayMaxNumber OF CHAR;
+    key, val, nonTerminalVal, string: ARRAY ArrayMaxNumber OF CHAR;
     symbol: CHAR;
     symbolStart: CHAR;
     quoteStart: BOOLEAN;
-    symbolBracketStart, symbolBracketEnd, quote: CHAR;
 BEGIN
-    (* Const *)
-    symbolBracketStart := "{";
-    symbolBracketEnd := "}";
-    (* TODO: Reverse " and ' *)
-    quote := "'";
-
     NEW(self);
     NEW(self.NonTerminalValues, ArrayMaxNumber);
     self.GetTerminal := GetTerminal;
@@ -61,7 +92,8 @@ BEGIN
     
     i := 0;
     j := 0;
-    k := 0;
+    terminalIterator := 0;
+    noneTerminalIterator := 0;
     
     quoteStart := FALSE;
 
@@ -75,19 +107,12 @@ BEGIN
             Logger.Log("End Parsing Json");
         END;
         
-        IF ~quoteStart & (symbol = quote) THEN quoteStart := TRUE
-        ELSIF quoteStart & (symbol # quote) THEN characterStack.push(characterStack, symbol)
-        ELSIF quoteStart & (symbol = quote) THEN
-            j := characterStack.Count;
-            WHILE characterStack.top(characterStack) # 0AX DO
-                DEC(j);
-                string[j] := characterStack.pop(characterStack);
-            END;
-            quoteStart := FALSE;
+        (* terminals *)
+        IF symbol = quote THEN
+            i := PushDownString(text; quote; quote; i; string);
         END;
 
-        IF (Strings.Length(string) > 0) & ~quoteStart THEN
-            
+        IF (Strings.Length(string) > 0) & (symbol = quote) THEN
             IF Strings.Length(key) > 0 THEN
                 COPY(string, val)
             ELSE
@@ -98,13 +123,39 @@ BEGIN
         END;
 
         IF (Strings.Length(key) > 0) & (Strings.Length(val) > 0) THEN
-            COPY(key, self.TerminalKeys[k]);
-            COPY(val, self.TerminalsValues[k]);
-            INC(k);
+            COPY(key, self.TerminalKeys[terminalIterator]);
+            COPY(val, self.TerminalsValues[terminalIterator]);
+            INC(terminalIterator);
             COPY("", key);
             COPY("", val);
         END;
+        
+        (* none terminals *)        
+        IF symbol = symbolBracketStart THEN
+            i := PushDownString(string; symbolBracketStart; symbolBracketEnd; i; string);
+        END;
 
+        IF (Strings.Length(string) > 0) & (symbol = symbolBracketStart) THEN
+            IF Strings.Length(key) > 0 THEN
+                COPY(string, nonTerminalVal)
+            ELSE
+                COPY(string, key) 
+            END;
+            
+            COPY("", string);
+        END;
+
+        IF (Strings.Length(text) > 0) & (Strings.Length(nonTerminalVal) > 0) THEN
+       
+            COPY(key, self.NonTerminalKeys[noneTerminalIterator]);
+            self.NonTerminalValues[noneTerminalIterator].Create(nonTerminalVal);
+
+            INC(noneTerminalIterator);
+
+            COPY("", key);
+            COPY("", nonTerminalVal);
+        END;
+        
         INC(i);
     UNTIL i > LEN(text) - 1;
 
