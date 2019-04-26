@@ -1,5 +1,5 @@
 
-VOC = /opt/voc/bin/voc
+VOC = voc
 
 all:
 	cd builds && \

@@ -109,7 +109,7 @@ BEGIN
         
         (* terminals *)
         IF symbol = quote THEN
-            i := PushDownString(text; quote; quote; i; string);
+            i := PushDownString(text, quote, quote, i, string);
         END;
 
         IF (Strings.Length(string) > 0) & (symbol = quote) THEN
@@ -132,7 +132,7 @@ BEGIN
         
         (* none terminals *)        
         IF symbol = symbolBracketStart THEN
-            i := PushDownString(string; symbolBracketStart; symbolBracketEnd; i; string);
+            i := PushDownString(string, symbolBracketStart, symbolBracketEnd, i, string);
         END;
 
         IF (Strings.Length(string) > 0) & (symbol = symbolBracketStart) THEN
@@ -148,7 +148,7 @@ BEGIN
         IF (Strings.Length(text) > 0) & (Strings.Length(nonTerminalVal) > 0) THEN
        
             COPY(key, self.NonTerminalKeys[noneTerminalIterator]);
-            self.NonTerminalValues[noneTerminalIterator].Create(nonTerminalVal);
+            self.NonTerminalValues[noneTerminalIterator] := Create(nonTerminalVal);
 
             INC(noneTerminalIterator);
 
