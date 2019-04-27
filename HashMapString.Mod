@@ -1,7 +1,7 @@
 MODULE HashMap;
 IMPORT Logger, CharacterStack, Strings, Out;
 CONST
-    ArrayMaxNumber = 5000;
+    ArrayMaxNumber = 100;
     (* Const *)
     symbolBracketStart = "{";
     symbolBracketEnd = "}";
@@ -30,7 +30,6 @@ VAR
     jsonRecord: JsonTypePointer;
     testValue: ARRAY ArrayMaxNumber OF CHAR;
     keyFound: BOOLEAN;
-    
 PROCEDURE GetTerminal *(self: JsonTypePointer; key: ARRAY OF CHAR; VAR returnValue: ARRAY OF CHAR): BOOLEAN;
 VAR
     i: LONGINT;
@@ -40,6 +39,12 @@ BEGIN
     END;
     RETURN FALSE;
 END GetTerminal;
+
+(* 
+    TODO:
+        Create a good validation for comas
+        Create a good validation for name repetition
+*)
 
 PROCEDURE PushDownString(
     string: ARRAY OF CHAR; 
@@ -54,23 +59,20 @@ BEGIN
     NEW(characterStack);
     j := i;
     characterStack := CharacterStack.Create();
-    
     REPEAT
-        characterStack.push(characterStack, string[j]);
-
-        IF characterStack.top(characterStack) = endCharacter THEN 
-            REPEAT
-            UNTIL characterStack.pop(characterStack) = startCharacter;
+        IF (characterStack.Count > 1) & (string[j] = endCharacter) THEN 
+            REPEAT UNTIL characterStack.pop(characterStack) = startCharacter;
+        ELSE
+            characterStack.push(characterStack, string[j]);
+            INC(j);
         END;
-        
-        INC(j);
     UNTIL characterStack.top(characterStack) = 0AX;
-    
+
     FOR k := i TO j DO
         returnString[k - i] := string[k];
     END;
-
-    RETURN j;
+    
+    RETURN j; (* returning next symbol of quote *)
 END PushDownString;
 
 PROCEDURE Create*(text: ARRAY OF CHAR): JsonTypePointer;
@@ -98,8 +100,8 @@ BEGIN
     quoteStart := FALSE;
 
     REPEAT
-        symbol := text[i];
-        IF symbol = symbolBracketStart THEN
+        IF (text[i] = symbolBracketStart) & (i = 0) THEN
+            INC(i);
             Logger.Log("Starting Parse Json");
         END;
 
@@ -107,6 +109,8 @@ BEGIN
             Logger.Log("End Parsing Json");
         END;
         
+        symbol := text[i];
+
         (* terminals *)
         IF symbol = quote THEN
             i := PushDownString(text, quote, quote, i, string);
@@ -126,13 +130,14 @@ BEGIN
             COPY(key, self.TerminalKeys[terminalIterator]);
             COPY(val, self.TerminalsValues[terminalIterator]);
             INC(terminalIterator);
+                        
             COPY("", key);
             COPY("", val);
         END;
         
         (* none terminals *)        
         IF symbol = symbolBracketStart THEN
-            i := PushDownString(string, symbolBracketStart, symbolBracketEnd, i, string);
+            i := PushDownString(text, symbolBracketStart, symbolBracketEnd, i, string);
         END;
 
         IF (Strings.Length(string) > 0) & (symbol = symbolBracketStart) THEN
@@ -164,8 +169,9 @@ END Create;
 
 BEGIN
     NEW(jsonRecord);
-    jsonRecord := Create("{'foo': 'bar', 'test': 'test1'}");
-    keyFound := jsonRecord.GetTerminal(jsonRecord, "test", testValue);
+    jsonRecord := Create("{'foo': 'bar', 'test': 'test1', 'test2': {'asdasd': 'asd'}}");
+
+    keyFound := jsonRecord.GetTerminal(jsonRecord, "'test'", testValue);
 
     IF keyFound THEN
         Logger.Log('found KEY');
