@@ -97,6 +97,10 @@ BEGIN
     terminalIterator := 0;
     noneTerminalIterator := 0;
     
+    
+    COPY("", key);
+    COPY("", val);
+    
     quoteStart := FALSE;
 
     REPEAT
@@ -118,9 +122,9 @@ BEGIN
 
         IF (Strings.Length(string) > 0) & (symbol = quote) THEN
             IF Strings.Length(key) > 0 THEN
-                COPY(string, val)
+                COPY(string, val);
             ELSE
-                COPY(string, key) 
+                COPY(string, key);
             END;
             
             COPY("", string);
@@ -139,26 +143,30 @@ BEGIN
         IF symbol = symbolBracketStart THEN
             i := PushDownString(text, symbolBracketStart, symbolBracketEnd, i, string);
         END;
-
+        
         IF (Strings.Length(string) > 0) & (symbol = symbolBracketStart) THEN
             IF Strings.Length(key) > 0 THEN
                 COPY(string, nonTerminalVal)
-            ELSE
-                COPY(string, key) 
             END;
             
             COPY("", string);
         END;
 
-        IF (Strings.Length(text) > 0) & (Strings.Length(nonTerminalVal) > 0) THEN
-       
+        
+
+        IF (Strings.Length(key) > 0) & (Strings.Length(nonTerminalVal) > 0) THEN
             COPY(key, self.NonTerminalKeys[noneTerminalIterator]);
+            Logger.Log("key");
+            Logger.Log(key);
+            Logger.Log("nonTerminalVal");
+            Logger.Log(nonTerminalVal);
             self.NonTerminalValues[noneTerminalIterator] := Create(nonTerminalVal);
 
             INC(noneTerminalIterator);
 
             COPY("", key);
             COPY("", nonTerminalVal);
+            RETURN self;
         END;
         
         INC(i);
@@ -169,9 +177,9 @@ END Create;
 
 BEGIN
     NEW(jsonRecord);
-    jsonRecord := Create("{'foo': 'bar', 'test': 'test1', 'test2': {'asdasd': 'asd'}}");
+    jsonRecord := Create("{'foo': 'bar', 'test': 'test1', 'test2': {'sub': 'dub'}}");
 
-    keyFound := jsonRecord.GetTerminal(jsonRecord, "'test'", testValue);
+    keyFound := jsonRecord.GetTerminal(jsonRecord, "'foo'", testValue);
 
     IF keyFound THEN
         Logger.Log('found KEY');
