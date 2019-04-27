@@ -75,6 +75,19 @@ BEGIN
     RETURN j; (* returning next symbol of quote *)
 END PushDownString;
 
+PROCEDURE deQuote(text: ARRAY OF CHAR; VAR result: ARRAY OF CHAR);
+VAR
+    i, j: LONGINT;
+BEGIN
+    j := 0;
+    FOR i := 0 TO Strings.Length(text) DO
+        IF text[i] # quote THEN
+            result[j] := text[i];
+            INC(j);
+        END;
+    END;
+END deQuote;
+
 PROCEDURE Create*(text: ARRAY OF CHAR): JsonTypePointer;
 VAR
     self: JsonTypePointer; 
@@ -100,6 +113,7 @@ BEGIN
     
     COPY("", key);
     COPY("", val);
+    COPY("", nonTerminalVal);
     
     quoteStart := FALSE;
 
@@ -131,8 +145,8 @@ BEGIN
         END;
 
         IF (Strings.Length(key) > 0) & (Strings.Length(val) > 0) THEN
-            COPY(key, self.TerminalKeys[terminalIterator]);
-            COPY(val, self.TerminalsValues[terminalIterator]);
+            deQuote(key, self.TerminalKeys[terminalIterator]);
+            deQuote(val, self.TerminalsValues[terminalIterator]);
             INC(terminalIterator);
                         
             COPY("", key);
@@ -155,11 +169,7 @@ BEGIN
         
 
         IF (Strings.Length(key) > 0) & (Strings.Length(nonTerminalVal) > 0) THEN
-            COPY(key, self.NonTerminalKeys[noneTerminalIterator]);
-            Logger.Log("key");
-            Logger.Log(key);
-            Logger.Log("nonTerminalVal");
-            Logger.Log(nonTerminalVal);
+            deQuote(key, self.NonTerminalKeys[noneTerminalIterator]);
             self.NonTerminalValues[noneTerminalIterator] := Create(nonTerminalVal);
 
             INC(noneTerminalIterator);
@@ -179,7 +189,7 @@ BEGIN
     NEW(jsonRecord);
     jsonRecord := Create("{'foo': 'bar', 'test': 'test1', 'test2': {'sub': 'dub'}}");
 
-    keyFound := jsonRecord.GetTerminal(jsonRecord, "'foo'", testValue);
+    keyFound := jsonRecord.GetTerminal(jsonRecord, "foo", testValue);
 
     IF keyFound THEN
         Logger.Log('found KEY');
