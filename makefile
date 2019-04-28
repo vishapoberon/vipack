@@ -9,13 +9,14 @@ all:
 		../diaspora2hugo/src/lists/Sys.Mod \
 		../diaspora2hugo/src/lists/List.Mod \
 		../CharacterStack.Mod \
-		../JsonParser.Mod -m
+		../JsonParser.Mod \
+		../opium.Mod -m
 
 clean:
 		cd builds && rm * &
 
 run:
-	./builds/JsonParser
+	./builds/opium install
 
 test: clean all run
 	
