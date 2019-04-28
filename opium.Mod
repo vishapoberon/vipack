@@ -23,7 +23,11 @@ BEGIN
 END parseArgs;
 
 BEGIN
-    IF Strings.Match(command, "") THEN help 
-    ELSE IF Strings.Match(command, "install") THEN PackageFileParser.install END;
-    
+    parseArgs(command);
+
+    IF Strings.Match(command, "") THEN 
+        help;
+    ELSIF Strings.Match(command, "install") THEN 
+        PackageFileParser.install();
+    END;
 END opium.

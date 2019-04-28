@@ -10,6 +10,7 @@ all:
 		../diaspora2hugo/src/lists/List.Mod \
 		../CharacterStack.Mod \
 		../JsonParser.Mod \
+		../PackageFileParser.Mod \
 		../opium.Mod -m
 
 clean:
