@@ -9,13 +9,13 @@ all:
 		../diaspora2hugo/src/lists/Sys.Mod \
 		../diaspora2hugo/src/lists/List.Mod \
 		../CharacterStack.Mod \
-		../HashMapString.Mod -m
+		../JsonParser.Mod -m
 
 clean:
 		cd builds && rm * &
 
 run:
-	./builds/HashMap
+	./builds/JsonParser
 
 test: clean all run
 	
