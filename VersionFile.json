@@ -1,0 +1,24 @@
+{
+    "Package": "Package-name",
+    "Author": "Author Name",
+    "License":"License name",
+    "Version": "1.0.0",
+    "Remote": "http://vishap.oberon.com",
+    "Files": [
+      "File1.Mod",
+      "File2.Mod",
+      "MakeFile"
+    ],
+    "Dependencies": {
+        "Package-2-name": "2.5.*",
+        "Package-3-name": "2.*",
+        "Package-4-name": "2.1.4"
+    },
+    "Scripts": {
+      "build": "make build",
+      "test": "make test",
+      "run": "make run",
+      "compile": "make compile"
+    }
+  }
+  
