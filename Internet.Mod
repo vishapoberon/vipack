@@ -37,7 +37,7 @@ BEGIN
   l := LEN(buf)-1;
   f := 0;
   r := Platform.Read(fd, p, l, f);
-  IF r > 0 THEN RETURN TRUE ELSE RETURN FALSE END
+  IF r >= 0 THEN RETURN TRUE ELSE RETURN FALSE END
 END Read;
 
 PROCEDURE Connect*(host, port: ARRAY OF CHAR; VAR conn: Socket): BOOLEAN;

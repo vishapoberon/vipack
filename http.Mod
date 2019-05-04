@@ -1,5 +1,5 @@
 MODULE http;
-IMPORT Strings, Internet, Logger;
+IMPORT Strings, Internet, Logger, Out;
 CONST 
   MAXARRAYNUMBER = 10000;
   MAXARRAYNUMBEREXTENDED = 1000000;
@@ -35,11 +35,25 @@ BEGIN
   AppendEOLAndClean(header, buff);
 END addHeader;
 
+PROCEDURE getHeader(buff, key: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
+VAR
+  positionStart, valPositionStart, i: LONGINT;
+BEGIN
+  positionStart := Strings.Pos(key, buff, 0);
+  valPositionStart := positionStart + Strings.Length(key);
+  i := 0;
+  REPEAT
+    val[i] := buff[valPositionStart + i];
+    INC(i);
+  UNTIL val[i]; (* TODO: check value char number *)
+END getHeader;
+
 PROCEDURE get(host, path, port: ARRAY OF CHAR; VAR buff: ARRAY OF CHAR);
 VAR 
     socket : Internet.Socket;
     connectionFlag: BOOLEAN;
-    send: ARRAY MAXARRAYNUMBER OF CHAR;
+    valueContentLength: REAL;
+    send, valueContentLengthString: ARRAY MAXARRAYNUMBER OF CHAR;
     sendClean: PSTRING;
     httpTail: ARRAY 16 OF CHAR;
     endOfLine: ARRAY 3 OF CHAR;
@@ -69,14 +83,16 @@ BEGIN
     connectionFlag := Internet.Write(socket, sendClean^);
 
     AppendEOLAndClean("", sendClean);
-    Logger.Log(sendClean^);
     connectionFlag := Internet.Write(socket, sendClean^);
     
     REPEAT 
       connectionFlag := Internet.Read(socket, tmpBuff);
       Strings.Append(tmpBuff, buff);
-    UNTIL ~connectionFlag;
-      
+      getHeader(buff, "Content-Length", valueContentLengthString);
+      Strings.StrToReal(valueContentLengthString, valueContentLength);
+      Out.Real(valueContentLength, 20);
+      Out.Ln;
+    UNTIL ~connectionFlag OR (Strings.Length(buff) > valueContentLength);
     Internet.Disconnect(socket);
 END get;
 
