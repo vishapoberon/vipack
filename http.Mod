@@ -1,7 +1,6 @@
 MODULE http;
 IMPORT Strings, Internet, Logger;
 CONST 
-
   MAXARRAYNUMBER = 10000;
   MAXARRAYNUMBEREXTENDED = 1000000;
   
@@ -61,14 +60,12 @@ BEGIN
     REPEAT 
       connectionFlag := Internet.Read(socket, tmpBuff);
       Strings.Append(tmpBuff, buff);
-      Logger.Log(tmpBuff);
     UNTIL ~connectionFlag;
       
     Internet.Disconnect(socket);
 END get;
 
 BEGIN
-  get("norayr.am", "/seq.txt", "80", buff);
+  get("norayr.am", "/gf.jpg", "80", buff);
   Logger.Log(buff);
-
 END http.
