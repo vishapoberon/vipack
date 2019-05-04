@@ -4,7 +4,8 @@ CONST
   MAXARRAYNUMBER = 10000;
   MAXARRAYNUMBEREXTENDED = 1000000;
   
-TYPE PSTRING = POINTER TO ARRAY OF CHAR;
+TYPE 
+  PSTRING = POINTER TO ARRAY OF CHAR;
 
 VAR
   buff: ARRAY MAXARRAYNUMBEREXTENDED OF CHAR;
@@ -22,6 +23,17 @@ BEGIN
   buffClean[i + 1] := 0AX;
   buffClean[i + 2] := " ";
 END AppendEOLAndClean;
+
+PROCEDURE addHeader(key, val: ARRAY OF CHAR; VAR buff: PSTRING);
+VAR
+  header: ARRAY MAXARRAYNUMBER OF CHAR;
+BEGIN
+  COPY("", header);
+  Strings.Append(key, header);
+  Strings.Append(": ", header);
+  Strings.Append(val, header);
+  AppendEOLAndClean(header, buff);
+END addHeader;
 
 PROCEDURE get(host, path, port: ARRAY OF CHAR; VAR buff: ARRAY OF CHAR);
 VAR 
@@ -41,18 +53,21 @@ BEGIN
     send := "GET ";
 
     Strings.Append(path, send);
+    Strings.Append(httpTail, send);
+
 
     AppendEOLAndClean(send, sendClean);
-    Logger.Log(sendClean^);
     connectionFlag := Internet.Write(socket, sendClean^);
-    send := "HOST: ";
-
-    Strings.Append(host, send);
-
-    AppendEOLAndClean(send, sendClean);
-    Logger.Log(sendClean^);
+    
+    addHeader("HOST", host, sendClean);
     connectionFlag := Internet.Write(socket, sendClean^);
-  
+    
+    addHeader("User-Agent", "oberon-http-client/1.0", sendClean);
+    connectionFlag := Internet.Write(socket, sendClean^);
+
+    addHeader("Accept", "*/*", sendClean);
+    connectionFlag := Internet.Write(socket, sendClean^);
+
     AppendEOLAndClean("", sendClean);
     Logger.Log(sendClean^);
     connectionFlag := Internet.Write(socket, sendClean^);
@@ -66,6 +81,6 @@ BEGIN
 END get;
 
 BEGIN
-  get("norayr.am", "/gf.jpg", "80", buff);
+  get("norayr.am", "/tmp/", "80", buff);
   Logger.Log(buff);
 END http.
