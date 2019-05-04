@@ -26,7 +26,6 @@ clean:
 run:
 	./builds/opium install
 
-file:
-		cd builds && \
-			$(VOC) -s \
-			../FileManager.Mod -m
+
+http:
+	$(VOC) -s time.Mod logger.Mod types.Mod sockets.Mod netdb.Mod Internet.Mod http.Mod -m
