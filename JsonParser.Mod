@@ -186,7 +186,7 @@ BEGIN
 END Create;
 
 BEGIN
-    NEW(jsonRecord);
+    (* NEW(jsonRecord);
     jsonRecord := Create("{'foo': 'bar', 'test': 'test1', 'test2': {'sub': 'dub'}}");
 
     keyFound := jsonRecord.GetTerminal(jsonRecord, "foo", testValue);
@@ -194,6 +194,5 @@ BEGIN
     IF keyFound THEN
         Logger.Log('found KEY');
         Logger.Log(testValue);
-    ELSE Logger.Log('Value for the Key is not found') END;
-
+    ELSE Logger.Log('Value for the Key is not found') END; *)
 END JsonParser.

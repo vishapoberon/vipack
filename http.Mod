@@ -10,7 +10,7 @@ TYPE
 VAR
   buff, buff2: ARRAY MAXARRAYNUMBEREXTENDED OF CHAR;
 
-PROCEDURE getClean(buff: ARRAY OF CHAR; VAR clean: ARRAY OF CHAR);
+PROCEDURE getClean *(buff: ARRAY OF CHAR; VAR clean: ARRAY OF CHAR);
 VAR
   i: INTEGER;
   newLine: ARRAY 2 OF CHAR;
@@ -76,7 +76,7 @@ BEGIN
   UNTIL ORD(val[i]) = 10; (* 0DX number(newline)*)
 END getHeader;
 
-PROCEDURE get(host, path, port: ARRAY OF CHAR; VAR buff: ARRAY OF CHAR);
+PROCEDURE get *(host, path, port: ARRAY OF CHAR; VAR buff: ARRAY OF CHAR);
 VAR 
     socket : Internet.Socket;
     connectionFlag: BOOLEAN;
@@ -127,7 +127,7 @@ BEGIN
 END get;
 
 BEGIN
-  get("norayr.am", "/tmp/", "80", buff);
+  (* get("norayr.am", "/tmp/", "80", buff);
   getClean(buff, buff2);
-  Logger.Log(buff2);
+  Logger.Log(buff2); *)
 END http.

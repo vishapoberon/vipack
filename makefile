@@ -7,7 +7,7 @@ test: clean copy-version-file-to-build-dir all run
 copy-version-file-to-build-dir:
 	cp ./$(VERSION_FILE) ./builds/$(VERSION_FILE)
 
-all:
+all: http
 	cd builds && \
 	$(VOC) -s \
 		../time.Mod \
@@ -35,5 +35,4 @@ http: clean
 			../sockets.Mod \
 			../netdb.Mod \
 			../Internet.Mod \
-			../http.Mod -m \
-			&& ./http
+			../http.Mod
