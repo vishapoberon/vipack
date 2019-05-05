@@ -73,7 +73,8 @@ BEGIN
   REPEAT
     val[i] := buff[valPositionStart + i];
     INC(i);
-  UNTIL ORD(val[i]) = 10; (* 0DX number(newline)*)
+  UNTIL (ORD(val[i]) = 10) (* 0DX number(newline)*) OR
+  (i > Strings.Length(buff)); 
 END getHeader;
 
 PROCEDURE get *(host, path, port: ARRAY OF CHAR; VAR buff: ARRAY OF CHAR);
@@ -112,7 +113,6 @@ BEGIN
 
     AppendEOLAndClean("", sendClean);
     connectionFlag := Internet.Write(socket, sendClean^);
-    
     REPEAT 
       connectionFlag := Internet.Read(socket, tmpBuff);
       Strings.Append(tmpBuff, buff);
