@@ -8,7 +8,35 @@ TYPE
   PSTRING = POINTER TO ARRAY OF CHAR;
 
 VAR
-  buff: ARRAY MAXARRAYNUMBEREXTENDED OF CHAR;
+  buff, buff2: ARRAY MAXARRAYNUMBEREXTENDED OF CHAR;
+
+PROCEDURE getClean(buff: ARRAY OF CHAR; VAR clean: ARRAY OF CHAR);
+VAR
+  i: INTEGER;
+  newLine: ARRAY 2 OF CHAR;
+  lineIsHeader, EOL, notFirstLine: BOOLEAN;
+BEGIN
+  i := 0;
+  notFirstLine := FALSE;
+  lineIsHeader := FALSE;
+  EOL := FALSE;
+
+  REPEAT
+    IF EOL THEN
+      lineIsHeader := FALSE;
+      EOL := FALSE;
+      notFirstLine := TRUE
+    END;
+
+    IF buff[i] = ":" THEN lineIsHeader := TRUE END;
+
+    IF ((buff[i - 1] = 0DX) & (buff[i] = 0AX)) THEN EOL := TRUE END;
+
+    INC(i);
+  UNTIL (i + 2 > Strings.Length(buff)) OR (~lineIsHeader & EOL & notFirstLine);
+
+  Strings.Extract(buff, i, Strings.Length(buff), clean);
+END getClean;
 
 PROCEDURE AppendEOLAndClean(buff: ARRAY OF CHAR; VAR buffClean: PSTRING);
 VAR i: LONGINT;
@@ -40,12 +68,12 @@ VAR
   positionStart, valPositionStart, i: LONGINT;
 BEGIN
   positionStart := Strings.Pos(key, buff, 0);
-  valPositionStart := positionStart + Strings.Length(key);
+  valPositionStart := positionStart + Strings.Length(key) + 1;
   i := 0;
   REPEAT
     val[i] := buff[valPositionStart + i];
     INC(i);
-  UNTIL val[i]; (* TODO: check value char number *)
+  UNTIL ORD(val[i]) = 10; (* 0DX number(newline)*)
 END getHeader;
 
 PROCEDURE get(host, path, port: ARRAY OF CHAR; VAR buff: ARRAY OF CHAR);
@@ -90,13 +118,16 @@ BEGIN
       Strings.Append(tmpBuff, buff);
       getHeader(buff, "Content-Length", valueContentLengthString);
       Strings.StrToReal(valueContentLengthString, valueContentLength);
-      Out.Real(valueContentLength, 20);
+      (* Out.Real(valueContentLength, 6);
       Out.Ln;
+      Logger.LogIntLn(Strings.Length(buff));
+      Logger.Log(buff); *)
     UNTIL ~connectionFlag OR (Strings.Length(buff) > valueContentLength);
     Internet.Disconnect(socket);
 END get;
 
 BEGIN
   get("norayr.am", "/tmp/", "80", buff);
-  Logger.Log(buff);
+  getClean(buff, buff2);
+  Logger.Log(buff2);
 END http.

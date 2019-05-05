@@ -1,5 +1,5 @@
 MODULE Logger;
-IMPORT time, Out;
+IMPORT time, Out, Strings;
 
 CONST
     deca = 10;
@@ -45,7 +45,7 @@ END LogNormalized;
 
 PROCEDURE Log*(buff: ARRAY OF CHAR);
 VAR 
-    year, month, day, hour, min, sec: LONGINT;
+    year, month, day, hour, min, sec, i: LONGINT;
 BEGIN
     time.Now(year, month, day, hour, min, sec);
     
@@ -61,7 +61,13 @@ BEGIN
     Out.String("-");
     LogNormalized(sec, 2);
     Out.String(" :- ");
-    Out.String(buff);
+    FOR i:=0 TO Strings.Length(buff) DO
+        (* Out.Char(" ");
+        Out.Int(ORD(buff[i]), 4);
+        Out.Char("-"); *)
+        Out.Char(buff[i]);
+        (* Out.Char(" ");Out.Char(" ");Out.Char(" "); *)
+    END;
     Out.Ln;
 END Log;
 

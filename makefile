@@ -27,5 +27,13 @@ run:
 	./builds/opium install
 
 
-http:
-	$(VOC) -s time.Mod logger.Mod types.Mod sockets.Mod netdb.Mod Internet.Mod http.Mod -m
+http: clean
+	cd builds && \
+		$(VOC) -s ../time.Mod \
+			../logger.Mod \
+			../types.Mod \
+			../sockets.Mod \
+			../netdb.Mod \
+			../Internet.Mod \
+			../http.Mod -m \
+			&& ./http
