@@ -1,5 +1,5 @@
 MODULE JsonParser;
-IMPORT Logger, CharacterStack, Strings, Out;
+IMPORT Logger, CharacterStack, Strings, Out, strutils;
 CONST
     ArrayMaxNumber = 100;
     (* Const *)
@@ -18,6 +18,8 @@ TYPE
         GetNonTerminal* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR): JsonTypePointer;
         HasKey* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR): BOOLEAN;
         TypeOfTheKey* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR; VAR returnValue : ARRAY OF CHAR);
+        GetTerminalKeys* : PROCEDURE(self : JsonTypePointer;VAR destination : ARRAY OF TString);
+        GetNoneTerminalKeys* : PROCEDURE(self : JsonTypePointer; VAR destination : ARRAY OF TString);
 
         TerminalKeys : ARRAY ArrayMaxNumber OF TString;
         TerminalsValues : ARRAY ArrayMaxNumber OF TString;
@@ -30,16 +32,70 @@ VAR
     jsonRecord: JsonTypePointer;
     testValue: ARRAY ArrayMaxNumber OF CHAR;
     keyFound: BOOLEAN;
+
+PROCEDURE GetNonTerminal(self : JsonTypePointer; key : ARRAY OF CHAR): JsonTypePointer;
+VAR
+    i: LONGINT;
+BEGIN
+    FOR i := 0 TO LEN(self.NonTerminalKeys) - 1 DO
+        IF Strings.Match(key, self.NonTerminalKeys[i]) THEN RETURN self.NonTerminalValues[i] END;
+    END;
+
+    RETURN NIL;
+END GetNonTerminal;
+
 PROCEDURE GetTerminal *(self: JsonTypePointer; key: ARRAY OF CHAR; VAR returnValue: ARRAY OF CHAR): BOOLEAN;
 VAR
     i: LONGINT;
+    noneTerminal: JsonTypePointer;
+    strings: strutils.strings;
+    parent, children: ARRAY ArrayMaxNumber OF CHAR;
 BEGIN
     FOR i := 0 TO LEN(self.TerminalKeys) - 1 DO
         IF Strings.Match(key, self.TerminalKeys[i]) THEN COPY(self.TerminalsValues[i], returnValue); RETURN TRUE END;
     END;
+    
+    strings := strutils.tokenize(key, '.');
+    
+    IF LEN(strings^) < 1 THEN RETURN FALSE END;
+    
+    COPY(strings^[0], parent);
+    
+    IF Strings.Length(parent) < 1 THEN RETURN FALSE END;
+    
+    noneTerminal := jsonRecord.GetNonTerminal(self, parent);
+
+    IF noneTerminal = NIL THEN RETURN FALSE END;
+    
+    FOR i := 1 TO LEN(strings^) - 1 DO
+        Strings.Append(strings[i], children);
+        IF i < LEN(strings^) - 1 THEN
+            Strings.Append(".", children);
+        END;
+    END;
+    
+    RETURN noneTerminal.GetTerminal(noneTerminal, children, returnValue);
+
     RETURN FALSE;
 END GetTerminal;
 
+PROCEDURE GetTerminalKeys(self : JsonTypePointer; VAR destination : ARRAY OF TString);
+VAR
+    i: LONGINT;
+BEGIN
+    FOR i := 0 TO LEN(self.TerminalKeys) - 1 DO
+        destination[i] := self.TerminalKeys[i];
+    END;
+END GetTerminalKeys;
+
+PROCEDURE GetNoneTerminalKeys(self : JsonTypePointer; VAR destination : ARRAY OF TString);
+VAR
+    i: LONGINT;
+BEGIN
+    FOR i := 0 TO LEN(self.NonTerminalKeys) - 1 DO
+        destination[i] := self.NonTerminalKeys[i];
+    END;
+END GetNoneTerminalKeys;
 (* 
     TODO:
         Create a good validation for comas
@@ -101,7 +157,9 @@ BEGIN
     NEW(self);
     NEW(self.NonTerminalValues, ArrayMaxNumber);
     self.GetTerminal := GetTerminal;
-
+    self.GetNonTerminal := GetNonTerminal;
+    self.GetTerminalKeys := GetTerminalKeys;
+    self.GetNoneTerminalKeys := GetNoneTerminalKeys;
     NEW(characterStack);
     characterStack := CharacterStack.Create();
     
@@ -186,7 +244,7 @@ BEGIN
 END Create;
 
 BEGIN
-    (* NEW(jsonRecord);
+    NEW(jsonRecord);
     jsonRecord := Create("{'foo': 'bar', 'test': 'test1', 'test2': {'sub': 'dub'}}");
 
     keyFound := jsonRecord.GetTerminal(jsonRecord, "foo", testValue);
@@ -194,5 +252,12 @@ BEGIN
     IF keyFound THEN
         Logger.Log('found KEY');
         Logger.Log(testValue);
-    ELSE Logger.Log('Value for the Key is not found') END; *)
+    ELSE Logger.Log('Value for the Key is not found') END;
+
+    keyFound := jsonRecord.GetTerminal(jsonRecord, "test2.sub", testValue);
+
+    IF keyFound THEN
+        Logger.Log('found KEY');
+        Logger.Log(testValue);
+    ELSE Logger.Log('Value for the Key is not found') END;
 END JsonParser.

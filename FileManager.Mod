@@ -4,7 +4,6 @@ IMPORT Files, Out, Logger, Strings;
 PROCEDURE WriteString(VAR r : Files.Rider; str : ARRAY OF CHAR);
 BEGIN
    Files.WriteBytes(r, str, Strings.Length(str));
-   Logger.Log(str);
 END WriteString;
 
 PROCEDURE Read*(fileName: ARRAY OF CHAR; VAR returnString: ARRAY OF CHAR): BOOLEAN;
