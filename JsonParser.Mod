@@ -1,7 +1,8 @@
 MODULE JsonParser;
 IMPORT Logger, CharacterStack, Strings, Out, strutils;
 CONST
-    ArrayMaxNumber = 10000;
+    ArrayMaxNumber = 30;
+    ArrayMaxNumberChar = 1000;
     (* Const *)
     symbolBracketStart = "{";
     symbolBracketEnd = "}";
@@ -9,7 +10,7 @@ CONST
     quote = "'";
     coma = ",";
 TYPE
-    TString* = ARRAY ArrayMaxNumber OF CHAR;
+    TString* = ARRAY ArrayMaxNumberChar OF CHAR;
     
     JsonTypePointer* = POINTER TO JsonType;
 
@@ -39,6 +40,8 @@ VAR
 BEGIN
     FOR i := 0 TO LEN(self.NonTerminalKeys) - 1 DO
         IF Strings.Match(key, self.NonTerminalKeys[i]) THEN RETURN self.NonTerminalValues[i] END;
+        Logger.Log(key);
+        Logger.Log(self.NonTerminalKeys[i]);
     END;
 
     RETURN NIL;
@@ -84,7 +87,7 @@ VAR
     i: LONGINT;
 BEGIN
     FOR i := 0 TO LEN(self.TerminalKeys) - 1 DO
-        destination[i] := self.TerminalKeys[i];
+        COPY(self.TerminalKeys[i], destination[i]);
     END;
 END GetTerminalKeys;
 

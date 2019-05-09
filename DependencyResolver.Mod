@@ -1,7 +1,7 @@
 MODULE DependencyResolver;
 IMPORT JsonParser, Settings, PackageResolver, Strings, Logger;
 
-CONST ArrayMaxNumber = 10000;
+CONST ArrayMaxNumber = 30;
 
 VAR
     moduleNames: ARRAY ArrayMaxNumber OF JsonParser.TString; 
@@ -13,12 +13,12 @@ PROCEDURE Resolve *(jsonString: ARRAY OF CHAR);
 VAR
     jsonRecord, dependencies: JsonParser.JsonTypePointer;
     keyFound: BOOLEAN;
-    packageName, version, returnedJSON: ARRAY ArrayMaxNumber OF CHAR;
+    packageName, version, returnedJSON: JsonParser.TString;
     keys: ARRAY ArrayMaxNumber OF JsonParser.TString;
     i, k : LONGINT;
 BEGIN
     jsonRecord := JsonParser.Create(jsonString);
-
+    
     keyFound := jsonRecord.GetTerminal(jsonRecord, "Package", packageName);
 
     IF keyFound THEN
@@ -28,9 +28,9 @@ BEGIN
     ELSE Logger.Log("Value for the Key is not found"); RETURN; END;
 
     dependencies := jsonRecord.GetNonTerminal(jsonRecord, "Dependencies");
+        
+    dependencies.GetTerminalKeys(dependencies, keys);    
     
-    dependencies.GetTerminalKeys(dependencies, keys);
-
     FOR i := 0 TO LEN(keys) - 1 DO
         keyFound := dependencies.GetTerminal(dependencies, keys[i], version);
         
