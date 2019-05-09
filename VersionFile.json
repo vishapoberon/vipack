@@ -1,24 +1,18 @@
 {
-    "Package": "Package-name",
-    "Author": "Author Name",
-    "License":"License name",
-    "Version": "1.0.0",
-    "Remote": "http://vishap.oberon.com",
-    "Files": [
-      "File1.Mod",
-      "File2.Mod",
-      "MakeFile"
-    ],
-    "Dependencies": {
-        "Package-2-name": "2.5.*",
-        "Package-3-name": "2.*",
-        "Package-4-name": "2.1.4"
+    'Package': 'Package-name',
+    'Author': 'Author Name',
+    'License':'License name',
+    'Version': '1.0.0',
+    'Remote': 'vishap.oberon.com',
+    'Port': '80',
+    'Files': {
+     '0': 'File1.Mod',
+     '1': 'File2.Mod',
+     '2': 'MakeFile'
     },
-    "Scripts": {
-      "build": "make build",
-      "test": "make test",
-      "run": "make run",
-      "compile": "make compile"
+    'Dependencies': {
+        'dep1': '1.0.0',
+        'dep2': '1.0.0'
     }
   }
   

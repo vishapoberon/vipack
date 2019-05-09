@@ -1,7 +1,7 @@
 MODULE JsonParser;
 IMPORT Logger, CharacterStack, Strings, Out, strutils;
 CONST
-    ArrayMaxNumber = 100;
+    ArrayMaxNumber = 10000;
     (* Const *)
     symbolBracketStart = "{";
     symbolBracketEnd = "}";
@@ -9,7 +9,7 @@ CONST
     quote = "'";
     coma = ",";
 TYPE
-    TString = ARRAY ArrayMaxNumber OF CHAR;
+    TString* = ARRAY ArrayMaxNumber OF CHAR;
     
     JsonTypePointer* = POINTER TO JsonType;
 
@@ -18,7 +18,7 @@ TYPE
         GetNonTerminal* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR): JsonTypePointer;
         HasKey* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR): BOOLEAN;
         TypeOfTheKey* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR; VAR returnValue : ARRAY OF CHAR);
-        GetTerminalKeys* : PROCEDURE(self : JsonTypePointer;VAR destination : ARRAY OF TString);
+        GetTerminalKeys* : PROCEDURE(self : JsonTypePointer; VAR destination : ARRAY OF TString);
         GetNoneTerminalKeys* : PROCEDURE(self : JsonTypePointer; VAR destination : ARRAY OF TString);
 
         TerminalKeys : ARRAY ArrayMaxNumber OF TString;
@@ -244,7 +244,7 @@ BEGIN
 END Create;
 
 BEGIN
-    NEW(jsonRecord);
+    (* NEW(jsonRecord);
     jsonRecord := Create("{'foo': 'bar', 'test': 'test1', 'test2': {'sub': 'dub'}}");
 
     keyFound := jsonRecord.GetTerminal(jsonRecord, "foo", testValue);
@@ -259,5 +259,5 @@ BEGIN
     IF keyFound THEN
         Logger.Log('found KEY');
         Logger.Log(testValue);
-    ELSE Logger.Log('Value for the Key is not found') END;
+    ELSE Logger.Log('Value for the Key is not found') END; *)
 END JsonParser.

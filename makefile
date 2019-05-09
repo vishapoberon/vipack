@@ -10,13 +10,17 @@ copy-version-file-to-build-dir:
 all: http
 	cd builds && \
 	$(VOC) -s \
+		../Settings.Mod \
 		../time.Mod \
 		../logger.Mod \
 		../diaspora2hugo/src/lists/Sys.Mod \
 		../diaspora2hugo/src/lists/List.Mod \
+		../diaspora2hugo/src/lists/strutils.Mod \
 		../CharacterStack.Mod \
 		../JsonParser.Mod \
 		../FileManager.Mod \
+		../PackageResolver.Mod \
+		../DependencyResolver.Mod \
 		../PackageFileParser.Mod \
 		../opium.Mod -m
 
@@ -36,3 +40,19 @@ http: clean
 			../netdb.Mod \
 			../Internet.Mod \
 			../http.Mod
+
+json:
+	cd builds && \
+		$(VOC) -s \
+			../time.Mod \
+			../logger.Mod \
+			../diaspora2hugo/src/lists/Sys.Mod \
+			../diaspora2hugo/src/lists/List.Mod \
+			../diaspora2hugo/src/lists/strutils.Mod \
+			../CharacterStack.Mod \
+			../JsonParser.Mod
+
+
+run-http-server:
+	cd httpServer && \
+	python -m SimpleHTTPServer
