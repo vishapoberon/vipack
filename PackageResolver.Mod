@@ -1,5 +1,5 @@
 MODULE PackageResolver;
-IMPORT FileManager, http, Strings, Logger;
+IMPORT FileManager, http, Strings, Logger, Settings;
 
 CONST ArrayMaxNumber = 10000;
 
@@ -10,7 +10,8 @@ END Resolve;
 
 PROCEDURE ResolveFile *(host, port, packageName, version, fileName : ARRAY OF CHAR; VAR returnValue : ARRAY OF CHAR);
 VAR
-    filePath: ARRAY ArrayMaxNumber OF CHAR;
+    filePath, localPath: ARRAY ArrayMaxNumber OF CHAR;
+    isSuccessfull: BOOLEAN;
 BEGIN
     filePath := "";
     Strings.Append("/", filePath);
@@ -22,9 +23,15 @@ BEGIN
 
     http.get(host, port, filePath, returnValue);
     http.getClean(returnValue, returnValue);
-    (* TODO: introduce write to file functionality *)
-    (* FileManager.CreateDirectory(packageName); *)
-    (* FileManager.Write(packageName + fileName, returnValue); *)
+    isSuccessfull := FileManager.CreateDirectory(packageName, Settings.installPath);
+    
+    COPY(Settings.installPath, localPath);
+    Strings.Append("/", localPath);
+    Strings.Append(packageName, localPath);
+    Strings.Append("/", localPath);
+    Strings.Append(fileName, localPath);
+
+    isSuccessfull := FileManager.Write(localPath, returnValue);
     
 END ResolveFile;
 

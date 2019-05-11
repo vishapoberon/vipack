@@ -1,5 +1,5 @@
 MODULE FileManager;
-IMPORT Files, Out, Logger, Strings;
+IMPORT Files, Out, Logger, Strings, Platform;
 
 PROCEDURE WriteString(VAR r : Files.Rider; str : ARRAY OF CHAR);
 BEGIN
@@ -61,5 +61,21 @@ BEGIN
 
     RETURN TRUE;
 END Write;
+
+PROCEDURE CreateDirectory*(name, path: ARRAY OF CHAR): BOOLEAN;
+VAR
+    command, path0: ARRAY 100 OF CHAR;
+    errorCode: LONGINT;
+BEGIN
+    COPY(path, path0);
+    COPY("mkdir -p ", command);
+    Strings.Append("/", path0);
+    Strings.Append(name, path0);
+    Strings.Append(path0, command);
+    errorCode := Platform.System(command);
+    
+    IF errorCode = 0 THEN RETURN TRUE
+    ELSE RETURN FALSE END;
+END CreateDirectory;
 
 END FileManager.
