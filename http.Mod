@@ -77,7 +77,7 @@ BEGIN
   (i > Strings.Length(buff)); 
 END getHeader;
 
-PROCEDURE get *(host, path, port: ARRAY OF CHAR; VAR buff: ARRAY OF CHAR);
+PROCEDURE get *(host, port, path: ARRAY OF CHAR; VAR buff: ARRAY OF CHAR);
 VAR 
     socket : Internet.Socket;
     connectionFlag: BOOLEAN;

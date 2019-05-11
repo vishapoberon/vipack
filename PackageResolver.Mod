@@ -1,5 +1,5 @@
 MODULE PackageResolver;
-IMPORT FileManager, http, Strings;
+IMPORT FileManager, http, Strings, Logger;
 
 CONST ArrayMaxNumber = 10000;
 
@@ -21,7 +21,7 @@ BEGIN
     Strings.Append(fileName, filePath);
 
     http.get(host, port, filePath, returnValue);
-    
+    http.getClean(returnValue, returnValue);
     (* TODO: introduce write to file functionality *)
     (* FileManager.CreateDirectory(packageName); *)
     (* FileManager.Write(packageName + fileName, returnValue); *)

@@ -43,7 +43,7 @@ VAR
 BEGIN
     NEW(n);
     
-    IF self.Count = 0 THEN RETURN 0AX END;
+    IF self.Count = 0 THEN RETURN 0X END;
     
     n := self.Get(self, self.Count - 1);
     self.Delete(self, self.Count - 1);
@@ -56,7 +56,7 @@ VAR
 BEGIN
     NEW(n);
     
-    IF self.Count = 0 THEN RETURN 0AX END;
+    IF self.Count = 0 THEN RETURN 0X END;
     
     n := self.Get(self, self.Count - 1);
     RETURN n.obj(TChar).char;
