@@ -1,27 +1,14 @@
 MODULE PackageResolver;
-IMPORT FileManager, http, Strings, Logger, Settings;
+IMPORT FileManager, http, Strings, Logger, Settings, JsonParser;
 
-CONST ArrayMaxNumber = 10000;
+CONST ArrayMaxNumber = 1000;
 
-PROCEDURE *Resolve(remoteURL, port, packageName, version : ARRAY OF CHAR);
-BEGIN
-
-END Resolve;
-
-PROCEDURE ResolveFile *(host, port, packageName, version, fileName : ARRAY OF CHAR; VAR returnValue : ARRAY OF CHAR);
+PROCEDURE ResolveFile *(host, port, path, packageName, version, fileName : ARRAY OF CHAR; VAR returnValue : ARRAY OF CHAR);
 VAR
-    filePath, localPath: ARRAY ArrayMaxNumber OF CHAR;
+    localPath: ARRAY ArrayMaxNumber OF CHAR;
     isSuccessfull: BOOLEAN;
 BEGIN
-    filePath := "";
-    Strings.Append("/", filePath);
-    Strings.Append(packageName, filePath);
-    Strings.Append("/", filePath);
-    Strings.Append(version, filePath);
-    Strings.Append("/", filePath);
-    Strings.Append(fileName, filePath);
-
-    http.get(host, port, filePath, returnValue);
+    http.get(host, port, path, returnValue);
     http.getClean(returnValue, returnValue);
     isSuccessfull := FileManager.CreateDirectory(packageName, Settings.installPath);
     
@@ -35,5 +22,16 @@ BEGIN
     
 END ResolveFile;
 
+PROCEDURE Resolve *(host, port, path, packageName, version: ARRAY OF CHAR; files: ARRAY OF JsonParser.TString);
+VAR
+    i : LONGINT;
+    returnValue: JsonParser.TString;
+BEGIN
+    FOR i := 0 TO LEN(files) - 1 DO
+        IF ~Strings.Match(files[i], "") THEN
+            ResolveFile(host, port, path, packageName, version, files[i], returnValue);
+        END;
+    END;
+END Resolve;
 
 END PackageResolver.

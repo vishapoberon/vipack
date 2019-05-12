@@ -4,5 +4,5 @@ CONST
     host* = "localhost";
     port* = "80";
     installPath* = "dependencies";
-
+    quote* = '"';
 END Settings.

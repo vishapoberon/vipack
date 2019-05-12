@@ -1,14 +1,22 @@
 MODULE http;
 IMPORT Strings, Internet, Logger, Out;
 CONST 
-  MAXARRAYNUMBER = 10000;
-  MAXARRAYNUMBEREXTENDED = 1000000;
+  MAXARRAYNUMBER = 1000;
+  MAXARRAYNUMBEREXTENDED = 10000;
   
 TYPE 
   PSTRING = POINTER TO ARRAY OF CHAR;
 
 VAR
   buff, buff2: ARRAY MAXARRAYNUMBEREXTENDED OF CHAR;
+
+PROCEDURE Empty *(VAR string: ARRAY OF CHAR);
+VAR
+    i : LONGINT;
+BEGIN
+    FOR i := 0 TO LEN(string) - 1 DO string[i] := 0X END;
+    COPY("", string);
+END Empty;
 
 PROCEDURE getClean *(buff: ARRAY OF CHAR; VAR clean: ARRAY OF CHAR);
 VAR
@@ -56,7 +64,7 @@ PROCEDURE addHeader(key, val: ARRAY OF CHAR; VAR buff: PSTRING);
 VAR
   header: ARRAY MAXARRAYNUMBER OF CHAR;
 BEGIN
-  COPY("", header);
+  Empty(header);
   Strings.Append(key, header);
   Strings.Append(": ", header);
   Strings.Append(val, header);
@@ -88,7 +96,7 @@ VAR
     endOfLine: ARRAY 3 OF CHAR;
     tmpBuff: ARRAY MAXARRAYNUMBER OF CHAR;
 BEGIN
-    COPY("", buff);
+    Empty( buff);
     httpTail := " HTTP/1.1";
     
     connectionFlag := Internet.Connect(host, port, socket);
@@ -114,6 +122,8 @@ BEGIN
     AppendEOLAndClean("", sendClean);
     connectionFlag := Internet.Write(socket, sendClean^);
     REPEAT 
+      Empty( tmpBuff);
+
       connectionFlag := Internet.Read(socket, tmpBuff);
       Strings.Append(tmpBuff, buff);
       getHeader(buff, "Content-Length", valueContentLengthString);

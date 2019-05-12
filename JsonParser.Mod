@@ -1,13 +1,13 @@
 MODULE JsonParser;
-IMPORT Logger, CharacterStack, Strings, Out, strutils;
+IMPORT Logger, CharacterStack, Strings, Out, strutils, Settings;
 CONST
     ArrayMaxNumber = 30;
-    ArrayMaxNumberChar = 10000;
+    ArrayMaxNumberChar = 1000;
     (* Const *)
     symbolBracketStart = "{";
     symbolBracketEnd = "}";
     (* TODO: Reverse " and ' *)
-    quote = "'";
+    quote = Settings.quote;
     coma = ",";
 TYPE
     TString* = ARRAY ArrayMaxNumberChar OF CHAR;
@@ -20,13 +20,18 @@ TYPE
         HasKey* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR): BOOLEAN;
         TypeOfTheKey* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR; VAR returnValue : ARRAY OF CHAR);
         GetTerminalKeys* : PROCEDURE(self : JsonTypePointer; VAR destination : ARRAY OF TString);
+        GetTerminalValues* : PROCEDURE(self : JsonTypePointer; VAR destination : ARRAY OF TString);
         GetNoneTerminalKeys* : PROCEDURE(self : JsonTypePointer; VAR destination : ARRAY OF TString);
+        GetTerminalNumber* : PROCEDURE(self : JsonTypePointer): LONGINT;
+        GetNonTerminalNumber* : PROCEDURE(self : JsonTypePointer): LONGINT;
 
         TerminalKeys : ARRAY ArrayMaxNumber OF TString;
-        TerminalsValues : ARRAY ArrayMaxNumber OF TString;
+        TerminalValues : ARRAY ArrayMaxNumber OF TString;
+        TerminalNumber* : LONGINT;
 
         NonTerminalKeys : ARRAY ArrayMaxNumber OF TString;
         NonTerminalValues : POINTER TO ARRAY OF JsonTypePointer;
+        NonTerminalNumber* : LONGINT;
     END;
     
 VAR
@@ -34,18 +39,24 @@ VAR
     testValue: ARRAY ArrayMaxNumber OF CHAR;
     keyFound: BOOLEAN;
 
+PROCEDURE GetTerminalNumber*(self : JsonTypePointer): LONGINT;
+BEGIN RETURN self.TerminalNumber END GetTerminalNumber;
+
+PROCEDURE GetNonTerminalNumber*(self : JsonTypePointer): LONGINT;
+BEGIN RETURN self.NonTerminalNumber END GetNonTerminalNumber;
+
 PROCEDURE GetNonTerminal(self : JsonTypePointer; key : ARRAY OF CHAR): JsonTypePointer;
 VAR
     i: LONGINT;
 BEGIN
-    FOR i := 0 TO LEN(self.NonTerminalKeys) - 1 DO
+    FOR i := 0 TO self.NonTerminalNumber - 1 DO
         IF Strings.Match(key, self.NonTerminalKeys[i]) THEN RETURN self.NonTerminalValues[i] END;
     END;
 
     RETURN NIL;
 END GetNonTerminal;
 
-PROCEDURE Empty(VAR string: ARRAY OF CHAR);
+PROCEDURE Empty *(VAR string: ARRAY OF CHAR);
 VAR
     i : LONGINT;
 BEGIN
@@ -60,8 +71,9 @@ VAR
     strings: strutils.strings;
     parent, children: ARRAY ArrayMaxNumber OF CHAR;
 BEGIN
-    FOR i := 0 TO LEN(self.TerminalKeys) - 1 DO
-        IF Strings.Match(key, self.TerminalKeys[i]) THEN COPY(self.TerminalsValues[i], returnValue); RETURN TRUE END;
+
+    FOR i := 0 TO self.TerminalNumber DO
+        IF Strings.Match(key, self.TerminalKeys[i]) THEN COPY(self.TerminalValues[i], returnValue); RETURN TRUE END;
     END;
     
     strings := strutils.tokenize(key, '.');
@@ -72,7 +84,7 @@ BEGIN
     
     IF Strings.Length(parent) < 1 THEN RETURN FALSE END;
     
-    noneTerminal := jsonRecord.GetNonTerminal(self, parent);
+    noneTerminal := self.GetNonTerminal(self, parent);
 
     IF noneTerminal = NIL THEN RETURN FALSE END;
     
@@ -92,10 +104,20 @@ PROCEDURE GetTerminalKeys(self : JsonTypePointer; VAR destination : ARRAY OF TSt
 VAR
     i: LONGINT;
 BEGIN
-    FOR i := 0 TO LEN(self.TerminalKeys) - 1 DO
+    FOR i := 0 TO self.TerminalNumber DO
         COPY(self.TerminalKeys[i], destination[i]);
     END;
 END GetTerminalKeys;
+
+PROCEDURE GetTerminalValues(self : JsonTypePointer; VAR destination : ARRAY OF TString);
+VAR
+    i: LONGINT;
+BEGIN
+    FOR i := 0 TO LEN(self.TerminalValues) - 1 DO
+        Empty(destination[i]);
+        COPY(self.TerminalValues[i], destination[i]);
+    END;
+END GetTerminalValues;
 
 PROCEDURE GetNoneTerminalKeys(self : JsonTypePointer; VAR destination : ARRAY OF TString);
 VAR
@@ -199,9 +221,12 @@ BEGIN
         IF symbol = symbolBracketStart THEN
             (* Logger.Log("End Parsing Json"); *)
         END;
-        
         symbol := text[i];
 
+        (* Logger.LogIntLn(i); *)
+        (* IF i > 508 THEN
+            Logger.Log(text);        
+        END; *)
         (* terminals *)
         IF symbol = quote THEN
             i := PushDownString(text, quote, quote, i, string);
@@ -219,7 +244,7 @@ BEGIN
 
         IF (Strings.Length(key) > 0) & (Strings.Length(val) > 0) THEN
             deQuote(key, self.TerminalKeys[terminalIterator]);
-            deQuote(val, self.TerminalsValues[terminalIterator]);
+            deQuote(val, self.TerminalValues[terminalIterator]);
 
             INC(terminalIterator);
                         
@@ -252,7 +277,10 @@ BEGIN
         
         INC(i);
     UNTIL (i >= LEN(text) - 1) OR (text[i] = 0X);
-
+    
+    self.NonTerminalNumber := noneTerminalIterator;
+    self.TerminalNumber := terminalIterator;
+    
     RETURN self;
 END Create;
 

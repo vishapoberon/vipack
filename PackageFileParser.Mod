@@ -7,7 +7,7 @@ IMPORT
     DependencyResolver,
     Settings;
 CONST
-    MAXARRAYNUMBER = 10000;
+    MAXARRAYNUMBER = 1000;
 PROCEDURE install*;
 VAR
     jsonData: ARRAY MAXARRAYNUMBER OF CHAR;
@@ -20,9 +20,9 @@ BEGIN
     ASSERT(success);
     
     Logger.Log("Starting resolving dependencies");
-    Logger.Log(jsonData);
 
-    DependencyResolver.Resolve(jsonData);
+    DependencyResolver.ResolveVersionFiles(jsonData);
+    DependencyResolver.ResolvePackages();
 END install;
 
 BEGIN
