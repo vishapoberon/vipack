@@ -1,8 +1,8 @@
 MODULE http;
 IMPORT Strings, Internet, Logger, Out;
 CONST 
-  MAXARRAYNUMBER = 1000;
-  MAXARRAYNUMBEREXTENDED = 10000;
+  MAXARRAYNUMBER = 10000;
+  MAXARRAYNUMBEREXTENDED = 100000;
   
 TYPE 
   PSTRING = POINTER TO ARRAY OF CHAR;
@@ -131,7 +131,8 @@ BEGIN
       (* Out.Real(valueContentLength, 6);
       Out.Ln;
       Logger.LogIntLn(Strings.Length(buff));
-      Logger.Log(buff); *)
+       *)
+       Logger.Log(buff);
     UNTIL ~connectionFlag OR (Strings.Length(buff) > valueContentLength);
     Internet.Disconnect(socket);
 END get;

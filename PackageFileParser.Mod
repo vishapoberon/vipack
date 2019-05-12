@@ -23,6 +23,10 @@ BEGIN
 
     DependencyResolver.ResolveVersionFiles(jsonData);
     DependencyResolver.ResolvePackages();
+    Logger.Log("======================");
+    Logger.Log("======================");
+    Logger.Log("Installation complete");
+    Logger.Log("Thanks for using OPIUM!");
 END install;
 
 BEGIN

@@ -26,7 +26,7 @@ TYPE
         GetNonTerminalNumber* : PROCEDURE(self : JsonTypePointer): LONGINT;
 
         TerminalKeys : ARRAY ArrayMaxNumber OF TString;
-        TerminalValues : ARRAY ArrayMaxNumber OF TString;
+        TerminalValues* : ARRAY ArrayMaxNumber OF TString;
         TerminalNumber* : LONGINT;
 
         NonTerminalKeys : ARRAY ArrayMaxNumber OF TString;
@@ -113,7 +113,7 @@ PROCEDURE GetTerminalValues(self : JsonTypePointer; VAR destination : ARRAY OF T
 VAR
     i: LONGINT;
 BEGIN
-    FOR i := 0 TO LEN(self.TerminalValues) - 1 DO
+    FOR i := 0 TO self.TerminalNumber - 1 DO
         Empty(destination[i]);
         COPY(self.TerminalValues[i], destination[i]);
     END;
