@@ -2,7 +2,7 @@ MODULE JsonParser;
 IMPORT Logger, CharacterStack, Strings, Out, strutils, Settings;
 CONST
     ArrayMaxNumber = 30;
-    ArrayMaxNumberChar = 1000;
+    ArrayMaxNumberChar = 2000;
     (* Const *)
     symbolBracketStart = "{";
     symbolBracketEnd = "}";

@@ -132,7 +132,7 @@ BEGIN
       Out.Ln;
       Logger.LogIntLn(Strings.Length(buff));
        *)
-       Logger.Log(buff);
+      (* Logger.Log(buff); *)
     UNTIL ~connectionFlag OR (Strings.Length(buff) > valueContentLength);
     Internet.Disconnect(socket);
 END get;

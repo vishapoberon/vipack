@@ -11,7 +11,6 @@
         "2": "MakeFile"
     },
     "Dependencies": {
-        "lists": "1.0.0",
-        "diaspora": "1.0.0"
+        "vipack": "1.0.0"
     }
 }
