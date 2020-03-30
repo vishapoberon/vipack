@@ -2,7 +2,12 @@
 VOC = voc
 VERSION_FILE = ./VersionFile.json
 
-test: clean copy-version-file-to-build-dir all run
+test: clean create_builds_dir all copy-version-file-to-build-dir run
+
+
+create_builds_dir:
+	mkdir ./builds
+
 
 copy-version-file-to-build-dir:
 	cp ./$(VERSION_FILE) ./builds/$(VERSION_FILE)
@@ -24,8 +29,6 @@ all: http
 		../PackageFileParser.Mod \
 		../opium.Mod -m
 
-clean:
-		cd builds && rm * &
 
 run:
 	./builds/opium install
@@ -51,6 +54,9 @@ json:
 			../diaspora2hugo/src/lists/strutils.Mod \
 			../CharacterStack.Mod \
 			../JsonParser.Mod
+
+clean:
+		rm -r builds & 
 
 
 run-http-server:
