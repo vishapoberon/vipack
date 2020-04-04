@@ -15,45 +15,48 @@ copy-version-file-to-build-dir:
 all: http
 	cd builds && \
 	$(VOC) -s \
-		../Settings.Mod \
-		../time.Mod \
-		../logger.Mod \
+		../vpkFsHelper.Mod \
+		../vpkConf.Mod \
+		../vpkUserDetails.Mod \
+		../vpkSettings.Mod \
+		../vpkTime.Mod \
+		../vpkLogger.Mod \
 		../diaspora2hugo/src/lists/Sys.Mod \
 		../diaspora2hugo/src/lists/List.Mod \
 		../diaspora2hugo/src/lists/strutils.Mod \
-		../CharacterStack.Mod \
-		../JsonParser.Mod \
-		../FileManager.Mod \
-		../PackageResolver.Mod \
-		../DependencyResolver.Mod \
-		../PackageFileParser.Mod \
-		../opium.Mod -m
+		../vpkCharacterStack.Mod \
+		../vpkJsonParser.Mod \
+		../vpkFileManager.Mod \
+		../vpkPackageResolver.Mod \
+		../vpkDependencyResolver.Mod \
+		../vpkPackageFileParser.Mod \
+		../Vipack.Mod -m
 
 
 run:
-	./builds/opium install
+	./builds/Vipack install
 
 
 http: clean
 	cd builds && \
-		$(VOC) -s ../time.Mod \
-			../logger.Mod \
-			../types.Mod \
-			../sockets.Mod \
-			../netdb.Mod \
-			../Internet.Mod \
-			../http.Mod
+		$(VOC) -s ../vpkTime.Mod \
+			../vpkLogger.Mod \
+			../vpkTypes.Mod \
+			../vpkSockets.Mod \
+			../vpkNetdb.Mod \
+			../vpkInternet.Mod \
+			../vpkHttp.Mod
 
 json:
 	cd builds && \
 		$(VOC) -s \
-			../time.Mod \
-			../logger.Mod \
+			../vpkTime.Mod \
+			../vpkLogger.Mod \
 			../diaspora2hugo/src/lists/Sys.Mod \
 			../diaspora2hugo/src/lists/List.Mod \
 			../diaspora2hugo/src/lists/strutils.Mod \
-			../CharacterStack.Mod \
-			../JsonParser.Mod
+			../vpkCharacterStack.Mod \
+			../vpkJsonParser.Mod
 
 clean:
 		rm -r builds & 
