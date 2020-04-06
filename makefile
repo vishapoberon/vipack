@@ -15,6 +15,7 @@ copy-version-file-to-build-dir:
 all: http
 	cd builds && \
 	$(VOC) -s \
+		../vpkGit.Mod \
 		../vpkFsHelper.Mod \
 		../vpkConf.Mod \
 		../vpkUserDetails.Mod \

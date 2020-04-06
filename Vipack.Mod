@@ -1,5 +1,5 @@
 MODULE Vipack;
-IMPORT  vpkConf, vpkLogger, vpkPackageFileParser, Texts, Strings, In, Platform, Oberon, Out, Files, vpkUserDetails;
+IMPORT  vpkGit, vpkConf, vpkLogger, vpkPackageFileParser, Texts, Strings, In, Platform, Oberon, Out, Files, vpkUserDetails;
 
 PROCEDURE  main();
 
@@ -7,13 +7,13 @@ CONST confFileName = "vipack.conf";
 CONST syncDirName = "tree/";
 
 VAR  user, str: ARRAY 32 OF CHAR;
-	 confPath, curPath, string : ARRAY 120 OF CHAR;
+	 vpkDirPath, treePath, confPath : ARRAY 120 OF CHAR;
      i : INTEGER;
      f : Files.File;
      r : Files.Rider;
      ch : CHAR;
 	 S: Texts.Scanner;
-	 defaultUrl,project,command : ARRAY 500 OF CHAR;
+	 defaultUrl,gitUrl,project,command,string : ARRAY 500 OF CHAR;
 
 PROCEDURE help();
 BEGIN
@@ -27,47 +27,42 @@ Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 Texts.Scan(S);
 Out.String(S.s); Out.Ln;
 
-defaultUrl := "https://github.com/PizzaPablo666/test";
+defaultUrl := "https://github.com/norayr/diaspora";
 
 command := S.s;
 
-confPath := "/home//.vipack/";
+IF ~(Platform.getEnv("HOME", vpkDirPath)) THEN
+	Out.String("HOME variable is not found"); Out.Ln;
+END;
 
 (*HELP*)
 IF Strings.Match(command, "") OR Strings.Match(command, "--help")THEN
 	help;
 END;
 
-(* Getting username from input if there is no $USER variable *)
-IF ~(vpkUserDetails.GetUsername(user)) THEN
-	 Out.String("username: "); In.Line(user); 
-END;
-
-(* Making the full path to vipack.conf *)
-Strings.Insert(user,6,confPath);
-Out.String(confPath);Out.Ln;
-curPath := confPath;
+Strings.Append("/.vipack/",vpkDirPath);
+confPath := vpkDirPath;
+treePath := vpkDirPath;
 
 (* Checking if ~/.vipack directory already exists *)
-IF vpkConf.makeDir(confPath) THEN 
-	Out.String("Creating directory "); Out.String(confPath);Out.Ln;
-ELSE Out.String(confPath); Out.String(" already exists or path is wrong");Out.Ln;
+IF vpkConf.makeDir(vpkDirPath) THEN 
+	Out.String("Creating directory "); Out.String(vpkDirPath);Out.Ln;
+ELSE Out.String(vpkDirPath); Out.String(" already exists or path is wrong");Out.Ln;
 END;
 
 (* Checking if vipack.conf already exists *)
-Strings.Append(confFileName,curPath);
+Strings.Append(confFileName,confPath);
 
-IF ~(vpkConf.confExists(curPath)) THEN
+IF ~(vpkConf.confExists(confPath)) THEN
 	Out.String("Creating the configuration file "); Out.String(confPath);Out.Ln;
-	vpkConf.makeConf(curPath,f);
+	vpkConf.makeConf(confPath,f);
 	Files.Set(r, f, 0);
-	Files.WriteInt(r, 8); Files.WriteString(r, " PATH :"); Files.WriteString(r,defaultUrl);
+	(*Files.WriteInt(r, 8)*); Files.WriteString(r, " PATH :"); Files.WriteString(r,defaultUrl);
 	Files.Close(f);
 ELSE 
 	Out.String("File already exists");Out.Ln;
 END;
 (*after adding file and working with it, then removing the file part in the path *)
-curPath := confPath;
 
 
 (*ELSIF Strings.Match(command, "install") THEN
@@ -77,14 +72,25 @@ END;*)
 
 
 IF command = "sync" THEN
-	Strings.Append(syncDirName, curPath);
+	Strings.Append(syncDirName, vpkDirPath);
 	(*Check tree directory if doesn't exist create*)
-	IF vpkConf.makeDir(curPath) THEN
-		Out.String("Creating "); Out.String(curPath); Out.String("for syncing");Out.Ln;
+	IF vpkConf.makeDir(treePath) THEN
+		Out.String("Creating "); Out.String(treePath); Out.String("for syncing");Out.Ln;
 	ELSE Out.String("Some error occured or directory already exist");
 	END;
 	(*Sync*)
-	(*git.sync();*)
+	f := Files.Old(confPath);
+	Files.Set(r,f,0);
+	Files.ReadLine(r,gitUrl);
+	Strings.Delete(gitUrl,0,6);
+	Out.String(gitUrl); Out.Ln;
+	string := gitUrl;
+	Strings.Delete(string,19,Strings.Length(string)-17);
+	Out.String(string);Out.Ln;
+	IF Strings.Match(string,"https://github.com/") OR Strings.Match(string,"git://github.com/") THEN
+	Out.String("YES"); Out.Ln;
+	vpkGit.clone(gitUrl);
+	END;
 END;
 
 
@@ -96,8 +102,6 @@ IF command = "install" THEN
 END;
 
 
-
-Out.String(user); Out.Ln;
 END main;
 
 
