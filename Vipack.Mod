@@ -1,19 +1,24 @@
 MODULE Vipack;
-IMPORT  vpkGit, vpkConf, vpkLogger, vpkPackageFileParser, Texts, Strings, In, Platform, Oberon, Out, Files, vpkUserDetails;
+IMPORT  vpkFileManager,vpkJsonParser,vpkGit, vpkConf, vpkLogger, vpkPackageFileParser, Texts, Strings, In, Platform, Oberon, Out, Files, vpkUserDetails;
 
 PROCEDURE  main();
 
-CONST confFileName = "vipack.conf";
+CONST confFileName = "vipackConf.json";
 CONST syncDirName = "tree/";
+CONST quote = '"';
+CONST startBracket = "{";
+CONST endBracket = "}";
 
 VAR  user, str: ARRAY 32 OF CHAR;
-	 vpkDirPath, treePath, confPath : ARRAY 120 OF CHAR;
+	 vpkDirPath, treePath, confPath, jsonString : ARRAY 120 OF CHAR;
      i : INTEGER;
      f : Files.File;
      r : Files.Rider;
      ch : CHAR;
 	 S: Texts.Scanner;
-	 defaultUrl,gitUrl,project,command,string : ARRAY 500 OF CHAR;
+	 jsonData,string,defaultUrl,gitUrl,project,command, jsonPathLine : ARRAY 500 OF CHAR;
+	 success: BOOLEAN;
+	 jsonRecord: vpkJsonParser.JsonTypePointer;
 
 PROCEDURE help();
 BEGIN
@@ -27,7 +32,7 @@ Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
 Texts.Scan(S);
 Out.String(S.s); Out.Ln;
 
-defaultUrl := "https://github.com/norayr/diaspora";
+defaultUrl := "https://github.com/vishaps/vipackTree";
 
 command := S.s;
 
@@ -57,18 +62,17 @@ IF ~(vpkConf.confExists(confPath)) THEN
 	Out.String("Creating the configuration file "); Out.String(confPath);Out.Ln;
 	vpkConf.makeConf(confPath,f);
 	Files.Set(r, f, 0);
-	(*Files.WriteInt(r, 8)*); Files.WriteString(r, " PATH :"); Files.WriteString(r,defaultUrl);
+	Strings.Append(startBracket, jsonPathLine);
+	Strings.Append('"path" : ', jsonPathLine);
+	Strings.Append(quote, jsonPathLine);
+	Strings.Append(defaultUrl,jsonPathLine);
+	Strings.Append(quote, jsonPathLine);
+	Strings.Append(endBracket,jsonPathLine);
+	Files.WriteString(r,jsonPathLine);
 	Files.Close(f);
 ELSE 
 	Out.String("File already exists");Out.Ln;
 END;
-(*after adding file and working with it, then removing the file part in the path *)
-
-
-(*ELSIF Strings.Match(command, "install") THEN
-	 vpkPackageFileParser.install();
-END;*)
-
 
 
 IF command = "sync" THEN
@@ -79,11 +83,12 @@ IF command = "sync" THEN
 	ELSE Out.String("Some error occured or directory already exist");
 	END;
 	(*Sync*)
-	f := Files.Old(confPath);
-	Files.Set(r,f,0);
-	Files.ReadLine(r,gitUrl);
-	Strings.Delete(gitUrl,0,6);
-	Out.String(gitUrl); Out.Ln;
+	success := vpkFileManager.Read(confPath,jsonData);
+	jsonRecord := vpkJsonParser.Create(jsonData);
+	success := vpkJsonParser.GetTerminal(jsonRecord,"path", jsonString);
+	Out.String("URL = ");
+	Out.String(jsonString);Out.Ln;
+	gitUrl := jsonString;
 	string := gitUrl;
 	Strings.Delete(string,19,Strings.Length(string)-17);
 	Out.String(string);Out.Ln;
@@ -99,6 +104,8 @@ IF command = "install" THEN
 	Texts.Scan(S);
 	project := S.s;
 	Out.String(project);Out.Ln;
+	vpkPackageFileParser.install();
+
 END;
 
 
