@@ -1,16 +1,21 @@
 MODULE vpkGit;
 IMPORT Out,Strings, Platform;
 
-PROCEDURE clone*(URL : ARRAY OF CHAR);
+PROCEDURE pull*(URL : ARRAY OF CHAR; dst : ARRAY OF CHAR);
 VAR i : INTEGER;
 cmd : ARRAY 120 OF CHAR;
 BEGIN
-i:=Platform.System("git init .");
-cmd := "git clone ";
+cmd:= "git init ";
+Strings.Append(dst, cmd);
+i:=Platform.System(cmd);
+cmd := "";
+cmd := "git -C ";
+Strings.Append(dst,cmd);
+Strings.Append(" pull ",cmd);
 Strings.Append(URL, cmd);
 i := Platform.System(cmd);
 Out.Int(i,0);
-END clone;
+END pull;
 
 
 BEGIN

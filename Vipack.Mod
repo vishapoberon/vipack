@@ -4,7 +4,7 @@ IMPORT  vpkFileManager,vpkJsonParser,vpkGit, vpkConf, vpkLogger, vpkPackageFileP
 PROCEDURE  main();
 
 CONST confFileName = "vipackConf.json";
-CONST syncDirName = "tree/";
+CONST syncDirName = "vipackTree/";
 CONST quote = '"';
 CONST startBracket = "{";
 CONST endBracket = "}";
@@ -76,13 +76,17 @@ END;
 
 
 IF command = "sync" THEN
-	Strings.Append(syncDirName, vpkDirPath);
-	(*Check tree directory if doesn't exist create*)
+	treePath := vpkDirPath;
+	Strings.Append(syncDirName, treePath);
+	Out.String("*****************************************"); Out.Ln;
+	Out.String("TreePath = "); Out.String(vpkDirPath);
+
+	(* Check tree directory if doesn't exist create*)
 	IF vpkConf.makeDir(treePath) THEN
 		Out.String("Creating "); Out.String(treePath); Out.String("for syncing");Out.Ln;
 	ELSE Out.String("Some error occured or directory already exist");
 	END;
-	(*Sync*)
+	(* Syncing *)
 	success := vpkFileManager.Read(confPath,jsonData);
 	jsonRecord := vpkJsonParser.Create(jsonData);
 	success := vpkJsonParser.GetTerminal(jsonRecord,"path", jsonString);
@@ -92,9 +96,10 @@ IF command = "sync" THEN
 	string := gitUrl;
 	Strings.Delete(string,19,Strings.Length(string)-17);
 	Out.String(string);Out.Ln;
+	(* Checking the URL of vipackConf.json path key *)
 	IF Strings.Match(string,"https://github.com/") OR Strings.Match(string,"git://github.com/") THEN
 	Out.String("YES"); Out.Ln;
-	vpkGit.clone(gitUrl);
+	vpkGit.pull(gitUrl,treePath);
 	END;
 END;
 
