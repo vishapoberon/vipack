@@ -1,45 +1,97 @@
 MODULE vpkConf;
 IMPORT Out, Files, Strings, Platform,
-       vpkFsHelper;
+       vpkFsHelper, vpkSettings;
 
-PROCEDURE confExists*(VAR confFile: ARRAY OF CHAR ):BOOLEAN;
+VAR
+  conf, confDir : ARRAY 256 OF CHAR; 
+  
+PROCEDURE mkConfContent(VAR path: ARRAY OF CHAR);
 BEGIN
-	IF  Files.Old(confFile) = NIL THEN RETURN FALSE;
-	ELSE RETURN TRUE;
-	END;
+  Strings.Append('{"path" : "',  path);
+  Strings.Append(vpkSettings.treeURL,   path);
+  Strings.Append('"}, "type" : "git"}', path);
+END mkConfContent;
 
-END confExists;
-
-PROCEDURE makeFile*(VAR confFilePath: ARRAY OF CHAR);
-VAR f : Files.File;
+PROCEDURE makeFile(VAR confFilePath: ARRAY OF CHAR; VAR f: Files.File; VAR r: Files.Rider);
 BEGIN
 f := Files.New(confFilePath);
-Files.Register(f);
-
+Files.Set(r, f, 0);
 END makeFile;
 
-PROCEDURE makeDir*(VAR confDirPath: ARRAY OF CHAR):BOOLEAN;
+PROCEDURE writeInFile(VAR f: Files.File; r: Files.Rider; VAR text : ARRAY OF CHAR);
 BEGIN
-RETURN vpkFsHelper.mkDir(confDirPath);
-END makeDir;
-
-PROCEDURE varCheck*(variable : ARRAY OF CHAR;VAR  value : ARRAY OF CHAR): BOOLEAN;
-BEGIN
-RETURN Platform.getEnv(variable,value);
-END varCheck;
-
-PROCEDURE writeInFile*(VAR pathToFile : ARRAY OF CHAR;VAR text : ARRAY OF CHAR; posRider : INTEGER);
-VAR f : Files.File;
-	r : Files.Rider;
-BEGIN
-f := Files.Old(pathToFile);
-Files.Set(r,f,posRider);
-Files.WriteBytes(r, text, Strings.Length(text));
-Files.Close(f);
+  Files.WriteBytes(r, text, Strings.Length(text));
 END writeInFile;
 
+PROCEDURE closeFile(VAR f: Files.File);
+BEGIN
+  Files.Register(f);
+  Files.Close(f);
+END closeFile;
+
+PROCEDURE mkConfDirPath(home: ARRAY OF CHAR; VAR path: ARRAY OF CHAR);
+BEGIN
+  confDir := home;
+  Strings.Append("/", path);
+  Strings.Append(vpkSettings.vpkConfDir, path);
+END mkConfDirPath;
+
+PROCEDURE setConfPath;
+VAR
+  home: ARRAY 128 OF CHAR;
+BEGIN
+  vpkSettings.getHome(home);
+  mkConfDirPath(home, confDir);
+  conf := confDir;
+  Strings.Append("/", conf);
+  Strings.Append(vpkSettings.vpkConfFile, conf);
+END setConfPath;
+
+PROCEDURE getConfPath*(VAR path: ARRAY OF CHAR);
+BEGIN
+  COPY(conf, path);
+END getConfPath;
+
+PROCEDURE getConfDir*(VAR path: ARRAY OF CHAR);
+BEGIN
+  COPY(confDir, path);
+END getConfDir;
+
+PROCEDURE configure*;
+VAR
+  content: ARRAY 256 OF CHAR;
+  file : vpkFsHelper.fileInfo;
+  fd: Files.File;
+  rd: Files.Rider;
+BEGIN
+  file.name := conf;
+  IF ~vpkFsHelper.Exists(file) THEN 
+    (* Checking if ~/.vipack directory already exists *)
+    file.name := confDir;
+    IF ~vpkFsHelper.Exists(file) THEN (* exists!!! *)
+      Out.String("Creating directory "); Out.String(confDir);Out.Ln;
+      IF ~vpkFsHelper.mkDir(confDir) THEN
+        Out.String("failed to create "); Out.String(confDir); Out.String(" directory"); Out.Ln;
+        HALT(1);
+      END;
+    ELSE
+      IF ~(vpkFsHelper.dir IN file.attr) THEN
+        Out.String(confDir); Out.String(" exists, but is not a directory"); Out.Ln;
+        HALT(1);
+      END;
+    END;
+    (* create conf file *)
+    Out.String("Creating the configuration file "); Out.String(conf);Out.Ln;
+    content := "";
+    makeFile(conf, fd, rd);
+    mkConfContent(content);
+    writeInFile(fd, rd, content);
+    closeFile(fd);
+ ELSE 
+   Out.String("File already exists");Out.Ln;
+ END;
+END configure;
 
 BEGIN
-
-
+  setConfPath;
 END vpkConf.

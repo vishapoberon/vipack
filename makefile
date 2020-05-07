@@ -20,17 +20,18 @@ all: http
 	$(VOC) -s \
 		../src/vpkGit.Mod \
 		../src/vpkFsHelper.Mod \
-		../src/vpkConf.Mod \
-		../src/vpkUserDetails.Mod \
 		../src/vpkSettings.Mod \
-		../src/vpkTime.Mod \
-		../src/vpkLogger.Mod \
+		../src/vpkConf.Mod \
+		../src/vpkFileManager.Mod \
 		../lists/src/Sys.Mod \
 		../lists/src/List.Mod \
 		../lists/src/strutils.Mod \
-		../src/vpkCharacterStack.Mod \
+	  ../src/vpkCharacterStack.Mod \
 		../src/vpkJsonParser.Mod \
-		../src/vpkFileManager.Mod \
+	  ../src/vpkSyncer.Mod \
+		../src/vpkUserDetails.Mod \
+		../src/vpkTime.Mod \
+		../src/vpkLogger.Mod \
 		../src/vpkPackageResolver.Mod \
 		../src/vpkDependencyResolver.Mod \
 		../src/vpkPackageFileParser.Mod \
@@ -50,17 +51,6 @@ http: clean
 			../Internet/src/netdb.Mod \
 			../Internet/src/Internet.Mod \
 			../src/vpkHttp.Mod
-
-json:
-	cd $(BUILDDIR) && \
-		$(VOC) -s \
-			../src/vpkTime.Mod \
-			../src/vpkLogger.Mod \
-			../lists/src/Sys.Mod \
-			../lists/src/List.Mod \
-			../lists/src/strutils.Mod \
-			../src/vpkCharacterStack.Mod \
-			../src/vpkJsonParser.Mod
 
 clean:
 	if [ -d "$(BUILDDIR)" ]; then rm -rf $(BUILDDIR); fi

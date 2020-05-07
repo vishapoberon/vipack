@@ -7,8 +7,8 @@ CONST
     symbolBracketStart = "{";
     symbolBracketEnd = "}";
     (* TODO: Reverse " and ' *)
-    quote = vpkSettings.quote;
     coma = ",";
+    quote = '"';
 TYPE
     TString* = ARRAY ArrayMaxNumberChar OF CHAR;
     

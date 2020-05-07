@@ -7,7 +7,7 @@ CONST
 
 TYPE
   fileInfo* = RECORD;
-     name* : ARRAY 64 OF CHAR;
+     name* : ARRAY 256 OF CHAR;
      attr- : SET
      END;
 
