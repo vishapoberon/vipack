@@ -18,23 +18,23 @@ copy-version-file-to-build-dir:
 all: http
 	cd $(BUILDDIR) && \
 	$(VOC) -s \
-		../vpkGit.Mod \
-		../vpkFsHelper.Mod \
-		../vpkConf.Mod \
-		../vpkUserDetails.Mod \
-		../vpkSettings.Mod \
-		../vpkTime.Mod \
-		../vpkLogger.Mod \
+		../src/vpkGit.Mod \
+		../src/vpkFsHelper.Mod \
+		../src/vpkConf.Mod \
+		../src/vpkUserDetails.Mod \
+		../src/vpkSettings.Mod \
+		../src/vpkTime.Mod \
+		../src/vpkLogger.Mod \
 		../lists/src/Sys.Mod \
 		../lists/src/List.Mod \
 		../lists/src/strutils.Mod \
-		../vpkCharacterStack.Mod \
-		../vpkJsonParser.Mod \
-		../vpkFileManager.Mod \
-		../vpkPackageResolver.Mod \
-		../vpkDependencyResolver.Mod \
-		../vpkPackageFileParser.Mod \
-		../vipack.Mod -m
+		../src/vpkCharacterStack.Mod \
+		../src/vpkJsonParser.Mod \
+		../src/vpkFileManager.Mod \
+		../src/vpkPackageResolver.Mod \
+		../src/vpkDependencyResolver.Mod \
+		../src/vpkPackageFileParser.Mod \
+		../src/vipack.Mod -m
 
 
 run:
@@ -43,24 +43,24 @@ run:
 
 http: clean
 	cd $(BUILDDIR) && \
-		$(VOC) -s ../vpkTime.Mod \
-			../vpkLogger.Mod \
+		$(VOC) -s ../src/vpkTime.Mod \
+			../src/vpkLogger.Mod \
 			../Internet/src/types.Mod \
 			../Internet/src/sockets.Mod \
 			../Internet/src/netdb.Mod \
 			../Internet/src/Internet.Mod \
-			../vpkHttp.Mod
+			../src/vpkHttp.Mod
 
 json:
 	cd $(BUILDDIR) && \
 		$(VOC) -s \
-			../vpkTime.Mod \
-			../vpkLogger.Mod \
-			../diaspora2hugo/src/lists/Sys.Mod \
-			../diaspora2hugo/src/lists/List.Mod \
-			../diaspora2hugo/src/lists/strutils.Mod \
-			../vpkCharacterStack.Mod \
-			../vpkJsonParser.Mod
+			../src/vpkTime.Mod \
+			../src/vpkLogger.Mod \
+			../lists/src/Sys.Mod \
+			../lists/src/List.Mod \
+			../lists/src/strutils.Mod \
+			../src/vpkCharacterStack.Mod \
+			../src/vpkJsonParser.Mod
 
 clean:
 	if [ -d "$(BUILDDIR)" ]; then rm -rf $(BUILDDIR); fi

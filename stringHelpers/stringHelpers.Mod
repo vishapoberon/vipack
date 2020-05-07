@@ -156,7 +156,6 @@ BEGIN
   UNTIL (text[i] = 0X) OR (i = LEN(text));
 END dumpTextTill0;
 
-
 PROCEDURE textToPstrings*(VAR text: ARRAY OF CHAR): pstrings;
 VAR
   i, j, lineNum, start, number: INTEGER;
