@@ -2,13 +2,13 @@ MODULE testFsHelper;
 IMPORT Out, vpkFsHelper;
 
 VAR
-  dir : ARRAY 64 OF CHAR;
   f : vpkFsHelper.fileInfo;
+
+PROCEDURE test(f: vpkFsHelper.fileInfo);
+VAR
   b : BOOLEAN;
 BEGIN
-  dir := "/home";
-  f.name := "/home";
-
+  Out.String(f.name); Out.Ln;
   IF vpkFsHelper.Exists(f) THEN
     Out.String("exists"); Out.Ln;
     IF vpkFsHelper.dir IN f.attr THEN Out.String("directory"); Out.Ln; END;
@@ -21,5 +21,23 @@ BEGIN
   ELSE
     Out.String("does not exist"); Out.Ln;
   END;
+  Out.Ln;
+END test;
+
+BEGIN
+  f.name := "/aosenth";
+  test(f);
+  f.name := "/dev/nvme0n1";
+  test(f);
+  f.name := "/home";
+  test(f);
+  f.name := "/etc/fstab";
+  test(f);
+  f.name := "/usr/src/linux";
+  test(f);
+  f.name := "/dev/video0";
+  test(f);
+  f.name := "/tmp/fifo";
+  test(f);
 
 END testFsHelper.
