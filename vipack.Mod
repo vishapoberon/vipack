@@ -1,5 +1,5 @@
 MODULE vipack;
-IMPORT  vpkFileManager,vpkJsonParser,vpkGit, vpkConf, vpkLogger, vpkPackageFileParser, Texts, Strings, In, Platform, Oberon, Out, vpkUserDetails;
+IMPORT  vpkFileManager,vpkJsonParser,vpkGit, vpkConf, vpkLogger, vpkPackageFileParser, Texts, Strings, In, Platform, Oberon, Out;
 
 PROCEDURE  main();
 
