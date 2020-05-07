@@ -5,10 +5,10 @@ BUILDDIR = build
 VIPACK = vipack
 
 
-test: clean create_builds_dir all copy-version-file-to-build-dir run
+test: clean create_build_dir all copy-version-file-to-build-dir run
 
 
-create_builds_dir:
+create_build_dir:
 	mkdir -p $(BUILDDIR)
 
 
