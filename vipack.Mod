@@ -1,4 +1,4 @@
-MODULE Vipack;
+MODULE vipack;
 IMPORT  vpkFileManager,vpkJsonParser,vpkGit, vpkConf, vpkLogger, vpkPackageFileParser, Texts, Strings, In, Platform, Oberon, Out, vpkUserDetails;
 
 PROCEDURE  main();
@@ -121,4 +121,4 @@ BEGIN
 
 main();
 
-END Vipack.
+END vipack.

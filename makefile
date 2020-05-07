@@ -2,6 +2,7 @@
 VOC = voc
 VERSION_FILE = ./VersionFile.json
 BUILDDIR = build
+VIPACK = vipack
 
 
 test: clean create_builds_dir all copy-version-file-to-build-dir run
@@ -33,11 +34,11 @@ all: http
 		../vpkPackageResolver.Mod \
 		../vpkDependencyResolver.Mod \
 		../vpkPackageFileParser.Mod \
-		../Vipack.Mod -m
+		../vipack.Mod -m
 
 
 run:
-	$(BUILDDIR)/Vipack install
+	$(BUILDDIR)/vipack install
 
 
 http: clean
