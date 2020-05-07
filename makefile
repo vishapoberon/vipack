@@ -12,10 +12,10 @@ create_builds_dir:
 
 
 copy-version-file-to-build-dir:
-	cp ./$(VERSION_FILE) ./builds/$(VERSION_FILE)
+	cp ./$(VERSION_FILE) ./$(BUILDDIR)/$(VERSION_FILE)
 
 all: http
-	cd builds && \
+	cd $(BUILDDIR) && \
 	$(VOC) -s \
 		../vpkGit.Mod \
 		../vpkFsHelper.Mod \
@@ -37,11 +37,11 @@ all: http
 
 
 run:
-	./builds/Vipack install
+	$(BUILDDIR)/Vipack install
 
 
 http: clean
-	cd builds && \
+	cd $(BUILDDIR) && \
 		$(VOC) -s ../vpkTime.Mod \
 			../vpkLogger.Mod \
 			../vpkTypes.Mod \
@@ -51,7 +51,7 @@ http: clean
 			../vpkHttp.Mod
 
 json:
-	cd builds && \
+	cd $(BUILDDIR) && \
 		$(VOC) -s \
 			../vpkTime.Mod \
 			../vpkLogger.Mod \
