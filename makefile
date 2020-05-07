@@ -1,12 +1,14 @@
 
 VOC = voc
 VERSION_FILE = ./VersionFile.json
+BUILDDIR = build
+
 
 test: clean create_builds_dir all copy-version-file-to-build-dir run
 
 
 create_builds_dir:
-	mkdir ./builds
+	mkdir -p $(BUILDDIR)
 
 
 copy-version-file-to-build-dir:
@@ -60,7 +62,7 @@ json:
 			../vpkJsonParser.Mod
 
 clean:
-		rm -r builds & 
+	if [ -d "$(BUILDDIR)" ]; then rm -rf $(BUILDDIR); fi
 
 
 run-http-server:
