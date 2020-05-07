@@ -1,5 +1,6 @@
 MODULE vpkConf;
-IMPORT Out,Files, vpkFsHelper, Platform;
+IMPORT Out, Files, Strings, Platform,
+       vpkFsHelper;
 
 PROCEDURE confExists*(VAR confFile: ARRAY OF CHAR ):BOOLEAN;
 BEGIN
@@ -33,7 +34,7 @@ VAR f : Files.File;
 BEGIN
 f := Files.Old(pathToFile);
 Files.Set(r,f,posRider);
-Files.WriteString(r,text);
+Files.WriteBytes(r, text, Strings.Length(text));
 Files.Close(f);
 END writeInFile;
 
