@@ -27,23 +27,22 @@ BEGIN
   IF ~vpkFsHelper.Exists(dir) THEN
     Out.String(treePath); Out.String(" directory doesn't exist, creating"); Out.Ln;
     b := vpkFsHelper.mkDir(treePath);
+  END; 
+  IF ~(vpkFsHelper.dir IN dir.attr) THEN
+    Out.String(treePath); Out.String(" exists but is not a directory"); Out.Ln;
+    HALT(1);
+  END;
+  (* Syncing *)
+  vpkConf.getConfPath(confPath);
+  b := vpkFileManager.Read(confPath, jsonData);
+  jsonRecord := vpkJsonParser.Create(jsonData);
+  b := vpkJsonParser.GetTerminal(jsonRecord, vpkSettings.confTermPath, jsonURL);
+  Out.String("URL = "); Out.String(jsonURL); Out.Ln;
+  b := vpkJsonParser.GetTerminal(jsonRecord, vpkSettings.confType, jsonType);
+  IF jsonType = vpkSettings.confTypGit THEN
+    vpkGit.pull(jsonURL, treePath)
   ELSE
-    IF ~(vpkFsHelper.dir IN dir.attr) THEN
-      Out.String(treePath); Out.String(" exists but is not a directory"); Out.Ln;
-      HALT(1);
-    END;
-    (* Syncing *)
-    vpkConf.getConfPath(confPath);
-    b := vpkFileManager.Read(confPath, jsonData);
-    jsonRecord := vpkJsonParser.Create(jsonData);
-    b := vpkJsonParser.GetTerminal(jsonRecord, vpkSettings.confTermPath, jsonURL);
-    Out.String("URL = "); Out.String(jsonURL); Out.Ln;
-    b := vpkJsonParser.GetTerminal(jsonRecord, vpkSettings.confType, jsonType);
-    IF jsonType = vpkSettings.confTypGit THEN
-      vpkGit.pull(jsonURL, treePath)
-    ELSE
-      Out.String("not a git url"); Out.Ln
-    END;
+    Out.String("not a git url"); Out.Ln
   END;
 END sync;
 
