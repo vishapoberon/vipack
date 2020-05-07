@@ -1,0 +1,6 @@
+[submodule "Internet"]
+	path = Internet
+	url = https://github.com/norayr/Internet
+[submodule "lists"]
+	path = lists
+	url = https://github.com/norayr/lists

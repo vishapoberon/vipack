@@ -25,9 +25,9 @@ all: http
 		../vpkSettings.Mod \
 		../vpkTime.Mod \
 		../vpkLogger.Mod \
-		../diaspora2hugo/src/lists/Sys.Mod \
-		../diaspora2hugo/src/lists/List.Mod \
-		../diaspora2hugo/src/lists/strutils.Mod \
+		../lists/src/Sys.Mod \
+		../lists/src/List.Mod \
+		../lists/src/strutils.Mod \
 		../vpkCharacterStack.Mod \
 		../vpkJsonParser.Mod \
 		../vpkFileManager.Mod \
@@ -45,10 +45,10 @@ http: clean
 	cd $(BUILDDIR) && \
 		$(VOC) -s ../vpkTime.Mod \
 			../vpkLogger.Mod \
-			../vpkTypes.Mod \
-			../vpkSockets.Mod \
-			../vpkNetdb.Mod \
-			../vpkInternet.Mod \
+			../Internet/src/types.Mod \
+			../Internet/src/sockets.Mod \
+			../Internet/src/netdb.Mod \
+			../Internet/src/Internet.Mod \
 			../vpkHttp.Mod
 
 json:

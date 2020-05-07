@@ -1,5 +1,5 @@
 MODULE vpkHttp;
-IMPORT Strings, vpkInternet, vpkLogger, Out;
+IMPORT Strings, Internet, vpkLogger, Out;
 CONST 
   MAXARRAYNUMBER = 10000;
   MAXARRAYNUMBEREXTENDED = 100000;
@@ -87,7 +87,7 @@ END getHeader;
 
 PROCEDURE get *(host, port, path: ARRAY OF CHAR; VAR buff: ARRAY OF CHAR);
 VAR 
-    socket : vpkInternet.Socket;
+    socket : Internet.Socket;
     connectionFlag: BOOLEAN;
     valueContentLength: REAL;
     send, valueContentLengthString: ARRAY MAXARRAYNUMBER OF CHAR;
@@ -99,7 +99,7 @@ BEGIN
     Empty( buff);
     httpTail := " HTTP/1.1";
     
-    connectionFlag := vpkInternet.Connect(host, port, socket);
+    connectionFlag := Internet.Connect(host, port, socket);
     
     send := "GET ";
 
@@ -108,23 +108,23 @@ BEGIN
 
 
     AppendEOLAndClean(send, sendClean);
-    connectionFlag := vpkInternet.Write(socket, sendClean^);
+    connectionFlag := Internet.Write(socket, sendClean^);
     
     addHeader("HOST", host, sendClean);
-    connectionFlag := vpkInternet.Write(socket, sendClean^);
+    connectionFlag := Internet.Write(socket, sendClean^);
     
     addHeader("User-Agent", "oberon-http-client/1.0", sendClean);
-    connectionFlag := vpkInternet.Write(socket, sendClean^);
+    connectionFlag := Internet.Write(socket, sendClean^);
 
     addHeader("Accept", "*/*", sendClean);
-    connectionFlag := vpkInternet.Write(socket, sendClean^);
+    connectionFlag := Internet.Write(socket, sendClean^);
 
     AppendEOLAndClean("", sendClean);
-    connectionFlag := vpkInternet.Write(socket, sendClean^);
+    connectionFlag := Internet.Write(socket, sendClean^);
     REPEAT 
       Empty( tmpBuff);
 
-      connectionFlag := vpkInternet.Read(socket, tmpBuff);
+      connectionFlag := Internet.Read(socket, tmpBuff);
       Strings.Append(tmpBuff, buff);
       getHeader(buff, "Content-Length", valueContentLengthString);
       Strings.StrToReal(valueContentLengthString, valueContentLength);
@@ -134,7 +134,7 @@ BEGIN
        *)
       (* vpkLogger.Log(buff); *)
     UNTIL ~connectionFlag OR (Strings.Length(buff) > valueContentLength);
-    vpkInternet.Disconnect(socket);
+    Internet.Disconnect(socket);
 END get;
 
 BEGIN
