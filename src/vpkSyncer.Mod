@@ -5,7 +5,6 @@ IMPORT Strings, Out,
 PROCEDURE mkTreePath(VAR path: ARRAY OF CHAR);
 BEGIN
   vpkConf.getConfDir(path);
-  Strings.Append(vpkSettings.vpkConfDir, path);
   Strings.Append('/', path);
   Strings.Append(vpkSettings.vpkTreeDir, path);
 END mkTreePath;
@@ -22,7 +21,7 @@ VAR
 BEGIN
   mkTreePath(treePath);
   Out.String("*****************************************"); Out.Ln;
-  Out.String("TreePath = "); Out.String(treePath);
+  Out.String("TreePath = "); Out.String(treePath); Out.Ln;
   (* Check tree directory if doesn't exist create*)
   dir.name := treePath;
   IF ~vpkFsHelper.Exists(dir) THEN
