@@ -22,7 +22,6 @@ BEGIN
   (* Getting 1 argument and outputting it *)
   Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
   Texts.Scan(S);
-  Out.String(S.s); Out.Ln;
 
   command := S.s;
 

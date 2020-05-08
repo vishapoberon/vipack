@@ -62,11 +62,7 @@ BEGIN
     LogNormalized(sec, 2);
     Out.String(" :- ");
     FOR i := 0 TO Strings.Length(buff) - 1 DO
-        (* Out.Char(" ");
-        Out.Int(ORD(buff[i]), 4);
-        Out.Char("-"); *)
         Out.Char(buff[i]);
-        (* Out.Char(" ");Out.Char(" ");Out.Char(" "); *)
     END;
     Out.Ln;
 END Log;
