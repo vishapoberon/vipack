@@ -13,12 +13,4 @@ CONST
   port* = "80";
   installPath* = "dependencies";
 
-PROCEDURE getHome*(VAR path: ARRAY OF CHAR);
-BEGIN
-  IF ~(Platform.getEnv("HOME", path)) THEN
-    Out.String("HOME variable is not found"); Out.Ln;
-    HALT(1);
-  END;
-END getHome;
-
 END vpkSettings.

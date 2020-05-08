@@ -4,7 +4,15 @@ IMPORT Out, Files, Strings, Platform,
 
 VAR
   conf, confDir : ARRAY 256 OF CHAR; 
-  
+
+PROCEDURE getHome(VAR path: ARRAY OF CHAR);
+BEGIN
+  IF ~(Platform.getEnv("HOME", path)) THEN
+    Out.String("HOME variable is not found"); Out.Ln;
+    HALT(1);
+  END;
+END getHome;
+
 PROCEDURE mkConfContent(VAR path: ARRAY OF CHAR);
 BEGIN
   Strings.Append('{"path" : "',  path);
@@ -40,7 +48,7 @@ PROCEDURE setConfPath;
 VAR
   home: ARRAY 128 OF CHAR;
 BEGIN
-  vpkSettings.getHome(home);
+  getHome(home);
   mkConfDirPath(home, confDir);
   conf := confDir;
   Strings.Append("/", conf);
