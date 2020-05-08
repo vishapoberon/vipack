@@ -1,4 +1,4 @@
-MODULE vpkFsHelper;
+MODULE vpkFiles;
 IMPORT SYSTEM;
 
 CONST
@@ -96,4 +96,4 @@ BEGIN
 END Exists;
 
 
-END vpkFsHelper.
+END vpkFiles.

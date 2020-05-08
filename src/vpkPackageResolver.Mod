@@ -12,7 +12,7 @@ BEGIN
     vpkLogger.Log(path);
     vpkHttp.get(host, port, path, returnValue);
     vpkHttp.getClean(returnValue, returnValue);
-    isSuccessfull := vpkFileManager.CreateDirectory(packageName, vpkSettings.installPath);
+    isSuccessfull := vpkFileManager.createDir(packageName, vpkSettings.installPath);
 
     IF ~isSuccessfull THEN vpkLogger.Log("Something went wrong, while downloading files") END;
     ASSERT(isSuccessfull);
@@ -26,7 +26,7 @@ BEGIN
     Strings.Append("/", localPath);
     Strings.Append(fileName, localPath);
 
-    isSuccessfull := vpkFileManager.Write(localPath, returnValue);
+    isSuccessfull := vpkFileManager.stringToFile(localPath, returnValue);
     
 END ResolveFile;
 

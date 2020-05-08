@@ -15,23 +15,28 @@ create_build_dir:
 copy-version-file-to-build-dir:
 	cp ./$(VERSION_FILE) ./$(BUILDDIR)/$(VERSION_FILE)
 
-all: http
+all:
 	cd $(BUILDDIR) && \
 	$(VOC) -s \
-		../src/vpkGit.Mod \
-		../src/vpkFsHelper.Mod \
+		../Internet/src/types.Mod \
+		../Internet/src/sockets.Mod \
+		../Internet/src/netdb.Mod \
+		../Internet/src/Internet.Mod \
 		../src/vpkSettings.Mod \
-		../src/vpkConf.Mod \
-		../src/vpkFileManager.Mod \
+		../src/unix/vpkFiles.Mod \
+		../src/unix/vpkTime.Mod \
+		../src/vpkLogger.Mod \
+		../src/vpkHttp.Mod \
+		../src/unix/vpkEnv.Mod \
+		../src/unix/vpkGit.Mod \
 		../lists/src/Sys.Mod \
 		../lists/src/List.Mod \
 		../lists/src/strutils.Mod \
-	  ../src/vpkCharacterStack.Mod \
+		../src/vpkCharacterStack.Mod \
 		../src/vpkJsonParser.Mod \
+	  ../src/vpkConf.Mod \
+		../src/vpkFileManager.Mod \
 	  ../src/vpkSyncer.Mod \
-		../src/vpkUserDetails.Mod \
-		../src/vpkTime.Mod \
-		../src/vpkLogger.Mod \
 		../src/vpkPackageResolver.Mod \
 		../src/vpkDependencyResolver.Mod \
 		../src/vpkPackageFileParser.Mod \
@@ -40,17 +45,6 @@ all: http
 
 run:
 	$(BUILDDIR)/vipack install
-
-
-http: clean
-	cd $(BUILDDIR) && \
-		$(VOC) -s ../src/vpkTime.Mod \
-			../src/vpkLogger.Mod \
-			../Internet/src/types.Mod \
-			../Internet/src/sockets.Mod \
-			../Internet/src/netdb.Mod \
-			../Internet/src/Internet.Mod \
-			../src/vpkHttp.Mod
 
 clean:
 	if [ -d "$(BUILDDIR)" ]; then rm -rf $(BUILDDIR); fi

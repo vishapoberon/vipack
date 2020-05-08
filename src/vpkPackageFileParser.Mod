@@ -14,7 +14,7 @@ VAR
     success: BOOLEAN;
 BEGIN
     vpkLogger.Log("Starting install process");
-    success := vpkFileManager.Read(vpkSettings.packageFileName, jsonData);
+    success := vpkFileManager.fileToString(vpkSettings.packageFileName, jsonData);
     
     IF ~success THEN vpkLogger.Log("Some ERROR occured while reading VERSIONFILE") END;
     ASSERT(success);

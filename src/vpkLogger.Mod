@@ -1,5 +1,5 @@
 MODULE vpkLogger;
-IMPORT vpkTime, Out, Strings;
+IMPORT Out, Strings, vpkTime;
 
 CONST
     deca = 10;

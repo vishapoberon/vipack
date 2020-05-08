@@ -4,13 +4,27 @@ CONST
   vpkConfDir*   = ".vipack";
   vpkConfFile*  = "vipackConf.json";
   vpkTreeDir*   = "vipackTree";
-  treeURL*      = "https://github.com/vishaps/vipackTree";
-  confTypGit*       = "git";
-  confType*         = "type";
-  confTermPath*     = "path";
+
+  confTypKey*     = "type";
+  confTypGitVal*  = "git";
+  confTypHttpVal* = "http";
+  confTreeKey*    = "path";
+  defTreeVal*     = "https://github.com/vishaps/vipackTree";
+  confTreeVal*    = defTreeVal;
+  defTypVal*      = confTypGitVal;
+
   packageFileName* = "VersionFile.json";
   host* = "localhost";
   port* = "80";
   installPath* = "dependencies";
+
+  http* = 0;
+   git* = 1;
+  unkn* = -1;
+TYPE
+  tree* = RECORD
+   url* : ARRAY 128 OF CHAR;
+   typ* : SHORTINT
+   END;
 
 END vpkSettings.

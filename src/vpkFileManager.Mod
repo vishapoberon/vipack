@@ -1,12 +1,13 @@
 MODULE vpkFileManager;
-IMPORT Files, Out, vpkLogger, Strings, Platform;
+IMPORT Files, Out, Strings, Platform,
+vpkLogger, vpkFiles;
 
 PROCEDURE WriteString(VAR r : Files.Rider; str : ARRAY OF CHAR);
 BEGIN
    Files.WriteBytes(r, str, Strings.Length(str));
 END WriteString;
 
-PROCEDURE Read*(fileName: ARRAY OF CHAR; VAR returnString: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE fileToString*(fileName: ARRAY OF CHAR; VAR returnString: ARRAY OF CHAR): BOOLEAN;
 VAR
     f: Files.File;
     r: Files.Rider;
@@ -32,9 +33,9 @@ BEGIN
     UNTIL r.eof OR (i>=LEN(returnString));
 
     RETURN TRUE;
-END Read;
+END fileToString;
 
-PROCEDURE Write*(fileName, content: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE stringToFile*(fileName, content: ARRAY OF CHAR): BOOLEAN;
 VAR
     f: Files.File;
     r: Files.Rider;
@@ -60,22 +61,17 @@ BEGIN
     Files.Register(f);
 
     RETURN TRUE;
-END Write;
+END stringToFile;
 
-PROCEDURE CreateDirectory*(name, path: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE createDir*(name, path: ARRAY OF CHAR): BOOLEAN;
 VAR
-    command, path0: ARRAY 100 OF CHAR;
-    errorCode: LONGINT;
+    p : POINTER TO ARRAY OF CHAR;
 BEGIN
-    COPY(path, path0);
-    COPY("mkdir -p ", command);
-    Strings.Append("/", path0);
-    Strings.Append(name, path0);
-    Strings.Append(path0, command);
-    errorCode := Platform.System(command);
-    
-    IF errorCode = 0 THEN RETURN TRUE
-    ELSE RETURN FALSE END;
-END CreateDirectory;
+    NEW(p, Strings.Length(name) + Strings.Length(path) + 1);
+    COPY(path, p^);
+    Strings.Append("/", p^);
+    Strings.Append(name, p^);
+    RETURN vpkFiles.mkDir(p^)
+END createDir;
 
 END vpkFileManager.

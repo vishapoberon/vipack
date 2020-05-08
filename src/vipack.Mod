@@ -1,6 +1,6 @@
 MODULE vipack;
 IMPORT  Texts, Strings, Oberon, Out,
-  vpkJsonParser, vpkGit, vpkConf, vpkLogger, vpkPackageFileParser, vpkSyncer;
+  vpkConf, vpkLogger, vpkPackageFileParser, vpkSyncer;
 
 PROCEDURE help();
 BEGIN
@@ -12,13 +12,13 @@ END help;
 
 PROCEDURE  main();
 VAR  
-  user, str: ARRAY 32 OF CHAR;
-  i : INTEGER;
-  ch : CHAR;
 	S: Texts.Scanner;
-  project, command: ARRAY 500 OF CHAR;
-	jsonRecord: vpkJsonParser.JsonTypePointer;
+  project, command: ARRAY 64 OF CHAR; (* because Texts.Scanner.s is 64 bytes long*)
 BEGIN
+  (* this could go to vpkConf init section, 
+  but here it is more visible. though may be it doesn't have to be *)
+  IF ~vpkConf.configured() THEN vpkConf.mkDefConfig END; 
+
   (* Getting 1 argument and outputting it *)
   Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
   Texts.Scan(S);
@@ -29,8 +29,8 @@ BEGIN
   IF Strings.Match(command, "") OR Strings.Match(command, "help")THEN
 	  help;
   ELSE 
-    vpkConf.configure;
-	  IF command = "sync" THEN
+
+    IF command = "sync" THEN
       vpkSyncer.sync;
 	  END;
 
@@ -44,9 +44,6 @@ BEGIN
   END;
 END main;
 
-
 BEGIN
-
-main();
-
+  main
 END vipack.
