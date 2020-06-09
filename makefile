@@ -32,6 +32,8 @@ all:
 		../src/vpkStorage.Mod \
 	  ../src/vpkSyncer.Mod \
 		../src/vpkRetriever.Mod \
+		../src/vpkdepTree.Mod \
+		../src/vpkDot.Mod \
 		../src/vpkResolver.Mod \
 		../src/vpkInstaller.Mod \
 		../src/vipack.Mod -m

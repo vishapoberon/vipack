@@ -1,9 +1,13 @@
 MODULE vpkInstaller;
-IMPORT StringList, vpkResolver;
+IMPORT StringList, vpkResolver, vpkdepTree, vpkDot;
 
 PROCEDURE install*(VAR unit: ARRAY OF CHAR);
+VAR
+  tree: vpkdepTree.TdepTree;
+  lst: StringList.TStringList;
 BEGIN
-  vpkResolver.resolve(unit);
+  tree := vpkResolver.resolve(unit);
+  lst  := vpkDot.tree2dot(tree);
 
 END install;
 
