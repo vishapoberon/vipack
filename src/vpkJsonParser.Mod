@@ -1,5 +1,5 @@
 MODULE vpkJsonParser;
-IMPORT vpkLogger, vpkCharacterStack, Strings, Out, strutils, vpkSettings;
+IMPORT vpkLogger, vpkCharacterStack, Strings, Out, strutils, vpkSettings, StringList;
 CONST
     ArrayMaxNumber = 30;
     ArrayMaxNumberChar = 2000;
@@ -7,8 +7,8 @@ CONST
     symbolBracketStart = "{";
     symbolBracketEnd = "}";
     (* TODO: Reverse " and ' *)
-    coma = ",";
     quote = '"';
+    coma = ",";
 TYPE
     TString* = ARRAY ArrayMaxNumberChar OF CHAR;
     
@@ -19,8 +19,8 @@ TYPE
         GetNonTerminal* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR): JsonTypePointer;
         HasKey* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR): BOOLEAN;
         TypeOfTheKey* : PROCEDURE(self : JsonTypePointer; key : ARRAY OF CHAR; VAR returnValue : ARRAY OF CHAR);
-        GetTerminalKeys* : PROCEDURE(self : JsonTypePointer; VAR destination : ARRAY OF TString);
-        GetTerminalValues* : PROCEDURE(self : JsonTypePointer; VAR destination : ARRAY OF TString);
+        GetTerminalKeys* : PROCEDURE(self : JsonTypePointer; VAR destination : StringList.TStringList);
+        GetTerminalValues* : PROCEDURE(self : JsonTypePointer; VAR destination : StringList.TStringList);
         GetNoneTerminalKeys* : PROCEDURE(self : JsonTypePointer; VAR destination : ARRAY OF TString);
         GetTerminalNumber* : PROCEDURE(self : JsonTypePointer): LONGINT;
         GetNonTerminalNumber* : PROCEDURE(self : JsonTypePointer): LONGINT;
@@ -68,7 +68,7 @@ PROCEDURE GetTerminal *(self: JsonTypePointer; key: ARRAY OF CHAR; VAR returnVal
 VAR
     i: LONGINT;
     noneTerminal: JsonTypePointer;
-    strings: strutils.strings;
+    strings: strutils.pstrings;
     parent, children: ARRAY ArrayMaxNumber OF CHAR;
 BEGIN
 
@@ -80,7 +80,7 @@ BEGIN
     
     IF LEN(strings^) < 1 THEN RETURN FALSE END;
     
-    COPY(strings^[0], parent);
+    COPY(strings^[0]^, parent);
     
     IF Strings.Length(parent) < 1 THEN RETURN FALSE END;
     
@@ -89,7 +89,7 @@ BEGIN
     IF noneTerminal = NIL THEN RETURN FALSE END;
     
     FOR i := 1 TO LEN(strings^) - 1 DO
-        Strings.Append(strings[i], children);
+        Strings.Append(strings^[i]^, children);
         IF i < LEN(strings^) - 1 THEN
             Strings.Append(".", children);
         END;
@@ -100,23 +100,24 @@ BEGIN
     RETURN FALSE;
 END GetTerminal;
 
-PROCEDURE GetTerminalKeys(self : JsonTypePointer; VAR destination : ARRAY OF TString);
+PROCEDURE GetTerminalKeys(self : JsonTypePointer; VAR destination : StringList.TStringList);
 VAR
     i: LONGINT;
 BEGIN
-    FOR i := 0 TO self.TerminalNumber DO
-        COPY(self.TerminalKeys[i], destination[i]);
-    END;
+  IF destination = NIL THEN destination := StringList.Create() END;
+  FOR i := 0 TO self.TerminalNumber DO
+    destination.AppendString(destination, self.TerminalKeys[i]);
+  END;
 END GetTerminalKeys;
 
-PROCEDURE GetTerminalValues(self : JsonTypePointer; VAR destination : ARRAY OF TString);
+PROCEDURE GetTerminalValues(self : JsonTypePointer; VAR destination : StringList.TStringList);
 VAR
     i: LONGINT;
 BEGIN
-    FOR i := 0 TO self.TerminalNumber - 1 DO
-        Empty(destination[i]);
-        COPY(self.TerminalValues[i], destination[i]);
-    END;
+  IF destination = NIL THEN destination := StringList.Create() END;
+  FOR i := 0 TO self.TerminalNumber - 1 DO
+    destination.AppendString(destination, self.TerminalValues[i]);
+  END;
 END GetTerminalValues;
 
 PROCEDURE GetNoneTerminalKeys(self : JsonTypePointer; VAR destination : ARRAY OF TString);
@@ -215,17 +216,17 @@ BEGIN
     REPEAT
         IF (text[i] = symbolBracketStart) & (i = 0) THEN
             INC(i);
-            (* vpkLogger.Log("Starting Parse Json"); *)
+            (* Logger.Log("Starting Parse Json"); *)
         END;
 
         IF symbol = symbolBracketStart THEN
-            (* vpkLogger.Log("End Parsing Json"); *)
+            (* Logger.Log("End Parsing Json"); *)
         END;
         symbol := text[i];
 
-        (* vpkLogger.LogIntLn(i); *)
+        (* Logger.LogIntLn(i); *)
         (* IF i > 508 THEN
-            vpkLogger.Log(text);        
+            Logger.Log(text);        
         END; *)
         (* terminals *)
         IF symbol = quote THEN
@@ -284,21 +285,4 @@ BEGIN
     RETURN self;
 END Create;
 
-BEGIN
-    (* NEW(jsonRecord);
-    jsonRecord := Create("{'foo': 'bar', 'test': 'test1', 'test2': {'sub': 'dub'}}");
-
-    keyFound := jsonRecord.GetTerminal(jsonRecord, "foo", testValue);
-
-    IF keyFound THEN
-        vpkLogger.Log('found KEY');
-        vpkLogger.Log(testValue);
-    ELSE vpkLogger.Log('Value for the Key is not found') END;
-
-    keyFound := jsonRecord.GetTerminal(jsonRecord, "test2.sub", testValue);
-
-    IF keyFound THEN
-        vpkLogger.Log('found KEY');
-        vpkLogger.Log(testValue);
-    ELSE vpkLogger.Log('Value for the Key is not found') END; *)
 END vpkJsonParser.

@@ -1,6 +1,6 @@
 MODULE vpkSyncer;
 IMPORT Strings, Out,
-       vpkSettings, vpkEnv, vpkConf, vpkFiles, vpkGit;
+       vpkSettings, vpkEnv, vpkConf, vpkGit;
 
 PROCEDURE mkTreePath(VAR path: ARRAY OF CHAR);
 BEGIN

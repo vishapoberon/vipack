@@ -1,20 +1,19 @@
 MODULE vpkCharacterStack;
-IMPORT List, Out, Sys;
+IMPORT lDefs, List, Out;
 
 TYPE 
-    integer* = Sys.integer;
-    TObject* = Sys.TObject;
+    TObject* = lDefs.TObject;
 
     Node* = POINTER TO NodeDesc;
     NodeDesc* = List.NodeDesc;
 
     TChar* = POINTER TO TCharDesc;
     
-    TCharDesc = RECORD (Sys.TObjectDesc)
+    TCharDesc = RECORD (lDefs.TObjectDesc)
         char* : CHAR
     END;
 
-    string = Sys.string;
+    string = lDefs.string;
 
     CharacterStackType* = POINTER TO CharacterStackTypeDesc;
     
@@ -30,7 +29,7 @@ VAR
 PROCEDURE push(self: CharacterStackType; char: CHAR);
 VAR
     ch: TChar;
-    int: integer;
+    int: LONGINT;
 BEGIN
     NEW(ch);
     ch.char := char;

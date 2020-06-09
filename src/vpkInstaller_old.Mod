@@ -1,4 +1,4 @@
-MODULE vpkPackageFileParser;
+MODULE vpkInstaller;
 IMPORT
     vpkJsonParser,
     vpkFileManager,
@@ -31,4 +31,4 @@ END install;
 
 BEGIN
 
-END vpkPackageFileParser.
+END vpkInstaller.

@@ -61,11 +61,13 @@ BEGIN
     Out.String("-");
     LogNormalized(sec, 2);
     Out.String(" :- ");
-    FOR i := 0 TO Strings.Length(buff) - 1 DO
-        Out.Char(buff[i]);
-    END;
-    Out.Ln;
+    Out.String(buff)
 END Log;
+
+PROCEDURE Ln*;
+BEGIN
+  Out.Ln
+END Ln;
 
 PROCEDURE Char*(char: CHAR);
 VAR 

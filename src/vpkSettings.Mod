@@ -13,6 +13,9 @@ CONST
   confTreeVal*    = defTreeVal;
   defTypVal*      = confTypGitVal;
 
+  pkgTypKey*  = "Package";
+  depTypKey*  = "Dependencies";
+
   packageFileName* = "VersionFile.json";
   host* = "localhost";
   port* = "80";
@@ -26,5 +29,7 @@ TYPE
    url* : ARRAY 128 OF CHAR;
    typ* : SHORTINT
    END;
+
+
 
 END vpkSettings.

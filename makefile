@@ -4,24 +4,21 @@ VERSION_FILE = ./VersionFile.json
 BUILDDIR = build
 VIPACK = vipack
 
-
-test: clean create_build_dir all copy-version-file-to-build-dir run
-
-
-create_build_dir:
-	mkdir -p $(BUILDDIR)
-
-
-copy-version-file-to-build-dir:
-	cp ./$(VERSION_FILE) ./$(BUILDDIR)/$(VERSION_FILE)
-
 all:
+	mkdir -p $(BUILDDIR)
+	#later like this:
+	#cd Internet && make
+	#cd lists && make
 	cd $(BUILDDIR) && \
 	$(VOC) -s \
-		../Internet/src/types.Mod \
-		../Internet/src/sockets.Mod \
+		../Internet/src/netTypes.Mod \
 		../Internet/src/netdb.Mod \
+		../Internet/src/netSockets.Mod \
 		../Internet/src/Internet.Mod \
+		../lists/src/lDefs.Mod \
+		../lists/src/strutils.Mod \
+		../lists/src/List.Mod \
+		../lists/src/StringList.Mod \
 		../src/vpkSettings.Mod \
 		../src/unix/vpkFiles.Mod \
 		../src/unix/vpkTime.Mod \
@@ -29,27 +26,24 @@ all:
 		../src/vpkHttp.Mod \
 		../src/unix/vpkEnv.Mod \
 		../src/unix/vpkGit.Mod \
-		../lists/src/Sys.Mod \
-		../lists/src/List.Mod \
-		../lists/src/strutils.Mod \
 		../src/vpkCharacterStack.Mod \
 		../src/vpkJsonParser.Mod \
 	  ../src/vpkConf.Mod \
-		../src/vpkFileManager.Mod \
+		../src/vpkStorage.Mod \
 	  ../src/vpkSyncer.Mod \
-		../src/vpkPackageResolver.Mod \
-		../src/vpkDependencyResolver.Mod \
-		../src/vpkPackageFileParser.Mod \
+		../src/vpkRetriever.Mod \
+		../src/vpkResolver.Mod \
+		../src/vpkInstaller.Mod \
 		../src/vipack.Mod -m
 
-
-run:
-	$(BUILDDIR)/vipack install
+tests:
+			mkdir -p $(BUILDDIR)
+			cd $(BUILDDIR) && $(VOC) -s ../src/unix/vpkFiles.Mod ../tst/testFiles.Mod -m
+			cd $(BUILDDIR) && $(VOC) -s ../src/vpkJsonParser.Mod ../tst/testJsonParser.Mod -m
+			mkfifo /tmp/fifo
+			$(BUILDDIR)/testFiles
+			rm /tmp/fifo
+			$(BUILDDIR)/testJsonParser
 
 clean:
 	if [ -d "$(BUILDDIR)" ]; then rm -rf $(BUILDDIR); fi
-
-
-run-http-server:
-	cd httpServer && \
-	python -m SimpleHTTPServer

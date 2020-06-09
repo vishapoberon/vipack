@@ -1,5 +1,5 @@
 MODULE vpkPackageResolver;
-IMPORT vpkFileManager, vpkHttp, Strings, vpkLogger, vpkSettings, vpkJsonParser;
+IMPORT vpkStorage, vpkHttp, Strings, vpkLogger, vpkSettings, vpkJsonParser;
 
 CONST ArrayMaxNumber = 1000;
 
@@ -12,7 +12,7 @@ BEGIN
     vpkLogger.Log(path);
     vpkHttp.get(host, port, path, returnValue);
     vpkHttp.getClean(returnValue, returnValue);
-    isSuccessfull := vpkFileManager.createDir(packageName, vpkSettings.installPath);
+    isSuccessfull := vpkStorage.createDir(packageName, vpkSettings.installPath);
 
     IF ~isSuccessfull THEN vpkLogger.Log("Something went wrong, while downloading files") END;
     ASSERT(isSuccessfull);
@@ -26,7 +26,7 @@ BEGIN
     Strings.Append("/", localPath);
     Strings.Append(fileName, localPath);
 
-    isSuccessfull := vpkFileManager.stringToFile(localPath, returnValue);
+    isSuccessfull := vpkStorage.stringToFile(localPath, returnValue);
     
 END ResolveFile;
 

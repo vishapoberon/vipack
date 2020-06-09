@@ -1,6 +1,6 @@
 MODULE vipack;
 IMPORT  Texts, Strings, Oberon, Out,
-  vpkConf, vpkLogger, vpkPackageFileParser, vpkSyncer;
+  vpkConf, vpkLogger, vpkSyncer, vpkInstaller, StringList;
 
 PROCEDURE help();
 BEGIN
@@ -13,7 +13,7 @@ END help;
 PROCEDURE  main();
 VAR  
 	S: Texts.Scanner;
-  project, command: ARRAY 64 OF CHAR; (* because Texts.Scanner.s is 64 bytes long*)
+  unit, command: ARRAY 64 OF CHAR; (* because Texts.Scanner.s is 64 bytes long*)
 BEGIN
   (* this could go to vpkConf init section, 
   but here it is more visible. though may be it doesn't have to be *)
@@ -35,9 +35,9 @@ BEGIN
 
 	  IF command = "install" THEN
 		  Texts.Scan(S);
-		  project := S.s;
-		  Out.String(project);Out.Ln;
-		  vpkPackageFileParser.install();
+		  unit := S.s;
+		  Out.String("argument is "); Out.String(unit);Out.Ln;
+		  vpkInstaller.install(unit);
 	  END;
 
   END;
