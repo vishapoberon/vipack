@@ -36,7 +36,6 @@ BEGIN
 	  IF command = "install" THEN
 		  Texts.Scan(S);
 		  unit := S.s;
-		  Out.String("argument is "); Out.String(unit);Out.Ln;
 		  vpkInstaller.install(unit);
 	  END;
 
