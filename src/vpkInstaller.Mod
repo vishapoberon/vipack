@@ -1,5 +1,5 @@
 MODULE vpkInstaller;
-IMPORT StringList, vpkResolver, vpkdepTree, vpkDot;
+IMPORT StringList, vpkResolver, vpkdepTree, vpkDot, vpkSettings;
 
 PROCEDURE install*(VAR unit: ARRAY OF CHAR);
 VAR
@@ -8,7 +8,7 @@ VAR
 BEGIN
   tree := vpkResolver.resolve(unit);
   lst  := vpkDot.tree2dot(tree);
-
+  lst.Dump(lst, vpkSettings.graphName);
 END install;
 
 

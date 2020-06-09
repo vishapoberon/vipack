@@ -5,6 +5,8 @@ CONST
   vpkConfFile*  = "vipackConf.json";
   vpkTreeDir*   = "vipackTree";
 
+  graphName*      = "deps.dot";
+
   confTypKey*     = "type";
   confTypGitVal*  = "git";
   confTypHttpVal* = "http";
