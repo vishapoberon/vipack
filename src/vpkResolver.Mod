@@ -1,5 +1,5 @@
 MODULE vpkResolver;
-IMPORT Out, Strings, StringList, vpkdepTree, vpkRetriever;
+IMPORT Out, StringList, vpkdepTree, vpkRetriever;
 
 TYPE
    Tdep = vpkdepTree.Tdep;
@@ -16,7 +16,6 @@ BEGIN
   res := FALSE;
   i := 0;
   REPEAT
-    Out.Int(i, 0); Out.Ln;
     d2 := depTree.Get(depTree, i);
     IF d2 # NIL THEN
       IF d = d2 THEN res := TRUE END;
@@ -40,21 +39,20 @@ BEGIN
     depStrs := vpkRetriever.getDeps(d.name^); 
     IF depStrs # NIL THEN
       NEW (deps, depStrs.Count);
-      d.deps := deps;
       i := 0;
       REPEAT
         e := depStrs.Get(depStrs, i);
         IF e # NIL THEN
           t := met.GetByName(met, e.obj(StringList.TString).str^);
           IF t = NIL THEN
-            NEW(t); NEW(t.name, Strings.Length(e.obj(StringList.TString).str^)+1);
-            COPY (e.obj(StringList.TString).str^, t.name^);
+            t := vpkdepTree.CreateDep(e.obj(StringList.TString).str^);
           END;
           deps[i] := t;
           IF ~treeContains(t, depTree) THEN
             IF treeContains(t, met) THEN
-              Out.String("curcular dependency!"); Out.Ln;
+              Out.Ln; Out.String("curcular dependency: "); 
               Out.String(d.name^); Out.String(" requires "); Out.String(t.name^); Out.Ln;
+              Out.String("unable to continue."); Out.Ln;
               HALT(60)
             ELSE
               mkDepTree(t, depTree, met)
@@ -63,6 +61,7 @@ BEGIN
         END;
         INC(i) 
       UNTIL i = depStrs.Count - 1;
+      d.AssignDeps(d, deps);
     END;
   depTree.Add(depTree, d);
 END mkDepTree;
@@ -75,8 +74,7 @@ VAR
 BEGIN
   depTree := vpkdepTree.Create();
   met := vpkdepTree.Create(); (* for deps that we already met *)
-  NEW(dep); NEW(dep.name, Strings.Length(first) + 1);
-  COPY(first, dep.name^);
+  dep := vpkdepTree.CreateDep(first);
   mkDepTree(dep, depTree, met);
   RETURN depTree
 END resolve;

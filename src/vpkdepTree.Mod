@@ -1,5 +1,5 @@
 MODULE vpkdepTree;
-IMPORT Out, strutils, StringList;
+IMPORT Out, Strings, strutils, StringList;
 TYPE
  
   pstring = strutils.pstring;
@@ -25,9 +25,27 @@ TYPE
 
   TdepDesc* = RECORD
          prev-, next-: Tdep;
-         name* : pstring;
-         deps* : Tdeps;
+         name- : pstring;
+         deps- : Tdeps;
+       Create* : PROCEDURE (VAR name: ARRAY OF CHAR): Tdep;
+   AssignDeps* : PROCEDURE (VAR d: Tdep; VAR deps: Tdeps);
        END;
+
+PROCEDURE AssignDeps*(VAR d: Tdep; VAR deps: Tdeps);
+BEGIN
+  d.deps := deps
+END AssignDeps;
+
+PROCEDURE CreateDep*(VAR name: ARRAY OF CHAR): Tdep;
+VAR
+  dep: Tdep;
+BEGIN
+  NEW(dep);
+  NEW(dep.name, Strings.Length(name) + 1);
+  COPY(name, dep.name^);
+  dep.AssignDeps := AssignDeps;
+  RETURN dep
+END CreateDep;
 
 PROCEDURE list(VAR s : StringList.TStringList);
 VAR e : StringList.Node;
