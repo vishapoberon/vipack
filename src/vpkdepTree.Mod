@@ -14,11 +14,11 @@ TYPE
      First- : Tdep;
       Last- : Tdep;
     Create* : PROCEDURE () : TdepTree;
-      Free* : PROCEDURE (l : TdepTree);
-     Clear* : PROCEDURE (l : TdepTree);
-       Add* : PROCEDURE (l : TdepTree; s : Tdep);
-       Get* : PROCEDURE (l : TdepTree; i : LONGINT): Tdep;
-     Empty* : PROCEDURE (l : TdepTree) : BOOLEAN;
+      Free* : PROCEDURE (VAR l : TdepTree);
+     Clear* : PROCEDURE (VAR l : TdepTree);
+       Add* : PROCEDURE (VAR l : TdepTree; VAR s : Tdep);
+       Get* : PROCEDURE (VAR l : TdepTree; i : LONGINT): Tdep;
+     Empty* : PROCEDURE (VAR l : TdepTree) : BOOLEAN;
      Count* : LONGINT;
   END;
 
@@ -42,22 +42,23 @@ BEGIN
    UNTIL i = s.Count - 1;
 END list;
 
-PROCEDURE Free*(l : TdepTree);
+PROCEDURE Free*(VAR l : TdepTree);
  BEGIN
+   l := NIL
  END Free;
 
-PROCEDURE Clear*(l : TdepTree);
+PROCEDURE Clear*(VAR l : TdepTree);
  BEGIN
     l.First   := NIL;
     l.Count   := 0;
  END Clear;
 
-PROCEDURE Empty* (l : TdepTree) : BOOLEAN;
+PROCEDURE Empty* (VAR l : TdepTree) : BOOLEAN;
  BEGIN
     RETURN l.First = NIL
  END Empty;
 
-PROCEDURE Add* (l : TdepTree; d: Tdep);
+PROCEDURE Add* (VAR l : TdepTree; VAR d: Tdep);
  BEGIN
     IF l.First = NIL THEN
        l.First := d;
@@ -68,12 +69,12 @@ PROCEDURE Add* (l : TdepTree; d: Tdep);
     INC(l.Count);
  END Add;
 
-PROCEDURE Get*(l: TdepTree; inx: LONGINT): Tdep;
+PROCEDURE Get*(VAR l: TdepTree; inx: LONGINT): Tdep;
 VAR
   i: LONGINT;
   d: Tdep;
 BEGIN
-  NEW(d); d := NIL;
+  d := NIL;
   i := 0;
   IF (inx < l.Count) & (inx >= 0) THEN
     i := 0;

@@ -19,7 +19,7 @@ BEGIN
   Out.String("-----------------"); Out.Ln;
   Out.String("(use 'dot -Tpng deps.dot > deps.png' to get the graph image)"); Out.Ln; Out.Ln;
   Out.String("dependencies will be installed in the following order:"); Out.Ln;
-  i := 1;
+  i := 0;
   REPEAT
     dep := vpkdepTree.Get(tree, i);
     Out.String(dep.name^); Out.Ln;
