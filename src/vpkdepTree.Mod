@@ -18,6 +18,7 @@ TYPE
      Clear* : PROCEDURE (VAR l : TdepTree);
        Add* : PROCEDURE (VAR l : TdepTree; VAR s : Tdep);
        Get* : PROCEDURE (VAR l : TdepTree; i : LONGINT): Tdep;
+ GetByName* : PROCEDURE (VAR l : TdepTree; VAR name : ARRAY OF CHAR): Tdep;
      Empty* : PROCEDURE (VAR l : TdepTree) : BOOLEAN;
      Count* : LONGINT;
   END;
@@ -87,6 +88,28 @@ BEGIN
   RETURN d;
 END Get;
 
+PROCEDURE GetByName*(VAR l: TdepTree; VAR name: ARRAY OF CHAR): Tdep;
+VAR
+  i: LONGINT;
+  d: Tdep;
+  fnd: BOOLEAN;
+BEGIN
+  fnd := FALSE;
+  i := 0;
+  d := l.First;
+  REPEAT
+    IF d # NIL THEN
+      IF d.name^ = name THEN
+        fnd := TRUE
+      ELSE
+        d := d.next
+      END
+    END;
+    INC(i);
+  UNTIL fnd OR (i >= l.Count);
+  RETURN d; 
+END GetByName;
+
 PROCEDURE Create* () : TdepTree;
     VAR l : TdepTree;
  BEGIN
@@ -96,6 +119,7 @@ PROCEDURE Create* () : TdepTree;
     l.Count   := 0;
     l.Add     := Add;
     l.Get     := Get;
+  l.GetByName := GetByName;
     l.Clear   := Clear;
     l.Free    := Free;
     l.Empty   := Empty;
