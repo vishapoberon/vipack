@@ -31,7 +31,7 @@ TYPE
          deps- : Tdeps;
        Create* : PROCEDURE (VAR name: ARRAY OF CHAR): Tdep;
    AssignDeps* : PROCEDURE (VAR d: Tdep; VAR deps: Tdeps);
- RetrieveDeps* : retriever;
+ RetrieveDeps- : retriever;
   InstallRetriever*: PROCEDURE(VAR d: Tdep; r: retriever); 
        END;
 

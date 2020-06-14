@@ -1,5 +1,5 @@
 MODULE vpkInstaller;
-IMPORT Out, StringList, vpkResolver, vpkdepTree, vpkDot, vpkSettings;
+IMPORT Out, StringList, vpkResolver, vpkdepTree, vpkDot, vpkSettings, vpkJsonDepRetriever;
 
 PROCEDURE install*(VAR unit: ARRAY OF CHAR);
 VAR
@@ -9,7 +9,7 @@ VAR
   i : LONGINT;
 BEGIN
   Out.String("resolving dependencies...");
-  tree := vpkResolver.resolve(unit);
+  tree := vpkResolver.resolve(unit, vpkJsonDepRetriever.getDeps);
   Out.String(" done!"); Out.Ln;
   lst  := vpkDot.tree2dot(tree);
   Out.String("dependency graph:"); Out.Ln; 

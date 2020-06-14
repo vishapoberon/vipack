@@ -32,9 +32,9 @@ all:
 		../src/vpkStorage.Mod \
 	  ../src/vpkSyncer.Mod \
 		../src/vpkdepTree.Mod \
-		../src/vpkJsonDepRetriever.Mod \
 		../src/vpkDot.Mod \
 		../src/vpkResolver.Mod \
+		../src/vpkJsonDepRetriever.Mod \
 		../src/vpkInstaller.Mod \
 		../src/vipack.Mod -m
 

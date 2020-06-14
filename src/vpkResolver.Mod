@@ -1,11 +1,13 @@
 MODULE vpkResolver;
-IMPORT Out, StringList, vpkdepTree, vpkJsonDepRetriever;
+IMPORT Out, StringList, vpkdepTree;
 
 TYPE
    Tdep = vpkdepTree.Tdep;
   Tdeps = vpkdepTree.Tdeps;
 
   TdepTree = vpkdepTree.TdepTree;
+
+VAR rtvr: vpkdepTree.retriever;
 
 PROCEDURE treeContains(VAR d: Tdep; VAR depTree: TdepTree): BOOLEAN;
 VAR
@@ -46,7 +48,7 @@ BEGIN
           t := met.GetByName(met, e.obj(StringList.TString).str^);
           IF t = NIL THEN
             t := vpkdepTree.CreateDep(e.obj(StringList.TString).str^);
-            t.InstallRetriever(t, vpkJsonDepRetriever.getDeps);
+            t.InstallRetriever(t, rtvr);
           END;
           deps[i] := t;
           IF ~treeContains(t, depTree) THEN
@@ -67,16 +69,17 @@ BEGIN
   depTree.Add(depTree, d);
 END mkDepTree;
 
-PROCEDURE resolve*(first: ARRAY OF CHAR): TdepTree;
+PROCEDURE resolve*(first: ARRAY OF CHAR; r: vpkdepTree.retriever): TdepTree;
 VAR
   depTree: TdepTree;
   met: TdepTree;
   dep:  Tdep;
 BEGIN
+  rtvr := r;
   depTree := vpkdepTree.Create();
   met := vpkdepTree.Create(); (* for deps that we already met *)
   dep := vpkdepTree.CreateDep(first);
-  dep.InstallRetriever(dep, vpkJsonDepRetriever.getDeps);
+  dep.InstallRetriever(dep, rtvr);
   mkDepTree(dep, depTree, met);
   RETURN depTree
 END resolve;
