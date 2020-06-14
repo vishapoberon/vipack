@@ -1,8 +1,8 @@
-MODULE vpkRetriever;
-IMPORT StringList, strutils, vpkJsonParser, vpkStorage, vpkSettings;
+MODULE vpkJsonDepRetriever;
+IMPORT StringList, strutils, vpkJsonParser, vpkStorage, vpkSettings, vpkdepTree;
 
 
-PROCEDURE getDeps*(VAR name: ARRAY OF CHAR): StringList.TStringList;
+PROCEDURE getDeps*(VAR d: vpkdepTree.Tdep): StringList.TStringList;
 VAR
   jsonRecord, dependencies: vpkJsonParser.JsonTypePointer;
   p: strutils.pstring;
@@ -12,7 +12,7 @@ VAR
 BEGIN
   result := NIL;
   p := NIL;
-  vpkStorage.json2pstring(name, p);
+  vpkStorage.json2pstring(d.name^, p);
   IF p # NIL THEN
     jsonRecord := vpkJsonParser.Create(p^);
     b := jsonRecord.GetTerminal(jsonRecord, vpkSettings.pkgTypKey, pkgName);
@@ -29,4 +29,4 @@ BEGIN
 END getDeps;
 
 
-END vpkRetriever.
+END vpkJsonDepRetriever.

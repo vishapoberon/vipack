@@ -23,18 +23,27 @@ TYPE
      Count* : LONGINT;
   END;
 
+  retriever- = PROCEDURE (VAR d: Tdep): StringList.TStringList;
+
   TdepDesc* = RECORD
          prev-, next-: Tdep;
          name- : pstring;
          deps- : Tdeps;
        Create* : PROCEDURE (VAR name: ARRAY OF CHAR): Tdep;
    AssignDeps* : PROCEDURE (VAR d: Tdep; VAR deps: Tdeps);
+ RetrieveDeps* : retriever;
+  InstallRetriever*: PROCEDURE(VAR d: Tdep; r: retriever); 
        END;
 
 PROCEDURE AssignDeps*(VAR d: Tdep; VAR deps: Tdeps);
 BEGIN
   d.deps := deps
 END AssignDeps;
+
+PROCEDURE InstallRetriever*(VAR d: Tdep; r: retriever);
+BEGIN
+  d.RetrieveDeps := r
+END InstallRetriever;
 
 PROCEDURE CreateDep*(VAR name: ARRAY OF CHAR): Tdep;
 VAR
@@ -44,6 +53,8 @@ BEGIN
   NEW(dep.name, Strings.Length(name) + 1);
   COPY(name, dep.name^);
   dep.AssignDeps := AssignDeps;
+  dep.InstallRetriever := InstallRetriever;
+  dep.RetrieveDeps := NIL;
   RETURN dep
 END CreateDep;
 

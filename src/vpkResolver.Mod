@@ -1,5 +1,5 @@
 MODULE vpkResolver;
-IMPORT Out, StringList, vpkdepTree, vpkRetriever;
+IMPORT Out, StringList, vpkdepTree, vpkJsonDepRetriever;
 
 TYPE
    Tdep = vpkdepTree.Tdep;
@@ -35,8 +35,8 @@ VAR
   i: INTEGER;
 BEGIN
   met.Add(met, d);
-
-    depStrs := vpkRetriever.getDeps(d.name^); 
+    IF d.RetrieveDeps = NIL THEN Out.String("dep retriever method not installed"); Out.Ln; HALT(1) END;
+    depStrs := d.RetrieveDeps(d);
     IF depStrs # NIL THEN
       NEW (deps, depStrs.Count);
       i := 0;
@@ -46,6 +46,7 @@ BEGIN
           t := met.GetByName(met, e.obj(StringList.TString).str^);
           IF t = NIL THEN
             t := vpkdepTree.CreateDep(e.obj(StringList.TString).str^);
+            t.InstallRetriever(t, vpkJsonDepRetriever.getDeps);
           END;
           deps[i] := t;
           IF ~treeContains(t, depTree) THEN
@@ -75,6 +76,7 @@ BEGIN
   depTree := vpkdepTree.Create();
   met := vpkdepTree.Create(); (* for deps that we already met *)
   dep := vpkdepTree.CreateDep(first);
+  dep.InstallRetriever(dep, vpkJsonDepRetriever.getDeps);
   mkDepTree(dep, depTree, met);
   RETURN depTree
 END resolve;

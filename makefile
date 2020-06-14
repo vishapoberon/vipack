@@ -31,8 +31,8 @@ all:
 	  ../src/vpkConf.Mod \
 		../src/vpkStorage.Mod \
 	  ../src/vpkSyncer.Mod \
-		../src/vpkRetriever.Mod \
 		../src/vpkdepTree.Mod \
+		../src/vpkJsonDepRetriever.Mod \
 		../src/vpkDot.Mod \
 		../src/vpkResolver.Mod \
 		../src/vpkInstaller.Mod \
