@@ -2,6 +2,7 @@ MODULE vpkResolver;
 IMPORT Out, StringList, vpkdepTree;
 
 TYPE
+   pstr = StringList.pstring;
    Tdep = vpkdepTree.Tdep;
   Tdeps = vpkdepTree.Tdeps;
 
@@ -33,7 +34,7 @@ VAR
   depStrs: StringList.TStringList;
   t: Tdep;
   deps: Tdeps;
-  e: StringList.Node;
+  p: pstr;
   i: INTEGER;
 BEGIN
   met.Add(met, d);
@@ -43,11 +44,11 @@ BEGIN
       NEW (deps, depStrs.Count);
       i := 0;
       REPEAT
-        e := depStrs.Get(depStrs, i);
-        IF e # NIL THEN
-          t := met.GetByName(met, e.obj(StringList.TString).str^);
+        p := depStrs.GetString(depStrs, i);
+        IF p # NIL THEN
+          t := met.GetByName(met, p^);
           IF t = NIL THEN
-            t := vpkdepTree.CreateDep(e.obj(StringList.TString).str^);
+            t := vpkdepTree.CreateDep(p^);
             t.InstallRetriever(t, rtvr);
           END;
           deps[i] := t;
