@@ -5,6 +5,8 @@ BUILDDIR = build
 VIPACK = vipack
 
 all:
+	git submodule init
+	git submodule update
 	mkdir -p $(BUILDDIR)
 	#later like this:
 	#cd Internet && make
