@@ -6,7 +6,7 @@ PROCEDURE help();
 BEGIN
 	vpkLogger.Log("HelpText");
 	Out.String("Vipack sync - syncing git tree and local tree"); Out.Ln;
-	Out.String("vipackConf.json path -> $HOME/.vipack/vipackConf.son"); Out.Ln;
+	Out.String("vipackConf.json path -> $HOME/.vipack/vipackConf.json"); Out.Ln;
 	Out.String("vipackTree path -> $HOME/.vipack/vipackTree")
 END help;
 
