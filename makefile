@@ -1,26 +1,25 @@
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+mkfile_dir_path := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+build_dir_path := $(mkfile_dir_path)/build
+current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+BLD := $(mkfile_dir_path)/build
 
 VOC = voc
 VERSION_FILE = ./VersionFile.json
-BUILDDIR = build
+BLD = build
 VIPACK = vipack
 
 all:
-	git submodule init
-	git submodule update
-	mkdir -p $(BUILDDIR)
-	#later like this:
-	#cd Internet && make
-	#cd lists && make
-	cd $(BUILDDIR) && \
+	#git submodule init
+	#git submodule update
+	mkdir -p $(build_dir_path)
+	cd $(build_dir_path)
+	make -f $(mkfile_dir_path)/dps/lists/makefile BUILD=$(build_dir_path)
+	make -f $(mkfile_dir_path)/dps/Internet/makefile BUILD=$(build_dir_path)
+	make -f $(mkfile_dir_path)/dps/time/makefile BUILD=$(build_dir_path)
+	make -f $(mkfile_dir_path)/dps/opts/makefile BUILD=$(build_dir_path)
+	cd $(build_dir_path) && \
 	$(VOC) -s \
-		../Internet/src/netTypes.Mod \
-		../Internet/src/netdb.Mod \
-		../Internet/src/netSockets.Mod \
-		../Internet/src/Internet.Mod \
-		../lists/src/lDefs.Mod \
-		../lists/src/strutils.Mod \
-		../lists/src/List.Mod \
-		../lists/src/StringList.Mod \
 		../src/vpkSettings.Mod \
 		../src/unix/vpkFiles.Mod \
 		../src/unix/vpkTime.Mod \
@@ -41,13 +40,13 @@ all:
 		../src/vipack.Mod -m
 
 tests:
-			mkdir -p $(BUILDDIR)
-			cd $(BUILDDIR) && $(VOC) -s ../src/unix/vpkFiles.Mod ../tst/testFiles.Mod -m
-			cd $(BUILDDIR) && $(VOC) -s ../src/vpkJsonParser.Mod ../tst/testJsonParser.Mod -m
+			mkdir -p $(BLD)
+			cd $(BLD) && $(VOC) -s ../src/unix/vpkFiles.Mod ../tst/testFiles.Mod -m
+			cd $(BLD) && $(VOC) -s ../src/vpkJsonParser.Mod ../tst/testJsonParser.Mod -m
 			mkfifo /tmp/fifo
-			$(BUILDDIR)/testFiles
+			$(BLD)/testFiles
 			rm /tmp/fifo
-			$(BUILDDIR)/testJsonParser
+			$(BLD)/testJsonParser
 
 clean:
-	if [ -d "$(BUILDDIR)" ]; then rm -rf $(BUILDDIR); fi
+	if [ -d "$(BLD)" ]; then rm -rf $(BLD); fi

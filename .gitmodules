@@ -1,9 +1,6 @@
-[submodule "Internet"]
-	path = Internet
-	url = https://github.com/norayr/Internet
-[submodule "lists"]
-	path = lists
-	url = https://github.com/norayr/lists
 [submodule "dps/opts"]
 	path = dps/opts
 	url = git@github.com:norayr/opts
+[submodule "dps/time"]
+	path = dps/time
+	url = git@github.com:norayr/time
