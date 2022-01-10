@@ -4,3 +4,12 @@
 [submodule "dps/time"]
 	path = dps/time
 	url = git@github.com:norayr/time
+[submodule "lists"]
+	path = lists
+	url = git@github.com:norayr/lists
+[submodule "dps/lists"]
+	path = dps/lists
+	url = git@github.com:norayr/lists
+[submodule "dps/Internet"]
+	path = dps/Internet
+	url = git@github.com:norayr/Internet
