@@ -37,10 +37,11 @@ VAR
   p: pstr;
   i: INTEGER;
 BEGIN
-  met.Add(met, d);
+  (*met.Add(met, d);*)
     IF d.RetrieveDeps = NIL THEN Out.String("dep retriever method not installed"); Out.Ln; HALT(1) END;
     depStrs := d.RetrieveDeps(d);
     IF depStrs # NIL THEN
+      met.Add(met, d);
       NEW (deps, depStrs.Count);
       i := 0;
       REPEAT
@@ -66,6 +67,10 @@ BEGIN
         INC(i) 
       UNTIL i = depStrs.Count - 1;
       d.AssignDeps(d, deps);
+    ELSE
+      Out.Ln;
+      Out.String("package "); Out.String(d.name^); Out.String(" not found in the tree"); Out.Ln;
+      HALT(61)
     END;
   depTree.Add(depTree, d);
 END mkDepTree;
