@@ -1,7 +1,180 @@
 MODULE vipack;
 IMPORT  Texts, Strings, Oberon, Out,
-  vpkConf, vpkLogger, vpkSyncer, vpkInstaller, StringList;
+  vpkConf, vpkLogger, vpkSyncer, vpkInstaller, opts, StringList;
+(*
+PROCEDURE processArgs(VAR package, prefix, tree: ARRAY OF CHAR; deps, sync: BOOLEAN);
+VAR
+    options: opts.Options;
+   foptions: opts.Options;
+  opt, fopt: opts.Option;
+BEGIN
 
+  options := opts.createOptions();
+  foptions := opts.createOptions();
+
+  opt := opts.createOpt();
+  opts.setOptName(opt, "-p");
+  opts.setOptLName(opt, "--package");
+  opts.setOptHasVal(opt, TRUE);
+  opts.setOptDesc(opt, "package name to download");
+  opts.setOptRequired(opt, FALSE);
+  options.add(options, opt);
+
+  opt := opts.createOpt();
+  opts.setOptName(opt, "-d");
+  opts.setOptLName(opt, "--showdeps");
+  opts.setOptHasVal(opt, FALSE);
+  opts.setOptDesc(opt, "only resolve and show dependencies, do not fetch");
+  opts.setOptRequired(opt, FALSE);
+  options.add(options, opt);
+
+  opt := opts.createOpt();
+  opts.setOptName(opt, "-s");
+  opts.setOptLName(opt, "--sync");
+  opts.setOptHasVal(opt, FALSE);
+  opts.setOptDesc(opt, "sync the package tree");
+  opts.setOptRequired(opt, FALSE);
+  options.add(options, opt);
+
+  opt := opts.createOpt();
+  opts.setOptName(opt, "-P");
+  opts.setOptLName(opt, "--prefix");
+  opts.setOptHasVal(opt, TRUE);
+  opts.setOptDesc(opt, "where to download and build packages");
+  opts.setOptRequired(opt, FALSE);
+  options.add(options, opt);
+
+  opt := opts.createOpt();
+  opts.setOptName(opt, "-t");
+  opts.setOptLName(opt, "--tree");
+  opts.setOptHasVal(opt, TRUE);
+  opts.setOptDesc(opt, "override the default package description tree");
+  opts.setOptRequired(opt, FALSE);
+  options.add(options, opt);
+
+  foptions := opts.populateOptions(options);
+  IF opts.reqsSatisfied(options, foptions) THEN
+    Out.String("required options provided"); Out.Ln;
+  ELSE
+    Out.String("required options not provided"); Out.Ln;
+    opts.showHelp(options);
+    HALT(3);
+  END;
+  Out.Ln;
+  
+  COPY("", package); COPY("", prefix); COPY("", tree);
+  deps := FALSE; sync := FALSE;
+
+  fopt := opts.createOpt();
+  fopt := opts.findOpt("-d", foptions);
+  IF fopt # NIL THEN deps := TRUE END;
+
+   fopt := opts.createOpt();
+   fopt := opts.findOpt("-s", foptions);
+   IF fopt # NIL THEN sync := TRUE END;
+
+ 
+  opts.valOfOpt("-p", foptions, package);
+  opts.valOfOpt("-P", foptions, prefix);
+  opts.valOfOpt("-t", foptions, tree);
+
+END processArgs;
+*)
+PROCEDURE main;
+VAR
+  deps, sync: BOOLEAN;
+  package, prefix, tree: ARRAY 64 OF CHAR;
+    
+  options: opts.Options;
+  foptions: opts.Options;
+  opt, fopt: opts.Option;
+BEGIN
+   options := opts.createOptions();
+  foptions := opts.createOptions();
+
+  opt := opts.createOpt();
+  opts.setOptName(opt, "-p");
+  opts.setOptLName(opt, "--package");
+  opts.setOptHasVal(opt, TRUE);
+  opts.setOptDesc(opt, "package name to download");
+  opts.setOptRequired(opt, FALSE);
+  options.add(options, opt);
+
+  opt := opts.createOpt();
+  opts.setOptName(opt, "-d");
+  opts.setOptLName(opt, "--showdeps");
+  opts.setOptHasVal(opt, FALSE);
+  opts.setOptDesc(opt, "only resolve and show dependencies, do not fetch");
+  opts.setOptRequired(opt, FALSE);
+  options.add(options, opt);
+
+  opt := opts.createOpt();
+  opts.setOptName(opt, "-s");
+  opts.setOptLName(opt, "--sync");
+  opts.setOptHasVal(opt, FALSE);
+  opts.setOptDesc(opt, "sync the package tree");
+  opts.setOptRequired(opt, FALSE);
+  options.add(options, opt);
+
+  opt := opts.createOpt();
+  opts.setOptName(opt, "-P");
+  opts.setOptLName(opt, "--prefix");
+  opts.setOptHasVal(opt, TRUE);
+  opts.setOptDesc(opt, "where to download and build packages");
+  opts.setOptRequired(opt, FALSE);
+  options.add(options, opt);
+
+  opt := opts.createOpt();
+  opts.setOptName(opt, "-t");
+  opts.setOptLName(opt, "--tree");
+  opts.setOptHasVal(opt, TRUE);
+  opts.setOptDesc(opt, "override the default package description tree");
+  opts.setOptRequired(opt, FALSE);
+  options.add(options, opt);
+
+  foptions := opts.populateOptions(options);
+  IF opts.reqsSatisfied(options, foptions) THEN
+    Out.String("required options provided"); Out.Ln;
+  ELSE
+    Out.String("required options not provided"); Out.Ln;
+    opts.showHelp(options);
+    HALT(3);
+  END;
+  Out.Ln;
+  
+  COPY("", package); COPY("", prefix); COPY("", tree);
+  deps := FALSE; sync := FALSE;
+
+  fopt := opts.createOpt();
+  fopt := opts.findOpt("-d", foptions);
+  IF fopt # NIL THEN deps := TRUE END;
+
+   fopt := opts.createOpt();
+   fopt := opts.findOpt("-s", foptions);
+   IF fopt # NIL THEN sync := TRUE END;
+
+ 
+  opts.valOfOpt("-p", foptions, package);
+  opts.valOfOpt("-P", foptions, prefix);
+  opts.valOfOpt("-t", foptions, tree);
+
+  IF sync THEN
+    vpkSyncer.sync
+  ELSIF deps THEN
+    IF package # "" THEN
+      vpkInstaller.resolve(package);
+    ELSE
+      Out.String("you need to mention package name to resolve dependencies for it"); Out.Ln; Out.Ln;
+      opts.showHelp(options);
+    END
+  ELSE
+     
+    vpkInstaller.build(package, prefix, tree)
+  END;
+
+END main;
+
+(*
 PROCEDURE help();
 BEGIN
 	vpkLogger.Log("HelpText");
@@ -41,6 +214,7 @@ BEGIN
 
   END;
 END main;
+*)
 
 BEGIN
   main

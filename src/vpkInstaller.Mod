@@ -1,7 +1,7 @@
 MODULE vpkInstaller;
 IMPORT Out, StringList, vpkResolver, vpkdepTree, vpkDot, vpkSettings, vpkJsonDepRetriever;
 
-PROCEDURE install*(VAR unit: ARRAY OF CHAR);
+PROCEDURE resolve*(VAR unit: ARRAY OF CHAR);
 VAR
   tree: vpkdepTree.TdepTree;
   lst: StringList.TStringList;
@@ -26,7 +26,12 @@ BEGIN
     INC(i)
   UNTIL i = tree.Count;
 
-END install;
+END resolve;
 
 
+PROCEDURE build*(VAR package, prefix, tree: ARRAY OF CHAR);
+
+BEGIN
+
+END build;
 END vpkInstaller.
