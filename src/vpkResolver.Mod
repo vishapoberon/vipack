@@ -68,9 +68,11 @@ BEGIN
       UNTIL i = depStrs.Count - 1;
       d.AssignDeps(d, deps);
     ELSE
-      Out.Ln;
-      Out.String("package "); Out.String(d.name^); Out.String(" not found in the tree"); Out.Ln;
-      HALT(61)
+      IF met.Empty(met) THEN
+        Out.Ln;
+        Out.String("package "); Out.String(d.name^); Out.String(" not found in the tree"); Out.Ln;
+        HALT(61)
+      END;
     END;
   depTree.Add(depTree, d);
 END mkDepTree;
