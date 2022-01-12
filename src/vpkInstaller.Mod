@@ -8,9 +8,9 @@ VAR
   dep:  vpkdepTree.Tdep;
   i : LONGINT;
 BEGIN
-  Out.String("resolving dependencies...");
+  Out.Ln; Out.String("resolving dependencies..."); Out.Ln;
   tree := vpkResolver.resolve(unit, vpkJsonDepRetriever.getDeps);
-  Out.String(" done!"); Out.Ln;
+  Out.String(" done! (:"); Out.Ln; Out.Ln;
   lst  := vpkDot.tree2dot(tree);
   Out.String("dependency graph:"); Out.Ln; 
   Out.String("-----------------"); Out.Ln;

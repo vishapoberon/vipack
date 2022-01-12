@@ -36,12 +36,19 @@ VAR
   deps: Tdeps;
   p: pstr;
   i: INTEGER;
+  rtrvRes: LONGINT;
 BEGIN
-  (*met.Add(met, d);*)
+  met.Add(met, d);
     IF d.RetrieveDeps = NIL THEN Out.String("dep retriever method not installed"); Out.Ln; HALT(1) END;
-    depStrs := d.RetrieveDeps(d);
+    rtrvRes := d.RetrieveDeps(d, depStrs);
+    IF rtrvRes = -1 THEN
+      Out.Ln; Out.String("package named "); Out.String(d.name^); Out.String(" not found in the tree"); Out.Ln; HALT(61);
+    END;
+    IF rtrvRes = -2 THEN
+      Out.Ln; Out.String(d.name^); Out.String(".json malformed"); Out.Ln
+    END;
+
     IF depStrs # NIL THEN
-      met.Add(met, d);
       NEW (deps, depStrs.Count);
       i := 0;
       REPEAT
@@ -67,12 +74,6 @@ BEGIN
         INC(i) 
       UNTIL i = depStrs.Count - 1;
       d.AssignDeps(d, deps);
-    ELSE
-      IF met.Empty(met) THEN
-        Out.Ln;
-        Out.String("package "); Out.String(d.name^); Out.String(" not found in the tree"); Out.Ln;
-        HALT(61)
-      END;
     END;
   depTree.Add(depTree, d);
 END mkDepTree;

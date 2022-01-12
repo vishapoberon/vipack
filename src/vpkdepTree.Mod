@@ -23,7 +23,7 @@ TYPE
      Count* : LONGINT;
   END;
 
-  retriever- = PROCEDURE (VAR d: Tdep): StringList.TStringList;
+  retriever- = PROCEDURE (VAR d: Tdep; VAR strlist: StringList.TStringList): LONGINT;
 
   TdepDesc* = RECORD
          prev-, next-: Tdep;

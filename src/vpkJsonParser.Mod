@@ -1,5 +1,5 @@
 MODULE vpkJsonParser;
-IMPORT vpkLogger, vpkCharacterStack, Strings, Out, strutils, vpkSettings, StringList;
+IMPORT vpkLogger, vpkCharacterStack, Strings, strutils, vpkSettings, StringList;
 CONST
     ArrayMaxNumber = 30;
     ArrayMaxNumberChar = 2000;
