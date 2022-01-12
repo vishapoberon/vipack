@@ -45,7 +45,8 @@ BEGIN
       Out.Ln; Out.String("package named "); Out.String(d.name^); Out.String(" not found in the tree"); Out.Ln; HALT(61);
     END;
     IF rtrvRes = -2 THEN
-      Out.Ln; Out.String(d.name^); Out.String(".json malformed"); Out.Ln
+      Out.Ln; Out.String(d.name^); Out.String(".json malformed: no 'Package' section."); Out.Ln;
+      HALT(62);
     END;
 
     IF depStrs # NIL THEN
