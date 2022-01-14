@@ -15,11 +15,11 @@ PROCEDURE mkConfContent(VAR path: ARRAY OF CHAR);
 BEGIN
   COPY("", path);
   Strings.Append(open,  path);
-  Strings.Append(vpkSettings.confTreeKey, path);
+  Strings.Append(vpkSettings.rmtTreeKey, path);
   Strings.Append(is,    path);
   Strings.Append(vpkSettings.defTreeVal,   path);
   Strings.Append(newkey, path);
-  Strings.Append(vpkSettings.confTypKey,   path);
+  Strings.Append(vpkSettings.rmtTypKey,   path);
   Strings.Append(is,    path);
   Strings.Append(vpkSettings.defTypVal,    path);
   Strings.Append(close, path);
@@ -60,13 +60,13 @@ BEGIN
   WHILE ~ r.eof & (i < LEN(dt)) DO Files.Read(r, ch); dt[i] := ch; INC(i) END;
   Files.Close(f);
   jsonRecord := vpkJsonParser.Create(dt);
-  b := vpkJsonParser.GetTerminal(jsonRecord, vpkSettings.confTreeKey, tree.url);
-  IF ~b THEN Out.String("unable to read "); Out.String (vpkSettings.confTreeKey); Out.String(" from json"); Out.Ln; HALT(1); END;
-  b := vpkJsonParser.GetTerminal(jsonRecord, vpkSettings.confTypKey, treeTyp);
-  IF ~b THEN Out.String("unable to read "); Out.String (vpkSettings.confTypKey); Out.String(" from json"); Out.Ln; HALT(1); END;
-  IF treeTyp = vpkSettings.confTypGitVal THEN
+  b := vpkJsonParser.GetTerminal(jsonRecord, vpkSettings.rmtTreeKey, tree.url);
+  IF ~b THEN Out.String("unable to read "); Out.String (vpkSettings.rmtTreeKey); Out.String(" from json"); Out.Ln; HALT(1); END;
+  b := vpkJsonParser.GetTerminal(jsonRecord, vpkSettings.rmtTypKey, treeTyp);
+  IF ~b THEN Out.String("unable to read "); Out.String (vpkSettings.rmtTypKey); Out.String(" from json"); Out.Ln; HALT(1); END;
+  IF treeTyp = vpkSettings.rmtTypGitVal THEN
     tree.typ := vpkSettings.git;
-  ELSIF treeTyp = vpkSettings.confTypHttpVal THEN
+  ELSIF treeTyp = vpkSettings.rmtTypHttpVal THEN
     tree.typ := vpkSettings.http
   ELSE
     tree.typ := vpkSettings.unkn;

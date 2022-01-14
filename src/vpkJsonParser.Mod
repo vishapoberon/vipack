@@ -197,6 +197,7 @@ BEGIN
     self.GetTerminal := GetTerminal;
     self.GetNonTerminal := GetNonTerminal;
     self.GetTerminalKeys := GetTerminalKeys;
+    self.GetTerminalValues := GetTerminalValues;
     self.GetNoneTerminalKeys := GetNoneTerminalKeys;
     NEW(characterStack);
     characterStack := vpkCharacterStack.Create();

@@ -22,4 +22,19 @@ BEGIN
     END;
 END sync;
 
+PROCEDURE fetch*(name, url, typ, dst: ARRAY OF CHAR);
+BEGIN
+  IF dst = "" THEN
+    vpkEnv.mkdefPkgDirPath(name, dst);
+  ELSE
+    vpkEnv.mkPkgDirPath(name, dst);
+  END;
+
+  IF typ = vpkSettings.rmtTypGitVal THEN 
+    vpkGit.fetchRepo(url, dst);
+  ELSE
+    Out.String("TODO: not a git url"); Out.Ln
+  END
+END fetch;
+
 END vpkSyncer.

@@ -25,4 +25,9 @@ BEGIN
   pull(url, tmp);
 END syncTree;
 
+PROCEDURE fetchRepo*(url: ARRAY OF CHAR; dst: ARRAY OF CHAR);
+BEGIN
+  pull(url, dst);
+END fetchRepo;
+
 END vpkGit.

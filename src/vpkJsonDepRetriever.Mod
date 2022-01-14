@@ -1,6 +1,42 @@
 MODULE vpkJsonDepRetriever;
 IMPORT Out, StringList, strutils, vpkJsonParser, vpkStorage, vpkSettings, vpkdepTree;
 
+PROCEDURE getURIandType*(VAR d: vpkdepTree.Tdep; VAR URI: ARRAY OF CHAR; VAR type: ARRAY OF CHAR);
+VAR
+  jsonRecord, remote: vpkJsonParser.JsonTypePointer;
+  p: strutils.pstring;
+  k, v: StringList.pstring;
+  keys, values: StringList.TStringList;
+  i: LONGINT;
+BEGIN
+  p := NIL;
+  vpkStorage.json2pstring(d.name^, p);
+  IF p # NIL THEN
+    jsonRecord := vpkJsonParser.Create(p^);
+    remote := jsonRecord.GetNonTerminal(jsonRecord, vpkSettings.rmtType);
+    IF remote # NIL THEN
+      keys := NIL; values := NIL;
+      remote.GetTerminalKeys(remote, keys);
+      remote.GetTerminalValues(remote, values);
+      i := 0;
+      REPEAT
+        k := keys.GetString(keys, i);
+        v := keys.GetString(values, i);
+        IF k^ = vpkSettings.rmtTypKey THEN COPY(v^, type) END; 
+        IF k^ = vpkSettings.rmtTreeKey THEN COPY(v^, URI) END; 
+        INC(i);
+      UNTIL i = keys.Count - 1;
+     ELSE
+       Out.String("malformed json: no 'Remote' section"); Out.Ln;
+       HALT(63);
+     END
+  ELSE
+    Out.String("no json file for "); Out.String(d.name^); Out.Ln;
+    Out.String("program is not expected to pass unexistent name, something is wrong in other module"); Out.Ln;
+    HALT(64);
+  END
+END getURIandType;
+
 (* returns -1 if no such dependency found, otherwise returns length of depstr string list *)
 PROCEDURE getDeps*(VAR d: vpkdepTree.Tdep; VAR depstrlist: StringList.TStringList): LONGINT;
 VAR
@@ -28,12 +64,14 @@ BEGIN
         RETURN 0
       END
     ELSE
-      RETURN -2 (* json doesn't contain 'type' key, malformed *)
+      RETURN -2 (* json doesn't contain 'Package' key, malformed *)
     END;
   ELSE
     RETURN -1 (* no such json file found *)
   END;
 END getDeps;
+
+
 
 
 END vpkJsonDepRetriever.

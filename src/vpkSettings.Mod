@@ -4,16 +4,20 @@ CONST
   vpkConfDir*   = ".vipack";
   vpkConfFile*  = "vipackConf.json";
   vpkTreeDir*   = "vipackTree";
+  vpkPkgDir*    = "vpkLocal";
 
   graphName*      = "deps.dot";
 
-  confTypKey*     = "type";
-  confTypGitVal*  = "git";
-  confTypHttpVal* = "http";
-  confTreeKey*    = "path";
+  rmtType*         = "Remote";
+  rmtTypKey*      = "type";
+  rmtTypGitVal*   = "git";
+  rmtTypHttpVal*  = "http";
+  rmtTypHttpsVal* = "https";
+  rmtTypGemiVal*  = "gemini";
+  rmtTreeKey*     = "path";
   defTreeVal*     = "https://github.com/vishaps/vipackTree";
   confTreeVal*    = defTreeVal;
-  defTypVal*      = confTypGitVal;
+  defTypVal*      = rmtTypGitVal;
 
   pkgTypKey*  = "Package";
   depTypKey*  = "Dependencies";
@@ -23,8 +27,10 @@ CONST
   port* = "80";
   installPath* = "dependencies";
 
-  http* = 0;
-   git* = 1;
+  http*   = 0;
+  https*  = 1;
+  gemini* = 2;
+     git* = 3;
   unkn* = -1;
 TYPE
   tree* = RECORD

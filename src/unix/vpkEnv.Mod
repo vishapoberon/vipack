@@ -19,6 +19,25 @@ BEGIN
   Strings.Append(vpkSettings.vpkConfDir, path);
 END mkConfDirPath;
 
+PROCEDURE mkdefPkgDirPath*(VAR name, path: ARRAY OF CHAR);
+VAR
+  home: ARRAY 128 OF CHAR;
+BEGIN
+  getHome(home);
+  COPY(home, path);
+  Strings.Append("/", path);
+  Strings.Append(vpkSettings.vpkPkgDir, path);
+  Strings.Append("/", path);
+  Strings.Append(name, path);
+END mkdefPkgDirPath;
+
+PROCEDURE mkPkgDirPath*(VAR name, path: ARRAY OF CHAR);
+BEGIN
+  Strings.Append("/", path);
+  Strings.Append(name, path);
+END mkPkgDirPath;
+
+
 PROCEDURE setConfFileName;
 VAR
   home: ARRAY 128 OF CHAR;
@@ -65,6 +84,16 @@ BEGIN
   Strings.Append(vpkSettings.vpkTreeDir, path);
 END getTreeDir;
 
+PROCEDURE createIfNotThere*(VAR file: vpkFiles.fileInfo);
+BEGIN
+    IF ~vpkFiles.Exists(file) THEN
+      IF ~vpkFiles.mkDir(file.name) THEN
+        Out.String("failed to create directory "); Out.String(file.name); Out.Ln; HALT(1);
+      END;
+    END;
+
+END createIfNotThere;
+
 PROCEDURE checkEnv*;
 VAR
  file : vpkFiles.fileInfo;
@@ -91,11 +120,7 @@ BEGIN
     Strings.Append('/', tmp);
     Strings.Append(vpkSettings.vpkTreeDir, tmp);
     file.name := tmp;
-    IF ~vpkFiles.Exists(file) THEN
-      IF ~vpkFiles.mkDir(file.name) THEN
-        Out.String("failed to create tree dir "); Out.String(tmp); Out.Ln; HALT(1);
-      END;
-    END;
+    createIfNotThere(file);
 END checkEnv;
 
 BEGIN

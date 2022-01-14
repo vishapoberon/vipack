@@ -1,6 +1,6 @@
 MODULE vipack;
 IMPORT  Texts, Strings, Oberon, Out,
-  vpkConf, vpkLogger, vpkSyncer, vpkInstaller, opts, StringList;
+  vpkConf, vpkLogger, vpkSyncer, vpkInstaller, vpkdepTree, opts, StringList;
 (*
 PROCEDURE processArgs(VAR package, prefix, tree: ARRAY OF CHAR; deps, sync: BOOLEAN);
 VAR
@@ -80,14 +80,23 @@ BEGIN
 
 END processArgs;
 *)
+
+PROCEDURE msgnopkg(VAR options: opts.Options);
+BEGIN
+      Out.String("you need to mention package name to resolve dependencies for it"); Out.Ln; Out.Ln;
+      opts.showHelp(options);
+END msgnopkg;
+
 PROCEDURE main;
 VAR
-  deps, sync: BOOLEAN;
-  package, prefix, tree: ARRAY 64 OF CHAR;
+  deps, sync, fetch: BOOLEAN;
+  package, prefix, pkgTree: ARRAY 128 OF CHAR;
     
   options: opts.Options;
   foptions: opts.Options;
   opt, fopt: opts.Option;
+
+  depTree: vpkdepTree.TdepTree;
 BEGIN
    options := opts.createOptions();
   foptions := opts.createOptions();
@@ -105,6 +114,14 @@ BEGIN
   opts.setOptLName(opt, "--showdeps");
   opts.setOptHasVal(opt, FALSE);
   opts.setOptDesc(opt, "only resolve and show dependencies, do not fetch");
+  opts.setOptRequired(opt, FALSE);
+  options.add(options, opt);
+
+  opt := opts.createOpt();
+  opts.setOptName(opt, "-f");
+  opts.setOptLName(opt, "--fetch");
+  opts.setOptHasVal(opt, FALSE);
+  opts.setOptDesc(opt, "only resolve and fetch, do not build");
   opts.setOptRequired(opt, FALSE);
   options.add(options, opt);
 
@@ -142,34 +159,40 @@ BEGIN
   END;
   Out.Ln;
   
-  COPY("", package); COPY("", prefix); COPY("", tree);
+  COPY("", package); COPY("", prefix); COPY("", pkgTree);
   deps := FALSE; sync := FALSE;
 
   fopt := opts.createOpt();
   fopt := opts.findOpt("-d", foptions);
   IF fopt # NIL THEN deps := TRUE END;
 
-   fopt := opts.createOpt();
-   fopt := opts.findOpt("-s", foptions);
-   IF fopt # NIL THEN sync := TRUE END;
+  fopt := opts.createOpt();
+  fopt := opts.findOpt("-f", foptions);
+  IF fopt # NIL THEN fetch := TRUE END;
+
+  fopt := opts.createOpt();
+  fopt := opts.findOpt("-s", foptions);
+  IF fopt # NIL THEN sync := TRUE END;
 
  
   opts.valOfOpt("-p", foptions, package);
   opts.valOfOpt("-P", foptions, prefix);
-  opts.valOfOpt("-t", foptions, tree);
+  opts.valOfOpt("-t", foptions, pkgTree);
 
   IF sync THEN
     vpkSyncer.sync
-  ELSIF deps THEN
-    IF package # "" THEN
-      vpkInstaller.resolve(package);
-    ELSE
-      Out.String("you need to mention package name to resolve dependencies for it"); Out.Ln; Out.Ln;
-      opts.showHelp(options);
-    END
   ELSE
-     
-    vpkInstaller.build(package, prefix, tree)
+    IF package # "" THEN
+      IF deps THEN
+        depTree := vpkInstaller.resolve(package)
+      ELSIF fetch THEN
+        vpkInstaller.fetch(package, prefix, pkgTree)
+      ELSE
+        vpkInstaller.build(package, prefix, pkgTree)
+      END
+    ELSE
+      msgnopkg(options)
+    END
   END;
 
 END main;
