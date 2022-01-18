@@ -81,15 +81,34 @@ BEGIN
   Strings.Append("/", path);
 END mkPkgDirPath;
 
-PROCEDURE mkBldDirPath*(VAR prefix, builddir: ARRAY OF CHAR);
+PROCEDURE mkBldDir*(VAR prefix: ARRAY OF CHAR): StringList.pstring;
+VAR
+  builddir: StringList.pstring;
+  ln : INTEGER;
 BEGIN
-  COPY(prefix, builddir);
-  createIfNotThere(builddir);
-  Strings.Append("/", builddir);
-  Strings.Append(vpkSettings.vpkBldDir, builddir);
-  createIfNotThere(builddir);
-  Strings.Append("/", builddir);
-END mkBldDirPath;
+  ln := 3 + Strings.Length(prefix) + Strings.Length(vpkSettings.vpkBldDir);
+  NEW(builddir, ln); 
+  COPY(prefix, builddir^);
+  createIfNotThere(builddir^);
+  Strings.Append("/", builddir^);
+  Strings.Append(vpkSettings.vpkBldDir, builddir^);
+  createIfNotThere(builddir^);
+  Strings.Append("/", builddir^);
+  RETURN builddir
+END mkBldDir;
+
+PROCEDURE mkCmd*(VAR p0, p1: ARRAY OF CHAR): StringList.pstring;
+VAR
+  cmd: StringList.pstring;
+  ln: INTEGER;
+BEGIN
+  ln := 2 + Strings.Length(p0) + Strings.Length(p1);
+  NEW(cmd, ln);
+  COPY(p0, cmd^);
+  Strings.Append(" ", cmd^);
+  Strings.Append(p1, cmd^);
+  RETURN cmd
+END mkCmd;
 
 PROCEDURE setConfFileName;
 VAR

@@ -58,11 +58,10 @@ VAR
       keys, values: StringList.TStringList;
       k, v: StringList.pstring;
       b: BOOLEAN;
-      builddir: ARRAY 512 OF CHAR;
-      cmd, srcPath: StringList.pstring;
-      chdirRes: INTEGER;
+      builddir, cmd, srcPath: StringList.pstring;
+      res: INTEGER;
 BEGIN
-  vpkEnv.mkBldDirPath(prefix, builddir);
+  builddir := vpkEnv.mkBldDir(prefix);
   b := FALSE;
   depTree := resolve(package);
   i := 0;
@@ -76,19 +75,20 @@ BEGIN
       REPEAT
         k := keys.GetString(keys, j);
         v := values.GetString(values, j);
-        Out.Int(j, 0); Out.String(": "); Out.String(k^); Out.Ln;
-        Out.Int(j, 0); Out.String(": "); Out.String(v^); Out.Ln;
-        chdirRes := Platform.Chdir(builddir);
-        IF chdirRes # 0 THEN
-          Out.String("failed to change directory to "); Out.String(builddir); Out.Ln; Out.String("this should never happen."); Out.Ln; HALT(66);
+        res := Platform.Chdir(builddir^);
+        IF res # 0 THEN
+          Out.String("failed to change directory to "); Out.String(builddir^); Out.Ln; Out.String("this should never happen."); Out.Ln; HALT(66);
         END;
         srcPath := vpkEnv.getSrcRelPath(dep.name^, v^);
         Out.String(srcPath^); Out.Ln;
+        cmd := vpkEnv.mkCmd(k^, srcPath^);
+        Out.String(cmd^);
+        res := Platform.System(cmd^);
+        IF res # 0 THEN Out.String("failed to run build command"); Out.Ln END;
         INC(j)
       UNTIL j = keys.Count - 1;
     ELSE
       Out.String("no build info found for the package: "); Out.String(dep.name^); Out.Ln;
-      HALT(67);
     END;
     INC(i);
   UNTIL i = depTree.Count;
