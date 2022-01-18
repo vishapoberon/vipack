@@ -43,12 +43,24 @@ BEGIN
     vpkJsonDepRetriever.getURIandType(dep, URI, typ); 
     vpkSyncer.fetch(dep.name^, URI, typ, prefix);
     INC(i)
-  UNTIL i= depTree.Count;
+  UNTIL i = depTree.Count;
 END fetch;
 
 PROCEDURE build*(VAR package, prefix, tree: ARRAY OF CHAR);
-
+VAR
+  depTree: vpkdepTree.TdepTree;
+      dep: vpkdepTree.Tdep;
+        i: LONGINT;
+      URI: ARRAY 128 OF CHAR;
+      typ: ARRAY 16  OF CHAR;
 BEGIN
-
+  depTree := resolve(package);
+  i := 0;
+  REPEAT
+    dep := vpkdepTree.Get(depTree, i);
+    vpkJsonDepRetriever.getURIandType(dep, URI, typ);
+    vpkSyncer.fetch(dep.name^, URI, typ, prefix);
+    INC(i);
+  UNTIL i = depTree.Count;
 END build;
 END vpkInstaller.

@@ -95,5 +95,34 @@ BEGIN
   END;
 END Exists;
 
+PROCEDURE ExistsByName*(VAR fileName : ARRAY OF CHAR): BOOLEAN;
+VAR
+  i : INTEGER;
+  st: Status;
+  fl: fileInfo;
+BEGIN
+  fl.attr := {};
+  COPY(fileName, fl.name);
+  i := stat(fl.name, st);
+  IF i < 0 THEN RETURN FALSE  END;
+  IF i = 0 THEN (* file exists*) 
+    i := isDir(st.mode);
+    IF i # 0 THEN fl.attr := fl.attr + {dir} END;
+    i := isChar(st.mode);
+    IF i # 0 THEN fl.attr := fl.attr + {char} END;
+    i := isBlock(st.mode);
+    IF i # 0 THEN fl.attr := fl.attr + {block} END;
+    i := isReg(st.mode);
+    IF i # 0 THEN fl.attr := fl.attr + {file} END;
+    i := isFIFO(st.mode);
+    IF i # 0 THEN fl.attr := fl.attr + {fifo} END;
+    i := isLnk(st.mode);
+    IF i # 0 THEN fl.attr := fl.attr + {symlink} END;
+    i := isSock(st.mode);
+    IF i # 0 THEN fl.attr := fl.attr + {socket} END;
+    RETURN TRUE
+  END;
+END ExistsByName;
+
 
 END vpkFiles.

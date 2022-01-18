@@ -5,6 +5,7 @@ CONST
   vpkConfFile*  = "vipackConf.json";
   vpkTreeDir*   = "vipackTree";
   vpkPkgDir*    = "vpkLocal";
+  vpkDepDir*    = "deps";
 
   graphName*      = "deps.dot";
 
@@ -25,7 +26,6 @@ CONST
   packageFileName* = "VersionFile.json";
   host* = "localhost";
   port* = "80";
-  installPath* = "dependencies";
 
   http*   = 0;
   https*  = 1;
