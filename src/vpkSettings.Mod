@@ -6,6 +6,7 @@ CONST
   vpkTreeDir*   = "vipackTree";
   vpkPkgDir*    = "vpkLocal";
   vpkDepDir*    = "deps";
+  vpkBldDir*    = "build";
 
   graphName*      = "deps.dot";
 
@@ -16,6 +17,7 @@ CONST
   rmtTypHttpsVal* = "https";
   rmtTypGemiVal*  = "gemini";
   rmtTreeKey*     = "path";
+  bldType*        = "Build";
   defTreeVal*     = "https://github.com/vishaps/vipackTree";
   confTreeVal*    = defTreeVal;
   defTypVal*      = rmtTypGitVal;

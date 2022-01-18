@@ -1,6 +1,33 @@
 MODULE vpkJsonDepRetriever;
 IMPORT Out, StringList, strutils, vpkJsonParser, vpkStorage, vpkSettings, vpkdepTree;
 
+PROCEDURE getBuildInfo*(VAR d: vpkdepTree.Tdep; VAR k, v: StringList.TStringList): BOOLEAN;
+VAR
+  p: strutils.pstring;
+  jsonRecord, build : vpkJsonParser.JsonTypePointer;
+  keys, values: StringList.TStringList;
+  b: BOOLEAN;
+BEGIN
+  b := FALSE;
+  p := NIL;
+  vpkStorage.json2pstring(d.name^, p);
+  IF p # NIL THEN
+    jsonRecord := vpkJsonParser.Create(p^);
+    build := jsonRecord.GetNonTerminal(jsonRecord, vpkSettings.bldType);
+    IF build # NIL THEN
+      keys := NIL; values := NIL;
+      build.GetTerminalKeys(build, keys);
+      build.GetTerminalValues(build, values);
+      k := keys; v := values;
+      RETURN TRUE
+    ELSE
+      RETURN FALSE
+    END
+  ELSE
+    RETURN FALSE
+  END;
+END getBuildInfo;
+
 PROCEDURE getURIandType*(VAR d: vpkdepTree.Tdep; VAR URI: ARRAY OF CHAR; VAR type: ARRAY OF CHAR);
 VAR
   jsonRecord, remote: vpkJsonParser.JsonTypePointer;
@@ -21,7 +48,7 @@ BEGIN
       i := 0;
       REPEAT
         k := keys.GetString(keys, i);
-        v := keys.GetString(values, i);
+        v := values.GetString(values, i);
         IF k^ = vpkSettings.rmtTypKey THEN COPY(v^, type) END; 
         IF k^ = vpkSettings.rmtTreeKey THEN COPY(v^, URI) END; 
         INC(i);

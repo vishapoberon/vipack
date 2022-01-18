@@ -1,5 +1,5 @@
 MODULE vpkEnv;
-IMPORT Files, Platform, Strings, Out, vpkSettings, vpkFiles;
+IMPORT Files, Platform, Strings, Out, vpkSettings, vpkFiles, StringList;
 
 VAR
   conf, confDir : ARRAY 256 OF CHAR;
@@ -12,6 +12,11 @@ BEGIN
   END;
 END getHome;
 
+PROCEDURE getGraphName*(VAR grname: ARRAY OF CHAR);
+BEGIN
+  COPY (vpkSettings.graphName, grname);
+END getGraphName;
+
 PROCEDURE createIfNotThere*(VAR fileName: ARRAY OF CHAR);
 BEGIN
     IF ~vpkFiles.ExistsByName(fileName) THEN
@@ -21,6 +26,23 @@ BEGIN
     END;
 
 END createIfNotThere;
+
+PROCEDURE getSrcRelPath*(VAR depName, path0: ARRAY OF CHAR): StringList.pstring;
+VAR
+  p: StringList.pstring;
+  len: INTEGER;
+BEGIN
+  len := 9 + Strings.Length(depName) + Strings.Length(path0);
+  (* 5 chars are ../, /, /, plus a couple of chars  *)
+  NEW(p, len); 
+  COPY("../", p^);
+  Strings.Append(vpkSettings.vpkDepDir, p^);
+  Strings.Append("/", p^);
+  Strings.Append(depName, p^);
+  Strings.Append("/", p^);
+  Strings.Append(path0, p^);
+  RETURN p;
+END getSrcRelPath;
 
 PROCEDURE mkConfDirPath(home: ARRAY OF CHAR; VAR path: ARRAY OF CHAR);
 BEGIN
@@ -58,6 +80,16 @@ BEGIN
   createIfNotThere(path);
   Strings.Append("/", path);
 END mkPkgDirPath;
+
+PROCEDURE mkBldDirPath*(VAR prefix, builddir: ARRAY OF CHAR);
+BEGIN
+  COPY(prefix, builddir);
+  createIfNotThere(builddir);
+  Strings.Append("/", builddir);
+  Strings.Append(vpkSettings.vpkBldDir, builddir);
+  createIfNotThere(builddir);
+  Strings.Append("/", builddir);
+END mkBldDirPath;
 
 PROCEDURE setConfFileName;
 VAR
