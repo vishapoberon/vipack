@@ -62,13 +62,13 @@ VAR
       res: INTEGER;
 BEGIN
   builddir := vpkEnv.mkBldDir(prefix);
-  b := FALSE;
   depTree := resolve(package);
   i := 0;
   REPEAT
     dep := vpkdepTree.Get(depTree, i);
     vpkJsonDepRetriever.getURIandType(dep, URI, typ);
     vpkSyncer.fetch(dep.name^, URI, typ, prefix);
+    b := FALSE;
     b := vpkJsonDepRetriever.getBuildInfo(dep, keys, values);
     IF b THEN
       j := 0;
