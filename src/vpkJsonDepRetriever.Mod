@@ -85,6 +85,7 @@ BEGIN
       IF dependencies # NIL THEN
         Out.String("found!"); Out.Ln;
         dependencies.GetTerminalKeys(dependencies, depstrlist);
+        StringList.list(depstrlist);
         RETURN depstrlist.Count
       ELSE
         Out.String("...has no dependencies"); Out.Ln;
