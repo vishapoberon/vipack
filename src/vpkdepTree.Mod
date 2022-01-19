@@ -72,6 +72,17 @@ BEGIN
    UNTIL i = s.Count - 1;
 END list;
 
+PROCEDURE listDeps*(VAR deps: Tdeps);
+VAR
+  l: LONGINT;
+BEGIN
+  l := 0;
+  REPEAT
+    Out.Int(l, 0); Out.String(": "); Out.String(deps[l].name^); Out.Ln;
+    INC(l);
+  UNTIL l = LEN(deps^) - 1;
+END listDeps;
+
 PROCEDURE Free*(VAR l : TdepTree);
  BEGIN
    l := NIL
@@ -96,8 +107,32 @@ PROCEDURE Add* (VAR l : TdepTree; VAR d: Tdep);
        l.Last.next := d;
     END;
     l.Last := d;
+    l.Last.next := NIL;
     INC(l.Count);
  END Add;
+
+PROCEDURE AddCopy* (VAR l : TdepTree; VAR d: Tdep);
+VAR
+  new: Tdep;
+  ln: INTEGER;
+ BEGIN
+ NEW(new);
+ new.prev := d.prev; new.next := d.next;
+ ln := Strings.Length(d.name^) + 1; NEW(new.name, ln); COPY(d.name^, new.name^);
+ new.deps := d.deps;
+ new.Create := d.Create; new.AssignDeps := d.AssignDeps;
+ new.RetrieveDeps := d.RetrieveDeps;
+ new.InstallRetriever := d.InstallRetriever;
+
+    IF l.First = NIL THEN
+       l.First := new;
+    ELSE
+       l.Last.next := new;
+    END;
+    l.Last := new;
+    l.Last.next := NIL;
+    INC(l.Count);
+ END AddCopy;
 
 PROCEDURE Get*(VAR l: TdepTree; inx: LONGINT): Tdep;
 VAR
@@ -129,14 +164,16 @@ BEGIN
   REPEAT
     IF d # NIL THEN
       IF d.name^ = name THEN
-        fnd := TRUE
+        fnd := TRUE;
+        RETURN d;
       ELSE
         d := d.next
       END
     END;
     INC(i);
-  UNTIL fnd OR (i >= l.Count);
-  RETURN d; 
+(*  UNTIL fnd OR (i >= l.Count );*)
+  UNTIL fnd OR (d = NIL);
+  RETURN NIL;  (* in case of this UNTIL it seems safe to RETURN d *)
 END GetByName;
 
 PROCEDURE Create* () : TdepTree;
