@@ -14,7 +14,6 @@ BEGIN
   Strings.Append(" pull ", cmd);
   Strings.Append(url, cmd);
   i := Platform.System(cmd);
-  Out.Int(i, 0);
 END pull;
 
 PROCEDURE syncTree*(url: ARRAY OF CHAR);

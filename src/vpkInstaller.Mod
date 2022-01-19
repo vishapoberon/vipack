@@ -75,14 +75,13 @@ BEGIN
       REPEAT
         k := keys.GetString(keys, j);
         v := values.GetString(values, j);
+        srcPath := vpkEnv.getSrcRelPath(dep.name^, v^);
+        cmd := vpkEnv.mkCmd(k^, srcPath^);
+        Out.String(cmd^); Out.Ln;
         res := Platform.Chdir(builddir^);
         IF res # 0 THEN
           Out.String("failed to change directory to "); Out.String(builddir^); Out.Ln; Out.String("this should never happen."); Out.Ln; HALT(66);
         END;
-        srcPath := vpkEnv.getSrcRelPath(dep.name^, v^);
-        Out.String(srcPath^); Out.Ln;
-        cmd := vpkEnv.mkCmd(k^, srcPath^);
-        Out.String(cmd^);
         res := Platform.System(cmd^);
         IF res # 0 THEN Out.String("failed to run build command"); Out.Ln END;
         INC(j)
