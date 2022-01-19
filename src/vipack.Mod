@@ -28,6 +28,9 @@ BEGIN
   opts.setOptRequired(opt, FALSE);
   options.add(options, opt);
 
+  opts.setOptRequired(opt, FALSE);
+  options.add(options, opt);
+
   opt := opts.createOpt();
   opts.setOptName(opt, "-s");
   opts.setOptLName(opt, "--sync");
@@ -89,7 +92,7 @@ END msgnopkg;
 
 PROCEDURE main;
 VAR
-  deps, sync, fetch: BOOLEAN;
+  deps, sync, fetch, ask: BOOLEAN;
   package, prefix, pkgTree: ARRAY 128 OF CHAR;
     
   options: opts.Options;
@@ -120,6 +123,14 @@ BEGIN
   opt := opts.createOpt();
   opts.setOptName(opt, "-f");
   opts.setOptLName(opt, "--fetch");
+  opts.setOptHasVal(opt, FALSE);
+  opts.setOptDesc(opt, "only resolve and fetch, do not build");
+  opts.setOptRequired(opt, FALSE);
+  options.add(options, opt);
+
+  opt := opts.createOpt();
+  opts.setOptName(opt, "-a");
+  opts.setOptLName(opt, "--ask");
   opts.setOptHasVal(opt, FALSE);
   opts.setOptDesc(opt, "only resolve and fetch, do not build");
   opts.setOptRequired(opt, FALSE);
@@ -167,6 +178,11 @@ BEGIN
   IF fopt # NIL THEN deps := TRUE END;
 
   fopt := opts.createOpt();
+  fopt := opts.findOpt("-a", foptions);
+  IF fopt # NIL THEN ask := TRUE END;
+
+
+  fopt := opts.createOpt();
   fopt := opts.findOpt("-f", foptions);
   IF fopt # NIL THEN fetch := TRUE END;
 
@@ -186,9 +202,9 @@ BEGIN
       IF deps THEN
         depTree := vpkInstaller.resolve(package)
       ELSIF fetch THEN
-        vpkInstaller.fetch(package, prefix, pkgTree)
+        vpkInstaller.fetch(package, prefix, pkgTree, ask)
       ELSE
-        vpkInstaller.build(package, prefix, pkgTree)
+        vpkInstaller.build(package, prefix, pkgTree, ask)
       END
     ELSE
       msgnopkg(options)

@@ -24,6 +24,8 @@ some examples:
 
 `vipack -p irc_bot` — will build the package and dependencies in the default prefix: `~/vpkLocal`
 
+`vipack -a -p irc_bot` — ask for confirmation before building the package and dependencies in the default prefix: `~/vpkLocal`
+
 `vipack -p irc_bot -P /tmp/coolprefix` — will do the same in the custom prefix.
 
 `vipack -p irc_bot -P /tmp/coolprefix -t /tmp/myothertree` — the same, but the dependency resolution will be conducted by using custom package description tree.

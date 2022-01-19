@@ -1,5 +1,5 @@
 MODULE vpkInstaller;
-IMPORT Out, StringList, vpkResolver, vpkdepTree, vpkDot, vpkEnv, vpkJsonDepRetriever, vpkSyncer, Platform;
+IMPORT In, Out, StringList, vpkResolver, vpkdepTree, vpkDot, vpkEnv, vpkJsonDepRetriever, vpkSyncer, Platform;
 
 PROCEDURE resolve*(VAR unit: ARRAY OF CHAR): vpkdepTree.TdepTree;
 VAR
@@ -30,7 +30,16 @@ BEGIN
   RETURN tree
 END resolve;
 
-PROCEDURE fetch*(VAR package, prefix, pkgTree: ARRAY OF CHAR);
+PROCEDURE ask();
+VAR
+  ch: CHAR;
+BEGIN
+  Out.String("would you like to merge these packages? (y/n) ");
+  In.Char(ch);
+  IF ch # 'y' THEN Out.Ln; Out.String('quitting'); Out.Ln; HALT(0); END
+END ask;
+
+PROCEDURE fetch*(VAR package, prefix, pkgTree: ARRAY OF CHAR; a: BOOLEAN);
 VAR
   depTree: vpkdepTree.TdepTree;
       dep: vpkdepTree.Tdep;
@@ -39,6 +48,7 @@ VAR
       typ: ARRAY 16 OF CHAR;
 BEGIN
   depTree := resolve(package);
+  IF a THEN ask END;
   i := 0;
   REPEAT
     dep := vpkdepTree.Get(depTree, i);
@@ -48,7 +58,7 @@ BEGIN
   UNTIL i = depTree.Count;
 END fetch;
 
-PROCEDURE build*(VAR package, prefix, tree: ARRAY OF CHAR);
+PROCEDURE build*(VAR package, prefix, tree: ARRAY OF CHAR; a : BOOLEAN);
 VAR
   depTree: vpkdepTree.TdepTree;
       dep: vpkdepTree.Tdep;
@@ -63,6 +73,7 @@ VAR
 BEGIN
   builddir := vpkEnv.mkBldDir(prefix);
   depTree := resolve(package);
+  IF a THEN ask END; 
   i := 0;
   REPEAT
     dep := vpkdepTree.Get(depTree, i);
