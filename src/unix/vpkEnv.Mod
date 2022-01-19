@@ -3,6 +3,7 @@ IMPORT Files, Platform, Strings, Out, vpkSettings, vpkFiles, StringList;
 
 VAR
   conf, confDir : ARRAY 256 OF CHAR;
+  pkgTreeDir: POINTER TO ARRAY OF CHAR;
 
 PROCEDURE getHome*(VAR path: ARRAY OF CHAR);
 BEGIN
@@ -149,11 +150,24 @@ BEGIN
   RETURN vpkFiles.Exists(file);
 END checkConfig;
 
+PROCEDURE setTreeDir*(VAR path: ARRAY OF CHAR);
+VAR
+  ln: INTEGER;
+BEGIN
+  ln := Strings.Length(path) + 1;
+  NEW(pkgTreeDir, ln);
+  COPY (path, pkgTreeDir^);
+END setTreeDir;
+
 PROCEDURE getTreeDir*(VAR path: ARRAY OF CHAR);
 BEGIN
-  COPY(confDir, path);
-  Strings.Append("/", path);
-  Strings.Append(vpkSettings.vpkTreeDir, path);
+  IF pkgTreeDir = NIL THEN
+    COPY(confDir, path);
+    Strings.Append("/", path);
+    Strings.Append(vpkSettings.vpkTreeDir, path);
+  ELSE
+    COPY(pkgTreeDir^, path);
+  END
 END getTreeDir;
 
 PROCEDURE checkEnv*;
@@ -187,5 +201,5 @@ END checkEnv;
 
 BEGIN
   setConfFileName;
-
+  pkgTreeDir := NIL;
 END vpkEnv.

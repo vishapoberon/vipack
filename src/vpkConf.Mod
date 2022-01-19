@@ -73,4 +73,9 @@ BEGIN
   END;
 END getConfigTreeVal;
 
+PROCEDURE setTreeDir*(VAR a: ARRAY OF CHAR);
+BEGIN
+  vpkEnv.setTreeDir(a)
+END setTreeDir;
+
 END vpkConf.

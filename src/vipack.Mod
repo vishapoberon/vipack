@@ -195,6 +195,8 @@ BEGIN
   opts.valOfOpt("-P", foptions, prefix);
   opts.valOfOpt("-t", foptions, pkgTree);
 
+  IF pkgTree # "" THEN vpkConf.setTreeDir(pkgTree) END;
+
   IF sync THEN
     vpkSyncer.sync
   ELSE
