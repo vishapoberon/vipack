@@ -101,7 +101,9 @@ VAR
 
   depTree: vpkdepTree.TdepTree;
 BEGIN
-   options := opts.createOptions();
+  IF ~vpkConf.configured() THEN vpkConf.mkDefConfig END;
+
+  options := opts.createOptions();
   foptions := opts.createOptions();
 
   opt := opts.createOpt();
