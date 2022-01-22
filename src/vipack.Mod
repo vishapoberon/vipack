@@ -195,7 +195,13 @@ BEGIN
  
   opts.valOfOpt("-p", foptions, package);
   opts.valOfOpt("-P", foptions, prefix);
+  IF prefix = "" THEN
+    Out.String(" will use the default prefix location"); Out.Ln;
+  END;
   opts.valOfOpt("-t", foptions, pkgTree);
+  IF pkgTree = "" THEN
+    Out.String(" will use the default package tree location"); Out.Ln;
+  END;
 
   IF pkgTree # "" THEN vpkConf.setTreeDir(pkgTree) END;
 

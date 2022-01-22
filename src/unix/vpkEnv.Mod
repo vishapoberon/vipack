@@ -52,6 +52,41 @@ BEGIN
   Strings.Append(vpkSettings.vpkConfDir, path);
 END mkConfDirPath;
 
+PROCEDURE mkBldDir*(VAR prefix: ARRAY OF CHAR): StringList.pstring;
+VAR
+  builddir: StringList.pstring;
+  ln : INTEGER;
+BEGIN
+  ln := 3 + Strings.Length(prefix) + Strings.Length(vpkSettings.vpkBldDir);
+  NEW(builddir, ln); 
+  COPY(prefix, builddir^);
+  createIfNotThere(builddir^);
+  Strings.Append("/", builddir^);
+  Strings.Append(vpkSettings.vpkBldDir, builddir^);
+  createIfNotThere(builddir^);
+  Strings.Append("/", builddir^);
+  RETURN builddir
+END mkBldDir;
+
+PROCEDURE mkdefBldDir*(): StringList.pstring;
+VAR
+  builddir: StringList.pstring;
+  ln: INTEGER;
+  home: ARRAY 128 OF CHAR;
+BEGIN
+  getHome(home);
+  ln := 2 + Strings.Length(home) + Strings.Length(vpkSettings.vpkPkgDir) + Strings.Length(vpkSettings.vpkBldDir);
+  NEW(builddir, ln);
+  COPY(home, builddir^);
+  Strings.Append("/", builddir^);
+  Strings.Append(vpkSettings.vpkPkgDir, builddir^);
+  createIfNotThere(builddir^);
+  Strings.Append("/", builddir^);
+  Strings.Append(vpkSettings.vpkBldDir, builddir^);
+  createIfNotThere(builddir^);
+  RETURN builddir
+END mkdefBldDir;
+
 PROCEDURE mkdefPkgDirPath*(VAR name, path: ARRAY OF CHAR);
 VAR
   home: ARRAY 128 OF CHAR;
@@ -60,11 +95,11 @@ BEGIN
   COPY(home, path);
   Strings.Append("/", path);
   Strings.Append(vpkSettings.vpkPkgDir, path);
-  Strings.Append("/", path);
   createIfNotThere(path);
+  Strings.Append("/", path);
   Strings.Append(vpkSettings.vpkDepDir, path);
-  Strings.Append("/", path);
   createIfNotThere(path);
+  Strings.Append("/", path);
   Strings.Append(name, path);
   createIfNotThere(path);
   Strings.Append("/", path);
@@ -82,21 +117,6 @@ BEGIN
   Strings.Append("/", path);
 END mkPkgDirPath;
 
-PROCEDURE mkBldDir*(VAR prefix: ARRAY OF CHAR): StringList.pstring;
-VAR
-  builddir: StringList.pstring;
-  ln : INTEGER;
-BEGIN
-  ln := 3 + Strings.Length(prefix) + Strings.Length(vpkSettings.vpkBldDir);
-  NEW(builddir, ln); 
-  COPY(prefix, builddir^);
-  createIfNotThere(builddir^);
-  Strings.Append("/", builddir^);
-  Strings.Append(vpkSettings.vpkBldDir, builddir^);
-  createIfNotThere(builddir^);
-  Strings.Append("/", builddir^);
-  RETURN builddir
-END mkBldDir;
 
 PROCEDURE mkCmd*(VAR p0, p1: ARRAY OF CHAR): StringList.pstring;
 VAR

@@ -71,7 +71,11 @@ VAR
       builddir, cmd, srcPath: StringList.pstring;
       res: INTEGER;
 BEGIN
-  builddir := vpkEnv.mkBldDir(prefix);
+  IF prefix # "" THEN 
+    builddir := vpkEnv.mkBldDir(prefix)
+  ELSE
+    builddir := vpkEnv.mkdefBldDir();
+  END;
   depTree := resolve(package);
   IF a THEN ask END; 
   i := 0;
