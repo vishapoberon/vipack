@@ -124,7 +124,7 @@ PROCEDURE GetNoneTerminalKeys(self : JsonTypePointer; VAR destination : ARRAY OF
 VAR
     i: LONGINT;
 BEGIN
-    FOR i := 0 TO LEN(self.NonTerminalKeys) - 1 DO
+    FOR i := 0 TO self.NonTerminalNumber - 1 DO
         destination[i] := self.NonTerminalKeys[i];
     END;
 END GetNoneTerminalKeys;
