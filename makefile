@@ -42,6 +42,7 @@ all: fetch_deps
 		../src/vipack.Mod -m
 
 fetch_deps:
+		mkdir -p $(DPS)
 		cd $(DPS) && git clone https://github.com/norayr/Internet
 		cd $(DPS) && git clone https://github.com/norayr/lists
 		cd $(DPS) && git clone https://github.com/norayr/opts
