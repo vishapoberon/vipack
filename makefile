@@ -43,27 +43,11 @@ all: deps
 
 deps: $(mkfile_dir_path)/$(DPS)/Internet   $(mkfile_dir_path)/$(DPS)/lists  $(mkfile_dir_path)/$(DPS)/opts  $(mkfile_dir_path)/$(DPS)/time
 		mkdir -p $(mkfile_dir_path)/$(DPS)
-		cd $$(mkfile_dir_path)/(DPS)
-		ifneq "$(wildcard Internet )" ""
-		  cd Internet && git pull && cd ..
-		else
-			git clone https://github.com/norayr/Internet
-		endif
-		ifneq "$(wildcard lists )" ""
-		  cd lists && git pull && cd ..
-		else
-			git clone https://github.com/norayr/lists
-		endif
-		ifneq "$(wildcard opts )" ""
-		  cd opts && git pull && cd ..
-		else
-			git clone https://github.com/norayr/opts
-		endif
-		ifneq "$(wildcard time )" ""
-		  cd time && git pull && cd ..
-		else
-			git clone https://github.com/norayr/Internet
-		endif
+		cd $(mkfile_dir_path)/$(DPS)
+		test ! -d Internet && git clone https://github.com/norayr/Internet
+		test ! -d lists && git clone https://github.com/norayr/lists
+		test ! -d opts && git clone https://github.com/norayr/opts
+		test ! -d time && git clone https://github.com/norayr/time
 
 tests:
 			mkdir -p $(mkfile_dir_path)/$(BLD)
