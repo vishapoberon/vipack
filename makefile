@@ -17,10 +17,10 @@ all: deps
 	#git submodule update
 	mkdir -p $(build_dir_path)
 	cd $(build_dir_path)
-	make -f $(mkfile_dir_path)/dps/lists/makefile BUILD=$(build_dir_path)
-	make -f $(mkfile_dir_path)/dps/Internet/makefile BUILD=$(build_dir_path)
-	make -f $(mkfile_dir_path)/dps/time/makefile BUILD=$(build_dir_path)
-	make -f $(mkfile_dir_path)/dps/opts/makefile BUILD=$(build_dir_path)
+	gmake -f $(mkfile_dir_path)/dps/lists/makefile BUILD=$(build_dir_path)
+	gmake -f $(mkfile_dir_path)/dps/Internet/makefile BUILD=$(build_dir_path)
+	gmake -f $(mkfile_dir_path)/dps/time/makefile BUILD=$(build_dir_path)
+	gmake -f $(mkfile_dir_path)/dps/opts/makefile BUILD=$(build_dir_path)
 	cd $(build_dir_path) && \
 	$(VOC) -s \
 		../src/vpkSettings.Mod \
@@ -45,10 +45,10 @@ all: deps
 deps:
 		mkdir -p $(mkfile_dir_path)/$(DPS)
 		cd $(mkfile_dir_path)/$(DPS)
-		test -d Internet && cd Internet; git pull || git clone https://github.com/norayr/Internet
-		test -d lists && cd lists; git pull || git clone https://github.com/norayr/lists
-		test -d opts && cd opts; git pull || git clone https://github.com/norayr/opts
-		test -d time && cd time; git pull || git clone https://github.com/norayr/time
+		if [ -d $(DPS)/Internet ]; then cd $(DPS)/Internet; git pull; cd -; else cd $(DPS); git clone https://github.com/norayr/Internet; cd -; fi
+		if [ -d $(DPS)/lists ]; then cd $(DPS)/lists; git pull; cd -; else cd $(DPS); git clone https://github.com/norayr/lists; cd -; fi
+		if [ -d $(DPS)/opts ]; then cd $(DPS)/opts; git pull; cd -; else cd $(DPS); git clone https://github.com/norayr/opts; cd -; fi
+		if [ -d $(DPS)/time ]; then cd $(DPS)/time; git pull; cd -; else cd $(DPS); git clone https://github.com/norayr/time; cd -; fi
 
 tests:
 			mkdir -p $(mkfile_dir_path)/$(BLD)
