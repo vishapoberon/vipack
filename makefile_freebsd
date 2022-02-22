@@ -24,7 +24,7 @@ all: deps
 	cd $(build_dir_path) && \
 	$(VOC) -s \
 		../src/vpkSettings.Mod \
-		../src/unix/vpkLinuxFiles.Mod \
+		../src/unix/vpkFreeBSDFiles.Mod \
 		../src/unix/vpkTime.Mod \
 		../src/vpkLogger.Mod \
 		../src/vpkHttp.Mod \
