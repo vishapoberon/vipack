@@ -41,7 +41,7 @@ all: deps
 		../src/vpkInstaller.Mod \
 		../src/vipack.Mod -m
 
-deps: $(mkfile_dir_path)/$(DPS)/Internet   $(mkfile_dir_path)/$(DPS)/lists  $(mkfile_dir_path)/$(DPS)/opts  $(mkfile_dir_path)/$(DPS)/time
+deps:
 		mkdir -p $(mkfile_dir_path)/$(DPS)
 		cd $(mkfile_dir_path)/$(DPS)
 		test ! -d Internet && git clone https://github.com/norayr/Internet
