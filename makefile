@@ -7,9 +7,11 @@ BLD := $(mkfile_dir_path)/build
 VOC = voc
 VERSION_FILE = ./VersionFile.json
 BLD = build
+DPS = dps
 VIPACK = vipack
 
-all:
+
+all: fetch_deps
 	#git submodule init
 	#git submodule update
 	mkdir -p $(build_dir_path)
@@ -38,6 +40,12 @@ all:
 		../src/vpkJsonDepRetriever.Mod \
 		../src/vpkInstaller.Mod \
 		../src/vipack.Mod -m
+
+fetch_deps:
+		cd $(DPS) && git clone https://github.com/norayr/Internet
+		cd $(DPS) && git clone https://github.com/norayr/lists
+		cd $(DPS) && git clone https://github.com/norayr/opts
+		cd $(DPS) && git clone https://github.com/norayr/time
 
 tests:
 			mkdir -p $(BLD)
