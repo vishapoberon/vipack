@@ -9,6 +9,19 @@ currently it has a backend to retrieve dependencies from the [vipack tree](https
 
 that is a list of json files, each containing information about the package dependencies, where to download the packages, and how to build those.
 
+build
+=====
+
+requirements: git, gmake, cc, voc
+
+`git clone https://github.com/vishaps/vipack`
+`cd vipack`
+`gmake`
+
+or on freebsd:
+
+`gmake -f makefile_freebsd`
+
 usage
 =====
 
