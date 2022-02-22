@@ -11,7 +11,7 @@ DPS = dps
 VIPACK = vipack
 
 
-all: fetch_deps
+all: deps
 	#git submodule init
 	#git submodule update
 	mkdir -p $(build_dir_path)
@@ -41,16 +41,34 @@ all: fetch_deps
 		../src/vpkInstaller.Mod \
 		../src/vipack.Mod -m
 
-fetch_deps:
-		mkdir -p $(DPS)
-		cd $(DPS) && git clone https://github.com/norayr/Internet
-		cd $(DPS) && git clone https://github.com/norayr/lists
-		cd $(DPS) && git clone https://github.com/norayr/opts
-		cd $(DPS) && git clone https://github.com/norayr/time
+deps: $(mkfile_dir_path)/$(DPS)/Internet   $(mkfile_dir_path)/$(DPS)/lists  $(mkfile_dir_path)/$(DPS)/opts  $(mkfile_dir_path)/$(DPS)/time
+		mkdir -p $(mkfile_dir_path)/$(DPS)
+		cd $$(mkfile_dir_path)/(DPS)
+		ifneq "$(wildcard Internet )" ""
+		  cd Internet && git pull && cd ..
+		else
+			git clone https://github.com/norayr/Internet
+		endif
+		ifneq "$(wildcard lists )" ""
+		  cd lists && git pull && cd ..
+		else
+			git clone https://github.com/norayr/lists
+		endif
+		ifneq "$(wildcard opts )" ""
+		  cd opts && git pull && cd ..
+		else
+			git clone https://github.com/norayr/opts
+		endif
+		ifneq "$(wildcard time )" ""
+		  cd time && git pull && cd ..
+		else
+			git clone https://github.com/norayr/Internet
+		endif
 
 tests:
-			mkdir -p $(BLD)
-			cd $(BLD) && $(VOC) -s ../src/unix/vpkFiles.Mod ../tst/testFiles.Mod -m
+			mkdir -p $(mkfile_dir_path)/$(BLD)
+			cd $(mkfile_dir_path)/$(BLD)
+			$(VOC) -s ../src/unix/vpkFiles.Mod ../tst/testFiles.Mod -m
 			cd $(BLD) && $(VOC) -s ../src/vpkJsonParser.Mod ../tst/testJsonParser.Mod -m
 			mkfifo /tmp/fifo
 			$(BLD)/testFiles
