@@ -55,45 +55,52 @@ fflags_t  4
 __uint32_t  4
 __int32_t  4
 *)
-  Status* = RECORD (* struct stat *)
-    dev* : INTEGER; (* dev_t 4 *)
-    ino* : INTEGER; (* ino_t 4 *)
-    mode*: SHORTINT; mode1*: SHORTINT; (* mode_t 2 *)
-    nlink* : SHORTINT; nlink1*: SHORTINT; (* nlink_t 2 *)
-    uid*, gid*: INTEGER; (* uid_t, gid_t 4 *)
-    rdev*: INTEGER; (* dev_t 4 *)
-    atime* : LONGINT; atimences* : LONGINT; (* struct timespec 16 *)
-    mtime* : LONGINT; mtimences* : LONGINT; (* struct timespec 16 *)
-    ctime* : LONGINT; ctimences* : LONGINT; (* struct timespec 16 *)
-    size*: LONGINT; (* off_t 8 *) 
-    blocks* : LONGINT;
-    blksize* : INTEGER;
-    flags* : INTEGER;
-    gen* : INTEGER;
-    lspare* : INTEGER;
-    birthtime* : LONGINT; birthtimences* : LONGINT; (* struct timespec 16 *)
-  END ;
-(*
-  Status = RECORD (* struct stat *)
-    dev* : HUGEINT; (* dev_t 8 *)
-    ino* : HUGEINT; (* ino 8 *)
-    nlink* : HUGEINT;
-    mode* : LONGINT;
-    uid*, gid*: LONGINT;
-    pad0* : LONGINT;
-    rdev* : HUGEINT;
-    size* : HUGEINT;
-    blksize* : HUGEINT;
-    blocks* : HUGEINT;
-    atime* : HUGEINT;
-    atimences* : HUGEINT;
-    mtime* : HUGEINT;
-    mtimensec* : HUGEINT;
-    ctime* : HUGEINT;
-    ctimensec* : HUGEINT;
-    unused0*, unused1*, unused2*: HUGEINT;
-    END;
+
+(* this was old info. now it's like this:
+
+size of stat is 224
+size of s.st_dev is 8
+size of s.st_ino is 8
+size of s.st_nlink is 8
+size of s.st_mode is 2
+size of s.st_padding0 is 2
+size of s.st_uid is 4
+size of s.st_gid is 4
+size of s.st_padding1 is 4
+size of s.rdev is 8
+size of s.st_atim is 16
+size of s.st_mtim is 16
+size of s.st_ctim is 16
+size of s.st_birthtim is 16
+size of s.st_size is 8
+size of s.st_blocks is 8
+size of s.st_blksize is 4
+size of s.st_flags is 4
+size of s.st_gen is 8
+size of s.st_spare is 80
 *)
+
+  Status*  =  RECORD (* struct stat *)
+    dev*   : HUGEINT; (* dev_t 8 *)
+    ino*   : HUGEINT; (* ino_t 8 *)
+    nlink* : HUGEINT; (* nlink_t 8 *)
+    mode*: INTEGER;   (* mode_t  4 *)
+    padding0: INTEGER;
+    uid*, gid*: LONGINT; (* uid_t, gid_t 4 *)
+    padding1: LONGINT;
+    rdev*: HUGEINT; (* dev_t 8 *)
+    atime* : HUGEINT; atimences* : HUGEINT; 
+    mtime* : HUGEINT; mtimences* : HUGEINT; (* struct timespec 16 *)
+    ctime* : HUGEINT; ctimences* : HUGEINT; (* struct timespec 16 *)
+    birthtime* : HUGEINT; birthtimences* : HUGEINT; (* struct timespec 16 *)
+    size*: HUGEINT; (* off_t 8 *) 
+    blocks* : HUGEINT;
+    blksize* : LONGINT;
+    flags* : LONGINT;
+    gen* : HUGEINT;
+    lspare* : ARRAY 10 OF HUGEINT;
+  END ;
+
 PROCEDURE -Aincludesysstat '#include <sys/stat.h>';
 PROCEDURE -Aincludesystypes '#include <sys/types.h>';
 
