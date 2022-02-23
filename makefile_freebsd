@@ -53,7 +53,7 @@ deps:
 tests:
 			mkdir -p $(mkfile_dir_path)/$(BLD)
 			cd $(mkfile_dir_path)/$(BLD)
-			$(VOC) -s ../src/unix/vpkFiles.Mod ../tst/testFiles.Mod -m
+			$(VOC) -s ../src/unix/vpkFreeBSDFiles.Mod ../tst/testFiles.Mod -m
 			cd $(BLD) && $(VOC) -s ../src/vpkJsonParser.Mod ../tst/testJsonParser.Mod -m
 			mkfifo /tmp/fifo
 			$(BLD)/testFiles
