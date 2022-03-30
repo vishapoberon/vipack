@@ -40,7 +40,7 @@ all: deps
 		../src/vpkResolver.Mod \
 		../src/vpkJsonDepRetriever.Mod \
 		../src/vpkInstaller.Mod \
-		../src/vipack.Mod -m
+		../src/vipack.Mod -M
 
 deps:
 		mkdir -p $(mkfile_dir_path)/$(DPS)
@@ -49,6 +49,9 @@ deps:
 		if [ -d $(DPS)/lists ]; then cd $(DPS)/lists; git pull; cd -; else cd $(DPS); git clone https://github.com/norayr/lists; cd -; fi
 		if [ -d $(DPS)/opts ]; then cd $(DPS)/opts; git pull; cd -; else cd $(DPS); git clone https://github.com/norayr/opts; cd -; fi
 		if [ -d $(DPS)/time ]; then cd $(DPS)/time; git pull; cd -; else cd $(DPS); git clone https://github.com/norayr/time; cd -; fi
+
+install:
+     cp $(mkfile_dir_path)/$(BLD)/vipack /usr/local/bin/
 
 tests:
 			mkdir -p $(mkfile_dir_path)/$(BLD)
