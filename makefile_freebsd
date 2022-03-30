@@ -50,9 +50,6 @@ deps:
 		if [ -d $(DPS)/opts ]; then cd $(DPS)/opts; git pull; cd -; else cd $(DPS); git clone https://github.com/norayr/opts; cd -; fi
 		if [ -d $(DPS)/time ]; then cd $(DPS)/time; git pull; cd -; else cd $(DPS); git clone https://github.com/norayr/time; cd -; fi
 
-install:
-        cp $(mkfile_dir_path)/$(BLD)/vipack /usr/local/bin/
-
 tests:
 			mkdir -p $(mkfile_dir_path)/$(BLD)
 			cd $(mkfile_dir_path)/$(BLD)
