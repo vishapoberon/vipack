@@ -10,6 +10,7 @@ BLD = build
 DPS = dps
 VIPACK = vipack
 
+CFLAGS=
 
 all: deps
 
