@@ -3,7 +3,7 @@ IMPORT Out, Strings, Platform, vpkEnv;
 
 PROCEDURE pull*(url : ARRAY OF CHAR; dst : ARRAY OF CHAR);
 VAR i : INTEGER;
-    cmd : ARRAY 120 OF CHAR;
+    cmd : ARRAY 2048 OF CHAR;
 BEGIN
   cmd:= "git init ";
   Strings.Append(dst, cmd);
