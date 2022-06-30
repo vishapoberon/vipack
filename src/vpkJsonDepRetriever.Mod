@@ -28,7 +28,7 @@ BEGIN
   END;
 END getBuildInfo;
 
-PROCEDURE getURIandType*(VAR d: vpkdepTree.Tdep; VAR URI: ARRAY OF CHAR; VAR type: ARRAY OF CHAR);
+PROCEDURE getURIandType*(VAR d: vpkdepTree.Tdep; VAR URI: ARRAY OF CHAR; VAR type: ARRAY OF CHAR; VAR branch: ARRAY OF CHAR);
 VAR
   jsonRecord, remote: vpkJsonParser.JsonTypePointer;
   p: strutils.pstring;
@@ -51,6 +51,7 @@ BEGIN
         v := values.GetString(values, i);
         IF k^ = vpkSettings.rmtTypKey THEN COPY(v^, type) END; 
         IF k^ = vpkSettings.rmtTreeKey THEN COPY(v^, URI) END; 
+        IF k^ = vpkSettings.rmtTreeBranchKey THEN COPY(v^, branch) END; 
         INC(i);
       UNTIL i = keys.Count - 1;
      ELSE

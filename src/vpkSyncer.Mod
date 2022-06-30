@@ -16,13 +16,13 @@ BEGIN
   (* Syncing *)
   vpkConf.getConfigTreeVal(tree);
     IF tree.typ = vpkSettings.git THEN
-      vpkGit.syncTree(tree.url)
+      vpkGit.syncTree(tree.url, tree.branch)
     ELSE
       Out.String("TODO: not a git url"); Out.Ln
     END;
 END sync;
 
-PROCEDURE fetch*(name, url, typ, dst: ARRAY OF CHAR);
+PROCEDURE fetch*(name, url, typ, dst, branch: ARRAY OF CHAR);
 BEGIN
   IF dst = "" THEN
     vpkEnv.mkdefPkgDirPath(name, dst);
@@ -31,7 +31,7 @@ BEGIN
   END;
 
   IF typ = vpkSettings.rmtTypGitVal THEN 
-    vpkGit.fetchRepo(url, dst);
+    vpkGit.fetchRepo(url, dst, branch);
   ELSE
     Out.String("TODO: not a git url"); Out.Ln
   END

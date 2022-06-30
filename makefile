@@ -17,10 +17,10 @@ all: deps
 	#git submodule update
 	mkdir -p $(build_dir_path)
 	cd $(build_dir_path)
-	gmake -f $(mkfile_dir_path)/dps/lists/makefile BUILD=$(build_dir_path)
+	gmake -f $(mkfile_dir_path)/dps/lists/Makefile BUILD=$(build_dir_path)
 	gmake -f $(mkfile_dir_path)/dps/Internet/makefile BUILD=$(build_dir_path)
-	gmake -f $(mkfile_dir_path)/dps/time/makefile BUILD=$(build_dir_path)
-	gmake -f $(mkfile_dir_path)/dps/opts/makefile BUILD=$(build_dir_path)
+	gmake -f $(mkfile_dir_path)/dps/time/Makefile BUILD=$(build_dir_path)
+	gmake -f $(mkfile_dir_path)/dps/opts/Makefile BUILD=$(build_dir_path)
 	cd $(build_dir_path) && \
 	$(VOC) -s \
 		../src/vpkSettings.Mod \

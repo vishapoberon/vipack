@@ -44,7 +44,7 @@ VAR
   depTree: vpkdepTree.TdepTree;
       dep: vpkdepTree.Tdep;
         i: LONGINT;
-      URI: ARRAY 128 OF CHAR;
+      URI, branch: ARRAY 128 OF CHAR;
       typ: ARRAY 16 OF CHAR;
 BEGIN
   depTree := resolve(package);
@@ -52,8 +52,8 @@ BEGIN
   i := 0;
   REPEAT
     dep := vpkdepTree.Get(depTree, i);
-    vpkJsonDepRetriever.getURIandType(dep, URI, typ); 
-    vpkSyncer.fetch(dep.name^, URI, typ, prefix);
+    vpkJsonDepRetriever.getURIandType(dep, URI, typ, branch); 
+    vpkSyncer.fetch(dep.name^, URI, typ, prefix, branch);
     INC(i)
   UNTIL i = depTree.Count;
 END fetch;
@@ -63,7 +63,7 @@ VAR
   depTree: vpkdepTree.TdepTree;
       dep: vpkdepTree.Tdep;
      i, j: LONGINT;
-      URI: ARRAY 128 OF CHAR;
+      URI, branch: ARRAY 128 OF CHAR;
       typ: ARRAY 16  OF CHAR;
       keys, values: StringList.TStringList;
       k, v: StringList.pstring;
@@ -81,8 +81,8 @@ BEGIN
   i := 0;
   REPEAT
     dep := vpkdepTree.Get(depTree, i);
-    vpkJsonDepRetriever.getURIandType(dep, URI, typ);
-    vpkSyncer.fetch(dep.name^, URI, typ, prefix);
+    vpkJsonDepRetriever.getURIandType(dep, URI, typ, branch);
+    vpkSyncer.fetch(dep.name^, URI, typ, prefix, branch);
     b := FALSE;
     b := vpkJsonDepRetriever.getBuildInfo(dep, keys, values);
     IF b THEN

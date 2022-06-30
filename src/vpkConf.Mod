@@ -53,6 +53,7 @@ VAR
   jsonRecord : vpkJsonParser.JsonTypePointer;
   b: BOOLEAN;
   treeTyp: ARRAY 8 OF CHAR;
+  branch: ARRAY 128 OF CHAR;
 BEGIN
   f := vpkEnv.getConfFile();
   Files.Set(r, f, 0);
@@ -66,6 +67,8 @@ BEGIN
   IF ~b THEN Out.String("unable to read "); Out.String (vpkSettings.rmtTypKey); Out.String(" from json"); Out.Ln; HALT(1); END;
   IF treeTyp = vpkSettings.rmtTypGitVal THEN
     tree.typ := vpkSettings.git;
+    b := vpkJsonParser.GetTerminal(jsonRecord, vpkSettings.rmtTreeBranchKey, branch);
+    IF ~b THEN COPY("", tree.branch) ELSE COPY(branch, tree.branch) END;
   ELSIF treeTyp = vpkSettings.rmtTypHttpVal THEN
     tree.typ := vpkSettings.http
   ELSE

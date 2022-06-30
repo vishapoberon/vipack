@@ -10,18 +10,19 @@ CONST
 
   graphName*      = "deps.dot";
 
-  rmtType*         = "Remote";
-  rmtTypKey*      = "type";
-  rmtTypGitVal*   = "git";
-  rmtTypHttpVal*  = "http";
-  rmtTypHttpsVal* = "https";
-  rmtTypGemiVal*  = "gemini";
-  rmtTreeKey*     = "path";
-  bldType*        = "Build";
-  (*defTreeVal*     = "https://github.com/vishaps/vipackTree";*)
-  defTreeVal*     = "git@github.com:vishaps/vipackTree";
-  confTreeVal*    = defTreeVal;
-  defTypVal*      = rmtTypGitVal;
+  rmtType*           = "Remote";
+  rmtTypKey*         = "type";
+  rmtTypGitVal*      = "git";
+  rmtTypHttpVal*     = "http";
+  rmtTypHttpsVal*    = "https";
+  rmtTypGemiVal*     = "gemini";
+  rmtTreeKey*        = "path";
+  rmtTreeBranchKey*  = "branch";
+  bldType*           = "Build";
+  (*defTreeVal*      = "https://github.com/vishaps/vipackTree";*)
+  defTreeVal*        = "git@github.com:vishaps/vipackTree";
+  confTreeVal*       = defTreeVal;
+  defTypVal*         = rmtTypGitVal;
 
   pkgTypKey*  = "Package";
   depTypKey*  = "Dependencies";
@@ -38,7 +39,8 @@ CONST
 TYPE
   tree* = RECORD
    url* : ARRAY 128 OF CHAR;
-   typ* : SHORTINT
+   typ* : SHORTINT;
+ branch*: ARRAY 128 OF CHAR;
    END;
 
 
