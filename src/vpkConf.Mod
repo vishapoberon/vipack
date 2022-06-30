@@ -55,6 +55,9 @@ VAR
   treeTyp: ARRAY 8 OF CHAR;
   branch: ARRAY 128 OF CHAR;
 BEGIN
+  COPY("", tree.branch);
+  COPY("", tree.url);
+  COPY("", branch);
   f := vpkEnv.getConfFile();
   Files.Set(r, f, 0);
   i := 0;

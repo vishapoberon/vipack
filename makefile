@@ -11,7 +11,7 @@ DPS = dps
 VIPACK = vipack
 
 
-all: deps
+all: deps vipack
 
 	#git submodule init
 	#git submodule update
@@ -21,6 +21,7 @@ all: deps
 	gmake -f $(mkfile_dir_path)/dps/Internet/makefile BUILD=$(build_dir_path)
 	gmake -f $(mkfile_dir_path)/dps/time/Makefile BUILD=$(build_dir_path)
 	gmake -f $(mkfile_dir_path)/dps/opts/Makefile BUILD=$(build_dir_path)
+vipack:
 	cd $(build_dir_path) && \
 	$(VOC) -s \
 		../src/vpkSettings.Mod \
