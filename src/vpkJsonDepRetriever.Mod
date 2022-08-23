@@ -36,6 +36,9 @@ VAR
   keys, values: StringList.TStringList;
   i: LONGINT;
 BEGIN
+  strutils.zeroStr(URI);
+  strutils.zeroStr(type);
+  strutils.zeroStr(branch);
   p := NIL;
   vpkStorage.json2pstring(d.name^, p);
   IF p # NIL THEN

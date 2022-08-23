@@ -1,5 +1,5 @@
 MODULE vpkGit;
-IMPORT Out, Strings, Platform, vpkEnv;
+IMPORT Out, Strings, Platform, vpkEnv, strutils;
 
 PROCEDURE pull*(VAR url : ARRAY OF CHAR; VAR dst : ARRAY OF CHAR; VAR branch: ARRAY OF CHAR);
 VAR i : INTEGER;
