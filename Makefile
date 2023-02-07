@@ -3,10 +3,12 @@
 CFLAGS   =
 
 # The following order is important, do not alphabetise
-DEPS     = 	norayr/lists      \
-		norayr/Internet   \
+DEPS     = 	norayr/lists  \
+        norayr/Internet   \
      		norayr/opts       \
-    		 norayr/time
+        norayr/time       \
+        norayr/skprLogger \
+        norayr/skprJson
 
 GITHUB   = https://github.com/
 
