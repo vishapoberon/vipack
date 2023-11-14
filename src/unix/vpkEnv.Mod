@@ -1,5 +1,5 @@
 MODULE vpkEnv;
-IMPORT Files, Platform, Strings, Out, vpkSettings, vpkFiles, lDefs;
+IMPORT Files, Platform, Strings, Out, vpkSettings, vpkFiles, strTypes;
 
 VAR
   conf, confDir : ARRAY 256 OF CHAR;
@@ -28,9 +28,9 @@ BEGIN
 
 END createIfNotThere;
 
-PROCEDURE getSrcRelPath*(VAR depName, path0: ARRAY OF CHAR): lDefs.pstring;
+PROCEDURE getSrcRelPath*(VAR depName, path0: ARRAY OF CHAR): strTypes.pstring;
 VAR
-  p: lDefs.pstring;
+  p: strTypes.pstring;
   len: INTEGER;
 BEGIN
   len := 9 + Strings.Length(depName) + Strings.Length(path0);
@@ -52,9 +52,9 @@ BEGIN
   Strings.Append(vpkSettings.vpkConfDir, path);
 END mkConfDirPath;
 
-PROCEDURE mkBldDir*(VAR prefix: ARRAY OF CHAR): lDefs.pstring;
+PROCEDURE mkBldDir*(VAR prefix: ARRAY OF CHAR): strTypes.pstring;
 VAR
-  builddir: lDefs.pstring;
+  builddir: strTypes.pstring;
   ln : INTEGER;
 BEGIN
   ln := 3 + Strings.Length(prefix) + Strings.Length(vpkSettings.vpkBldDir);
@@ -68,9 +68,9 @@ BEGIN
   RETURN builddir
 END mkBldDir;
 
-PROCEDURE mkdefBldDir*(): lDefs.pstring;
+PROCEDURE mkdefBldDir*(): strTypes.pstring;
 VAR
-  builddir: lDefs.pstring;
+  builddir: strTypes.pstring;
   ln: INTEGER;
   home: ARRAY 128 OF CHAR;
 BEGIN
@@ -118,9 +118,9 @@ BEGIN
 END mkPkgDirPath;
 
 
-PROCEDURE mkCmd*(VAR p0, p1: ARRAY OF CHAR): lDefs.pstring;
+PROCEDURE mkCmd*(VAR p0, p1: ARRAY OF CHAR): strTypes.pstring;
 VAR
-  cmd: lDefs.pstring;
+  cmd: strTypes.pstring;
   ln: INTEGER;
 BEGIN
   ln := 2 + Strings.Length(p0) + Strings.Length(p1);

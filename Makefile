@@ -3,12 +3,13 @@
 CFLAGS   =
 
 # The following order is important, do not alphabetise
-DEPS     = 	norayr/lists  \
-        norayr/Internet   \
-     		norayr/opts       \
-        norayr/time       \
-        norayr/skprLogger \
-        norayr/skprJson
+DEPS     =   norayr/strutils  \
+		norayr/lists              \
+		norayr/Internet           \
+		norayr/opts               \
+		norayr/time               \
+		norayr/skprLogger         \
+		norayr/skprJson
 
 GITHUB   = https://github.com/
 
@@ -33,7 +34,7 @@ all: ${DEPS}
 		${ROOTDIR}/../src/unix/vpkTime.Mod               \
 		${ROOTDIR}/../src/vpkLogger.Mod                  \
 		${ROOTDIR}/../src/vpkHttp.Mod                    \
-      		${ROOTDIR}/../src/unix/vpkEnv.Mod                \
+		${ROOTDIR}/../src/unix/vpkEnv.Mod                \
 		${ROOTDIR}/../src/unix/vpkGit.Mod                \
 		${ROOTDIR}/../src/vpkCharacterStack.Mod          \
 		${ROOTDIR}/../src/vpkJsonParser.Mod              \

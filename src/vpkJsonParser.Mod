@@ -1,5 +1,5 @@
 MODULE vpkJsonParser;
-IMPORT vpkLogger, vpkCharacterStack, Strings, strutils, vpkSettings, StringList;
+IMPORT vpkLogger, vpkCharacterStack, Strings, strUtils, vpkSettings, StringList;
 CONST
     ArrayMaxNumber = 30;
     ArrayMaxNumberChar = 2000;
@@ -68,7 +68,7 @@ PROCEDURE GetTerminal *(self: JsonTypePointer; key: ARRAY OF CHAR; VAR returnVal
 VAR
     i: LONGINT;
     noneTerminal: JsonTypePointer;
-    strings: strutils.pstrings;
+    strings: strUtils.pstrings;
     parent, children: ARRAY ArrayMaxNumber OF CHAR;
 BEGIN
 
@@ -76,7 +76,7 @@ BEGIN
         IF Strings.Match(key, self.TerminalKeys[i]) THEN COPY(self.TerminalValues[i], returnValue); RETURN TRUE END;
     END;
     
-    strings := strutils.tokenize(key, '.');
+    strings := strUtils.tokenize(key, '.');
     
     IF LEN(strings^) < 1 THEN RETURN FALSE END;
     

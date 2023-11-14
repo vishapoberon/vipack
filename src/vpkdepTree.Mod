@@ -1,9 +1,9 @@
 MODULE vpkdepTree;
-IMPORT Out, Strings, strutils, StringList;
+IMPORT Out, Strings, strUtils, StringList;
 TYPE
  
-  pstring = strutils.pstring;
-  pstrings = strutils.pstrings;
+  pstring = strUtils.pstring;
+  pstrings = strUtils.pstrings;
 
   Tdep*  = POINTER TO TdepDesc;
   Tdeps* = POINTER TO ARRAY OF Tdep;

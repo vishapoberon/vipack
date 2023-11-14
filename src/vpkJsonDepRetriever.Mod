@@ -1,9 +1,9 @@
 MODULE vpkJsonDepRetriever;
-IMPORT Out, StringList, strutils, vpkJsonParser, vpkStorage, vpkSettings, vpkdepTree;
+IMPORT Out, StringList, strUtils, vpkJsonParser, vpkStorage, vpkSettings, vpkdepTree;
 
 PROCEDURE getBuildInfo*(VAR d: vpkdepTree.Tdep; VAR k, v: StringList.TStringList): BOOLEAN;
 VAR
-  p: strutils.pstring;
+  p: strUtils.pstring;
   jsonRecord, build : vpkJsonParser.JsonTypePointer;
   keys, values: StringList.TStringList;
   b: BOOLEAN;
@@ -31,14 +31,14 @@ END getBuildInfo;
 PROCEDURE getURIandType*(VAR d: vpkdepTree.Tdep; VAR URI: ARRAY OF CHAR; VAR type: ARRAY OF CHAR; VAR branch: ARRAY OF CHAR);
 VAR
   jsonRecord, remote: vpkJsonParser.JsonTypePointer;
-  p: strutils.pstring;
+  p: strUtils.pstring;
   k, v: StringList.pstring;
   keys, values: StringList.TStringList;
   i: LONGINT;
 BEGIN
-  strutils.zeroStr(URI);
-  strutils.zeroStr(type);
-  strutils.zeroStr(branch);
+  strUtils.zeroStr(URI);
+  strUtils.zeroStr(type);
+  strUtils.zeroStr(branch);
   p := NIL;
   vpkStorage.json2pstring(d.name^, p);
   IF p # NIL THEN
@@ -72,7 +72,7 @@ END getURIandType;
 PROCEDURE getDeps*(VAR d: vpkdepTree.Tdep; VAR depstrlist: StringList.TStringList): LONGINT;
 VAR
   jsonRecord, dependencies: vpkJsonParser.JsonTypePointer;
-  p: strutils.pstring;
+  p: strUtils.pstring;
   b: BOOLEAN;
   pkgName : ARRAY 32 OF CHAR;
 BEGIN

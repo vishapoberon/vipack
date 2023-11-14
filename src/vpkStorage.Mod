@@ -1,13 +1,13 @@
 MODULE vpkStorage;
 IMPORT Files, Out, Strings,
-strutils, vpkLogger, vpkEnv, vpkFiles;
+strUtils, vpkLogger, vpkEnv, vpkFiles;
 
 PROCEDURE WriteString(VAR r : Files.Rider; str : ARRAY OF CHAR);
 BEGIN
    Files.WriteBytes(r, str, Strings.Length(str));
 END WriteString;
 
-PROCEDURE fileToString*(VAR fileName: ARRAY OF CHAR; VAR returnString: strutils.pstring);
+PROCEDURE fileToString*(VAR fileName: ARRAY OF CHAR; VAR returnString: strUtils.pstring);
 VAR
     f: Files.File;
     r: Files.Rider;
@@ -59,7 +59,7 @@ BEGIN
     RETURN TRUE;
 END stringToFile;
 
-PROCEDURE json2pstring*(VAR json: ARRAY OF CHAR; VAR pstr: strutils.pstring);
+PROCEDURE json2pstring*(VAR json: ARRAY OF CHAR; VAR pstr: strUtils.pstring);
 VAR
   fi: vpkFiles.fileInfo;
 BEGIN

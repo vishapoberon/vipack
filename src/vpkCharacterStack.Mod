@@ -1,19 +1,19 @@
 MODULE vpkCharacterStack;
-IMPORT lDefs, List, Out;
+IMPORT strTypes, List, Out;
 
 TYPE 
-    TObject* = lDefs.TObject;
+    TObject* = List.TObject;
 
     Node* = POINTER TO NodeDesc;
     NodeDesc* = List.NodeDesc;
 
     TChar* = POINTER TO TCharDesc;
     
-    TCharDesc = RECORD (lDefs.TObjectDesc)
+    TCharDesc = RECORD (List.TObjectDesc)
         char* : CHAR
     END;
 
-    string = lDefs.string;
+    string = strTypes.string;
 
     CharacterStackType* = POINTER TO CharacterStackTypeDesc;
     
