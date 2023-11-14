@@ -31,7 +31,7 @@ build_deps:
 	make -f $(DPS)/skprJson/GNUmakefile BUILD=$(BUILD)
 
 buildThis:
-	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vkpSettings.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkSettings.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkLinuxFiles.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkTime.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkLogger.Mod
@@ -48,7 +48,7 @@ buildThis:
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkResolver.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkJsonDepRetriever.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkInstaller.Mod
-	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vipack.Mod
+	cd $(BUILD) && $(VOC) $(mkfile_dir_path)/src/vipack.Mod -m
 
 tests:
 	#cd $(BUILD) && $(VOC) $(mkfile_dir_path)/test/testList.Mod -m
