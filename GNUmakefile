@@ -1,3 +1,5 @@
+DEPEND = github.com/norayr/lists github.com/norayr/Internet github.com/norayr/opts github.com/norayr/skprLogger github.com/norayr/skprJson
+
 VOC = /opt/voc/bin/voc
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 mkfile_dir_path := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
@@ -14,21 +16,26 @@ endif
 all: get_deps build_deps buildThis
 
 get_deps:
-	mkdir -p $(DPS)
-	if [ -d $(DPS)/lists ]; then cd $(DPS)/lists; git pull; cd -; else cd $(DPS); git clone https://github.com/norayr/lists; cd -; fi
-	if [ -d $(DPS)/Internet ]; then cd $(DPS)/Internet; git pull; cd -; else cd $(DPS); git clone https://github.com/norayr/Internet; cd -; fi
-	if [ -d $(DPS)/opts ]; then cd $(DPS)/opts; git pull; cd -; else cd $(DPS); git clone https://github.com/norayr/opts; cd -; fi
-	if [ -d $(DPS)/skprLogger ]; then cd $(DPS)/skprLogger; git pull; cd -; else cd $(DPS); git clone https://github.com/norayr/skprLogger; cd -; fi
-	if [ -d $(DPS)/skprJson ]; then cd $(DPS)/skprJson; git pull; cd -; else cd $(DPS); git clone https://github.com/norayr/skprJson; cd -; fi
+	@for i in $(DEPEND); do \
+			if [ -d "$(DPS)/$${i}" ]; then \
+				 cd "$(DPS)/$${i}"; \
+				 git pull; \
+				 cd - ;    \
+				 else \
+				 mkdir -p "$(DPS)/$${i}"; \
+				 cd "$(DPS)/$${i}"; \
+				 cd .. ; \
+				 git clone "https://$${i}"; \
+				 cd - ; \
+			fi; \
+	done
 
 build_deps:
 	mkdir -p $(BUILD)
-	cd $(BUILD)
-	make -f $(DPS)/lists/GNUmakefile BUILD=$(BUILD)
-	make -f $(DPS)/Internet/GNUmakefile BUILD=$(BUILD)
-	make -f $(DPS)/opts/GNUmakefile BUILD=$(BUILD)
-	make -f $(DPS)/skprLogger/GNUmakefile BUILD=$(BUILD)
-	make -f $(DPS)/skprJson/GNUmakefile BUILD=$(BUILD)
+	cd $(BUILD);
+	@for i in $(DEPEND); do \
+		make -f "$(DPS)/$${i}/GNUmakefile" BUILD=$(BUILD); \
+	done
 
 buildThis:
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkSettings.Mod
