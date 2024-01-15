@@ -3,6 +3,8 @@ DEPEND = github.com/norayr/lists github.com/norayr/Internet github.com/norayr/op
 VOC = /opt/voc/bin/voc
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 mkfile_dir_path := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+$(info $$mkfile_path is [${mkfile_path}])
+$(info $$mkfile_dir_path is [${mkfile_dir_path}])
 ifndef BUILD
 BUILD="build"
 endif

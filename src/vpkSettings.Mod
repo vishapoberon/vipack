@@ -19,8 +19,8 @@ CONST
   rmtTreeKey*        = "path";
   rmtTreeBranchKey*  = "branch";
   bldType*           = "Build";
-  (*defTreeVal*      = "https://github.com/vishaps/vipackTree";*)
-  defTreeVal*        = "git@github.com:vishaps/vipackTree";
+  defTreeVal*        = "https://github.com/vishaps/vipackTree";
+  (*defTreeVal*        = "git@github.com:vishaps/vipackTree";*)
   confTreeVal*       = defTreeVal;
   defTypVal*         = rmtTypGitVal;
 

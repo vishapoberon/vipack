@@ -1,70 +1,79 @@
 .POSIX:
+DEPEND = github.com/norayr/lists github.com/norayr/Internet github.com/norayr/opts github.com/norayr/skprLogger github.com/norayr/skprJson
 
-CFLAGS   =
+VOC = /opt/voc/bin/voc
+#mkfile_path = $(abspath $(lastword $(MAKEFILE_LIST)))
+#mkfile_dir_path = $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+#mkfile_path = $(abspath $(lastword $(MAKEFILE_LIST)))
+#mkfile_dir_path = $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 
-# The following order is important, do not alphabetise
-DEPS     =   norayr/strutils  \
-		norayr/lists              \
-		norayr/Internet           \
-		norayr/opts               \
-		norayr/time               \
-		norayr/skprLogger         \
-		norayr/skprJson
+#mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+##mkfile_dir_path := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST)))
+#mkfile_dir_path = $(dir $(firstword $(MAKEFILE_LIST)))
 
-GITHUB   = https://github.com/
+#$(info $$mkfile_path is [${mkfile_path}])
+#$(info $$mkfile_dir_path is [${mkfile_dir_path}])
+mkfile_dir_path = $(shell pwd)
+mkfile_path = $(mkfile_dir_path)/Makefile
+$(info $(mkfile_path))
 
-ROOTDIR  = $$PWD
+BUILD ?= build
+build_dir_path = $(mkfile_dir_path)/$(BUILD)
+current_dir = $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+BLD = $(mkfile_dir_path)/build
+DPD = deps
+DPS ?= $(mkfile_dir_path)/$(DPD)
 
-CFLAGS =
+all: get_deps build_deps buildThis
 
-all: ${DEPS}
-	@if [ ! -d build ]; then \
-		mkdir build;     \
-	fi
-	@for i in $?; do                                  \
-		cp -r   ${ROOTDIR}/build                  \
-		${ROOTDIR}/deps/$${i#*/}/build;           \
-		make -C ${ROOTDIR}/deps/$${i#*/};         \
-		cp -r   ${ROOTDIR}/deps/$${i#*/}/build/*  \
-		${ROOTDIR}/build/;                        \
+get_deps:
+	@for i in $(DEPEND); do \
+			if [ -d "$(DPS)/$${i}" ]; then \
+				 cd "$(DPS)/$${i}"; \
+				 git pull; \
+				 cd - ;    \
+				 else \
+				 mkdir -p "$(DPS)/$${i}"; \
+				 cd "$(DPS)/$${i}"; \
+				 cd .. ; \
+				 git clone "https://$${i}"; \
+				 cd - ; \
+			fi; \
 	done
 
-	@cd build; voc -s  ${ROOTDIR}/../src/vpkSettings.Mod     \
-		${ROOTDIR}/../src/unix/vpkLinuxFiles.Mod         \
-		${ROOTDIR}/../src/unix/vpkTime.Mod               \
-		${ROOTDIR}/../src/vpkLogger.Mod                  \
-		${ROOTDIR}/../src/vpkHttp.Mod                    \
-		${ROOTDIR}/../src/unix/vpkEnv.Mod                \
-		${ROOTDIR}/../src/unix/vpkGit.Mod                \
-		${ROOTDIR}/../src/vpkCharacterStack.Mod          \
-		${ROOTDIR}/../src/vpkJsonParser.Mod              \
-		${ROOTDIR}/../src/vpkConf.Mod                    \
-		${ROOTDIR}/../src/vpkStorage.Mod                 \
-		${ROOTDIR}/../src/vpkSyncer.Mod                  \
-		${ROOTDIR}/../src/vpkdepTree.Mod                 \
-		${ROOTDIR}/../src/vpkDot.Mod                     \
-		${ROOTDIR}/../src/vpkResolver.Mod                \
-		${ROOTDIR}/../src/vpkJsonDepRetriever.Mod        \
-		${ROOTDIR}/../src/vpkInstaller.Mod               \
-		${ROOTDIR}/../src/vipack.Mod -m
-
-${DEPS}:
-	@for i in $@; do                                         \
-		if [ -d deps/$${i#*/} ]; then                    \
-			printf "Updating %s: " $${i#*/};         \
-			git -C deps/$${i#*/} pull --ff-only      \
-			${GITHUB}$$i > /dev/null 2>&1            \
-			&& echo done                             \
-			|| (echo failed && exit 1);              \
-		else                                             \
-			printf "Fetching %s: " $${i#*/};         \
-			git clone ${GITHUB}$$i deps/$${i#*/}     \
-			> /dev/null 2>&1                         \
-			&& echo done                             \
-			|| (echo failed && exit 1);              \
-		fi                                               \
+build_deps:
+	mkdir -p $(BUILD)
+	cd $(BUILD);
+	@for i in $(DEPEND); do \
+		#make -f "$(DPS)/$${i}/Makefile" BUILD=$(BUILD); \
+		cd $(DPS)/$${i}" && make BUILD=$(BUILD); \
 	done
+
+buildThis:
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkSettings.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkLinuxFiles.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkTime.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkLogger.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkHttp.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkEnv.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkGit.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkCharacterStack.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkJsonParser.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkConf.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkStorage.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkSyncer.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkdepTree.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkDot.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkResolver.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkJsonDepRetriever.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkInstaller.Mod
+	cd $(BUILD) && $(VOC) $(mkfile_dir_path)/src/vipack.Mod -m
+
+tests:
+	#cd $(BUILD) && $(VOC) $(mkfile_dir_path)/test/testList.Mod -m
+	#build/testList
 
 clean:
-	rm -rf build deps
+	if [ -d "$(BUILD)" ]; then rm -rf $(BLD); fi
 
+print-%  : ; @echo $* = $($*)
