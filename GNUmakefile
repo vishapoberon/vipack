@@ -33,13 +33,13 @@ get_deps:
 	done
 
 build_deps:
-	mkdir -p $(BUILD)
-	cd $(BUILD); \
+	mkdir -p $(BLD)
+	cd $(BLD); \
 	for i in $(DEPEND); do \
 		if [ -f "$(DPS)/$${i}/GNUmakefile" ]; then \
-			make -f "$(DPS)/$${i}/GNUmakefile" BUILD=$(BUILD); \
+			make -f "$(DPS)/$${i}/GNUmakefile" BUILD=$(BLD); \
 		else \
-			make -f "$(DPS)/$${i}/Makefile" BUILD=$(BUILD); \
+			make -f "$(DPS)/$${i}/Makefile" BUILD=$(BLD); \
 		fi; \
 	done
 
