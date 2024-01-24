@@ -9,6 +9,10 @@ CONST
          defUAStr = "User-Agent";
      defAcceptStr = "Accept";
  defEverythingStr = "*/*";
+
+        hdrDate = "Date";
+      hdrServer = "Server";
+
 TYPE
 
   httpClient = POINTER TO httpClientDesc;
@@ -167,7 +171,6 @@ END readHeader;
 PROCEDURE processHeader(VAR http: httpClient; VAR hdr: ARRAY OF CHAR);
 VAR
   len, i, j: INTEGER;
-  pkey: strTypes.pstring;
   key, val: ARRAY 64 OF CHAR;
 
 BEGIN
@@ -183,10 +186,9 @@ strUtils.string2pstring(http^.rspnPstrings^[0]^, http^.rspnFirstLine);
   REPEAT
           Out.Int(i, 0); Out.String(": ");
           Out.String(http^.rspnPstrings^[i]^); Out.Ln;
-    pkey := strUtils.ExtractWord(0, http^.rspnPstrings^[i]^, ':');
-    strUtils.getNextWord(http^.rspnPstrings^[i]^, 0, key);
-          Out.String("key: '"); Out.String(key); Out.Char("'"); Out.Ln;
     j := strUtils.Pos(':', http^.rspnPstrings^[i]^, 0);
+    Strings.Extract(http^.rspnPstrings^[i]^, 0, j, key);
+          Out.String("key: '"); Out.String(key); Out.Char("'"); Out.Ln;
     strUtils.getTillEOL(http^.rspnPstrings^[i]^, j+1, val);
           Out.String("val: '"); Out.String(val); Out.Char("'"); Out.Ln;
     INC(i)
