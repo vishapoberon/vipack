@@ -43,13 +43,6 @@ build_deps:
 		fi; \
 	done
 
-#build_deps:
-#	mkdir -p $(BUILD)
-#	cd $(BUILD);
-#	@for i in $(DEPEND); do \
-#		make -f "$(DPS)/$${i}/GNUmakefile" BUILD=$(BUILD); \
-#	done
-
 buildThis:
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkSettings.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkLinuxFiles.Mod

@@ -166,8 +166,8 @@ END readHeader;
 
 PROCEDURE processHeader(VAR http: httpClient; VAR hdr: ARRAY OF CHAR);
 VAR
-  len, i, j: LONGINT;
-  ok: ARRAY 32 OF CHAR;
+  len, i, j: INTEGER;
+  pkey: strTypes.pstring;
   key, val: ARRAY 64 OF CHAR;
 
 BEGIN
@@ -175,19 +175,22 @@ BEGIN
   Out.String("header length is "); Out.Int(len, 0); Out.Ln;
 
   (* getting string like 'HTTP/1.1 200 OK', hopefully *)
-(*  i := 0; j := 0;
-  REPEAT
-    ok[j] := hdr[i];
-    INC(i); INC(j);
-  UNTIL ok[i] = 0DX;
-  ok[i] := 0X;
-*)
   http^.rspnPstrings := strUtils.string2pstrings(hdr);
-  COPY(http^.rspnPstrings^[0]^, ok);
-strUtils.string2pstring(ok, http^.rspnFirstLine);
+strUtils.string2pstring(http^.rspnPstrings^[0]^, http^.rspnFirstLine);
            Out.String("first line: '"); Out.String(http^.rspnFirstLine^);
            Out.Char("'"); Out.Ln;
-
+  i := 1;
+  REPEAT
+          Out.Int(i, 0); Out.String(": ");
+          Out.String(http^.rspnPstrings^[i]^); Out.Ln;
+    pkey := strUtils.ExtractWord(0, http^.rspnPstrings^[i]^, ':');
+    strUtils.getNextWord(http^.rspnPstrings^[i]^, 0, key);
+          Out.String("key: '"); Out.String(key); Out.Char("'"); Out.Ln;
+    j := strUtils.Pos(':', http^.rspnPstrings^[i]^, 0);
+    strUtils.getTillEOL(http^.rspnPstrings^[i]^, j+1, val);
+          Out.String("val: '"); Out.String(val); Out.Char("'"); Out.Ln;
+    INC(i)
+  UNTIL i = LEN(http^.rspnPstrings^)-1;
 END processHeader;
 
 PROCEDURE get*(VAR http: httpClient): strTypes.pstring;
