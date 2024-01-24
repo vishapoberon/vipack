@@ -12,6 +12,13 @@ CONST
 
         hdrDate = "Date";
       hdrServer = "Server";
+     hdrLastMod = "Last-Modified";
+        hdrETag = "ETag";
+hdrAcceptRanges = "Accept-Ranges";
+  hdrContLength = "Content-Length";
+        hdrVary = "Vary";
+     hdrContTyp = "Content-Type";
+
 
 TYPE
 
@@ -33,7 +40,7 @@ TYPE
       rspnLastModified- : strTypes.pstring;
               rspnETag- : strTypes.pstring;
       rspnAcceptRanges- : strTypes.pstring;
-     rspnContentLength- : INTEGER;
+     rspnContentLength- : LONGINT;
               rspnVary- : strTypes.pstring;
        rspnContentType- : strTypes.pstring;
 
@@ -172,7 +179,7 @@ PROCEDURE processHeader(VAR http: httpClient; VAR hdr: ARRAY OF CHAR);
 VAR
   len, i, j: INTEGER;
   key, val: ARRAY 64 OF CHAR;
-
+  res: SHORTINT;
 BEGIN
   len := Strings.Length(hdr);
   Out.String("header length is "); Out.Int(len, 0); Out.Ln;
@@ -191,6 +198,23 @@ strUtils.string2pstring(http^.rspnPstrings^[0]^, http^.rspnFirstLine);
           Out.String("key: '"); Out.String(key); Out.Char("'"); Out.Ln;
     strUtils.getTillEOL(http^.rspnPstrings^[i]^, j+1, val);
           Out.String("val: '"); Out.String(val); Out.Char("'"); Out.Ln;
+    IF key = hdrDate THEN strUtils.string2pstring(val, http^.rspnDate) END;
+    IF key = hdrServer THEN strUtils.string2pstring(val, http^.rspnServer) END;
+    IF key = hdrLastMod THEN strUtils.string2pstring(val, http^.rspnLastModified) END;
+    IF key = hdrETag THEN strUtils.string2pstring(val, http^.rspnETag) END;
+    IF key = hdrAcceptRanges THEN strUtils.string2pstring(val, http^.rspnAcceptRanges) END;
+
+    IF key = hdrContLength THEN
+      IntStr.StrToInt(val, http^.rspnContentLength, res);
+      IF res # IntStr.strAllRight THEN
+        Out.String("not number"); Out.Ln; HALT(1)
+      ELSE
+        Out.String("got content length: "); Out.Int(http^.rspnContentLength, 0); Out.Ln
+      END;
+    END;
+
+    IF key = hdrVary THEN strUtils.string2pstring(val, http^.rspnVary) END;
+    IF key = hdrContTyp THEN strUtils.string2pstring(val, http^.rspnContentType) END;
     INC(i)
   UNTIL i = LEN(http^.rspnPstrings^)-1;
 END processHeader;
