@@ -1,7 +1,7 @@
 MODULE vpkHttp;
 IMPORT IntStr := oocIntStr, Strings, Internet, vpkLogger, Out, strTypes, strUtils;
 CONST
-  defHeaderLength = 512;
+  defHeaderLength = 1024;
      defUserAgent = "oberon-http-client/1.0";
    defHttpVersion = "HTTP/1.1";
         defGetStr = "GET";
@@ -10,14 +10,22 @@ CONST
      defAcceptStr = "Accept";
  defEverythingStr = "*/*";
 
-        hdrDate = "Date";
-      hdrServer = "Server";
-     hdrLastMod = "Last-Modified";
-        hdrETag = "ETag";
-hdrAcceptRanges = "Accept-Ranges";
-  hdrContLength = "Content-Length";
-        hdrVary = "Vary";
-     hdrContTyp = "Content-Type";
+              hdrDate = "Date";
+            hdrServer = "Server";
+      hdrLastModified = "Last-Modified";
+              hdrETag = "ETag";
+      hdrAcceptRanges = "Accept-Ranges";
+     hdrContentLength = "Content-Length";
+              hdrVary = "Vary";
+       hdrContentType = "Content-Type";
+  hdrTransferEncoding = "Transfer-Encoding";
+        hdrConnection = "keey-alive";
+      hdrCacheControl = "Cache-Control";
+           hdrExpires = "Expires";
+          hdrLocation = "Location";
+          hdrReportTo = "Report-To";
+               hdrNEL = "NEL";
+             hdrCFRAY = "CF-RAY";
 
 
 TYPE
@@ -43,10 +51,19 @@ TYPE
      rspnContentLength- : LONGINT;
               rspnVary- : strTypes.pstring;
        rspnContentType- : strTypes.pstring;
+  rspnTransferEncoding- : strTypes.pstring;
+        rspnConnection- : strTypes.pstring;
+      rspnCacheControl- : strTypes.pstring;
+           rspnExpires- : strTypes.pstring;
+          rspnLocation- : strTypes.pstring;
+          rspnReportTo- : strTypes.pstring;
+               rspnNEL- : strTypes.pstring;
+             rspnCFRAY- : strTypes.pstring;
 
-               Create* : PROCEDURE(host, port, path: ARRAY OF CHAR): httpClient;
+                Create* : PROCEDURE(host, port, path: ARRAY OF CHAR): httpClient;
                    Get* : PROCEDURE(VAR http: httpClient): strTypes.pstring;
           setUserAgent* : PROCEDURE(VAR http: httpClient; ua: ARRAY OF CHAR);
+            clearState* : PROCEDURE(VAR http: httpClient);
   END;
 
 VAR (* these variables are only for testing *)
@@ -65,6 +82,29 @@ BEGIN
   UNTIL i = LEN(string^) -1;
 END Empty;
 
+PROCEDURE clearstate(VAR http: httpClient);
+BEGIN
+  http^.rspnPstrings          := NIL;
+  http^.rspnFirstLine         := NIL;
+  http^.rspnDate              := NIL;
+  http^.rspnServer            := NIL;
+  http^.rspnLastModified      := NIL;
+  http^.rspnETag              := NIL;
+  http^.rspnAcceptRanges      := NIL;
+  http^.rspnContentLength     := 0;
+  http^.rspnVary              := NIL;
+  http^.rspnContentType       := NIL;
+  http^.rspnTransferEncoding  := NIL;
+  http^.rspnConnection        := NIL;
+  http^.rspnCacheControl      := NIL;
+  http^.rspnExpires           := NIL;
+  http^.rspnLocation          := NIL;
+  http^.rspnReportTo          := NIL;
+  http^.rspnNEL               := NIL;
+  http^.rspnCFRAY             := NIL;
+
+END clearstate;
+
 PROCEDURE getClean(buff: ARRAY OF CHAR; VAR clean: strTypes.pstring);
 VAR
   i: INTEGER;
@@ -74,7 +114,7 @@ BEGIN
   notFirstLine := FALSE;
   lineIsHeader := FALSE;
   EOL := FALSE;
-
+                Out.String("entered repeat in getClean"); Out.Ln;
   REPEAT
     IF EOL THEN
       lineIsHeader := FALSE;
@@ -82,15 +122,20 @@ BEGIN
       notFirstLine := TRUE
     END;
 
-    IF buff[i] = ":" THEN lineIsHeader := TRUE END;
+    IF buff[i] = ":" THEN lineIsHeader := TRUE; Out.String("found ':'"); Out.Ln; END;
 
     IF ((buff[i - 1] = 0DX) & (buff[i] = 0AX)) THEN EOL := TRUE END;
 
     INC(i);
+    Out.String("i is now "); Out.Int(i, 0); Out.Ln;
   UNTIL (i + 2 > Strings.Length(buff)) OR (~lineIsHeader & EOL & notFirstLine);
 
-  NEW(clean, Strings.Length(buff) - i + 1);
+    Out.String("after until i is now "); Out.Int(i, 0); Out.Ln;
+                Out.String("exited repeat in getClean"); Out.Ln;
+  NEW(clean, Strings.Length(buff)  + 2);
+                Out.String("starting extract"); Out.Ln;
   Strings.Extract(buff, i, Strings.Length(buff), clean^);
+                Out.String("finished extract"); Out.Ln;
 END getClean;
 
 PROCEDURE AppendEOLAndClean(buff: ARRAY OF CHAR; VAR buffClean: strTypes.pstring);
@@ -145,6 +190,7 @@ VAR
   headerBool : BOOLEAN;
   res: SHORTINT;
   i: INTEGER;
+  n: INTEGER;
 BEGIN
   NEW(header, defHeaderLength);
   Empty(header);
@@ -153,11 +199,11 @@ BEGIN
   REPEAT
     http^.connectionFlag := Internet.Read(http^.socket, buff^);
     header[i] := buff[0];
-                Out.String("got character: "); Out.Int(ORD(buff[0]), 0); Out.Ln;
+    (*      Out.String("got character: "); Out.Int(ORD(buff[0]), 0); Out.Ln;*)
     IF (header[i] = 0DX) THEN
       http^.connectionFlag := Internet.Read(http^.socket, buff^);
       INC(i); header[i] := buff[0];
-                 Out.String("got character: "); Out.Int(ORD(buff[0]), 0); Out.Ln;
+               (*  Out.String("got character: "); Out.Int(ORD(buff[0]), 0); Out.Ln;*)
       IF (header[i] = 0AX) THEN
         http^.connectionFlag := Internet.Read(http^.socket, buff^);
         INC(i); header[i] := buff^[0];
@@ -170,7 +216,7 @@ BEGIN
     END;
     INC(i);
     header[i] := 0X;
-    Out.String("header is '"); Out.String(header^); Out.Char("'"); Out.Ln;
+(*    Out.String("header is '"); Out.String(header^); Out.Char("'"); Out.Ln;*)
   UNTIL headerBool;
   RETURN header
 END readHeader;
@@ -178,9 +224,12 @@ END readHeader;
 PROCEDURE processHeader(VAR http: httpClient; VAR hdr: ARRAY OF CHAR);
 VAR
   len, i, j: INTEGER;
-  key, val: ARRAY 64 OF CHAR;
+  key: ARRAY 64 OF CHAR;
+  val: ARRAY 512 OF CHAR;
   res: SHORTINT;
+  isLengthFound: BOOLEAN;
 BEGIN
+  isLengthFound := FALSE;
   len := Strings.Length(hdr);
   Out.String("header length is "); Out.Int(len, 0); Out.Ln;
 
@@ -200,11 +249,11 @@ strUtils.string2pstring(http^.rspnPstrings^[0]^, http^.rspnFirstLine);
           Out.String("val: '"); Out.String(val); Out.Char("'"); Out.Ln;
     IF key = hdrDate THEN strUtils.string2pstring(val, http^.rspnDate) END;
     IF key = hdrServer THEN strUtils.string2pstring(val, http^.rspnServer) END;
-    IF key = hdrLastMod THEN strUtils.string2pstring(val, http^.rspnLastModified) END;
+    IF key = hdrLastModified THEN strUtils.string2pstring(val, http^.rspnLastModified) END;
     IF key = hdrETag THEN strUtils.string2pstring(val, http^.rspnETag) END;
     IF key = hdrAcceptRanges THEN strUtils.string2pstring(val, http^.rspnAcceptRanges) END;
-
-    IF key = hdrContLength THEN
+    IF key = hdrContentLength THEN
+      isLengthFound := TRUE;
       IntStr.StrToInt(val, http^.rspnContentLength, res);
       IF res # IntStr.strAllRight THEN
         Out.String("not number"); Out.Ln; HALT(1)
@@ -214,15 +263,31 @@ strUtils.string2pstring(http^.rspnPstrings^[0]^, http^.rspnFirstLine);
     END;
 
     IF key = hdrVary THEN strUtils.string2pstring(val, http^.rspnVary) END;
-    IF key = hdrContTyp THEN strUtils.string2pstring(val, http^.rspnContentType) END;
+    IF key = hdrContentType THEN strUtils.string2pstring(val, http^.rspnContentType) END;
+    IF key = hdrTransferEncoding THEN strUtils.string2pstring(val, http^.rspnTransferEncoding) END;
+    IF key = hdrConnection THEN strUtils.string2pstring(val, http^.rspnConnection) END;
+    IF key = hdrCacheControl THEN strUtils.string2pstring(val, http^.rspnCacheControl) END;
+    IF key = hdrExpires THEN strUtils.string2pstring(val, http^.rspnExpires) END;
+    IF key = hdrLocation THEN strUtils.string2pstring(val, http^.rspnLocation) END;
+    IF key = hdrReportTo THEN strUtils.string2pstring(val, http^.rspnReportTo) END;
+    IF key = hdrNEL THEN strUtils.string2pstring(val, http^.rspnNEL) END;
+    IF key = hdrCFRAY THEN strUtils.string2pstring(val, http^.rspnCFRAY) END;
+
     INC(i)
   UNTIL i = LEN(http^.rspnPstrings^)-1;
+  IF ~isLengthFound THEN http^.rspnContentLength := 64000 END
 END processHeader;
 
 PROCEDURE get*(VAR http: httpClient): strTypes.pstring;
 VAR
-  tmpBuff, buff: strTypes.pstring;
+  header, tmpBuff, buff: strTypes.pstring;
+  firstRead: BOOLEAN;
+  readFailure: BOOLEAN; eof: BOOLEAN;
+  readThisTime, readAll: LONGINT;
 BEGIN
+  firstRead := TRUE;
+  readThisTime := 0; readAll := 0;
+  http^.clearState(http);
   (* Establish connection *)
      Out.String("connecting to:"); Out.Ln;
      Out.String("host: '"); Out.String(http^.host^); Out.Char("'"); Out.Ln;
@@ -234,48 +299,52 @@ BEGIN
     Out.Ln;
     HALT(5)
   END;
-
-      Out.String("sending '"); Out.String(http^.reqHeader[0]^); Out.Char("'"); Out.Ln;
-  http^.connectionFlag := Internet.Write(http^.socket, http^.reqHeader[0]^);
-      Out.String("sending '"); Out.String(http^.reqHeader[1]^); Out.Char("'"); Out.Ln;
-  http^.connectionFlag := Internet.Write(http^.socket, http^.reqHeader[1]^);
-      Out.String("sending '"); Out.String(http^.reqHeader[2]^); Out.Char("'"); Out.Ln;
-  http^.connectionFlag := Internet.Write(http^.socket, http^.reqHeader[2]^);
-      Out.String("sending '"); Out.String(http^.reqHeader[3]^); Out.Char("'"); Out.Ln;
-  http^.connectionFlag := Internet.Write(http^.socket, http^.reqHeader[3]^);
-      Out.String("sending '"); Out.String(http^.reqHeader[4]^); Out.Char("'"); Out.Ln;
-  http^.connectionFlag := Internet.Write(http^.socket, http^.reqHeader[4]^);
-
-  tmpBuff := readHeader(http);
-  processHeader(http, tmpBuff^);
-  HALT(5);
-  (*
-  Out.String("over, getting header"); Out.Ln;
-  valueContentLengthString := getHeader(tmpBuff^, "Content-Length");
-  Out.String("got :'"); Out.String(valueContentLengthString^); Out.String("'"); Out.Ln;
-  IntStr.StrToInt(valueContentLengthString^, valueContentLength, res);
-  IF res # IntStr.strAllRight THEN
-    Out.String("not number"); Out.Ln; HALT(1)
-  ELSE
-    Out.String("got content length: "); Out.Int(valueContentLength, 0); Out.Ln
-  END;
-  i := 1;
   REPEAT
-    NEW(buff, (valueContentLength+1)*i);
-    Strings.Append(tmpBuff^, buff^);
-    NEW(tmpBuff, valueContentLength+1);
-    http^.connectionFlag := Internet.Read(socket, tmpBuff^);
-    (*
-    Out.String("starting strings.append"); Out.Ln;
-    Strings.Append(tmpBuff^, buff^);
-    Out.String("ending strings.append"); Out.Ln;
-    Out.String("buff is '"); Out.String(buff^); Out.Char("'"); Out.Ln;
-    Out.String("tmpbuff2 is '"); Out.String(tmpBuff^); Out.Char("'"); Out.Ln;
-  *)
-  UNTIL ~http^.connectionFlag OR (Strings.Length(buff^) > valueContentLength);
-  Internet.Disconnect(socket);
+        Out.String("sending '"); Out.String(http^.reqHeader[0]^); Out.Char("'"); Out.Ln;
+    http^.connectionFlag := Internet.Write(http^.socket, http^.reqHeader[0]^);
+        Out.String("sending '"); Out.String(http^.reqHeader[1]^); Out.Char("'"); Out.Ln;
+    http^.connectionFlag := Internet.Write(http^.socket, http^.reqHeader[1]^);
+        Out.String("sending '"); Out.String(http^.reqHeader[2]^); Out.Char("'"); Out.Ln;
+    http^.connectionFlag := Internet.Write(http^.socket, http^.reqHeader[2]^);
+        Out.String("sending '"); Out.String(http^.reqHeader[3]^); Out.Char("'"); Out.Ln;
+    http^.connectionFlag := Internet.Write(http^.socket, http^.reqHeader[3]^);
+        Out.String("sending '"); Out.String(http^.reqHeader[4]^); Out.Char("'"); Out.Ln;
+    http^.connectionFlag := Internet.Write(http^.socket, http^.reqHeader[4]^);
+
+    header := readHeader(http);
+    processHeader(http, header^);
+    NEW(tmpBuff, http^.rspnContentLength);
+    readFailure := FALSE; eof := FALSE;
+    REPEAT
+      Out.String("repeat"); Out.Ln;
+      Empty(tmpBuff);
+      http^.connectionFlag := Internet.ReadBuf(http^.socket, tmpBuff^, readThisTime);
+      IF readThisTime < 0 THEN readFailure := TRUE; Out.String("read failure"); Out.Ln END;
+      IF readThisTime = 0 THEN eof := TRUE; Out.String("eol=true"); Out.Ln END;
+      readAll := readAll + readThisTime;
+      Out.String("readThisTime="); Out.Int(readThisTime, 0); Out.Ln;
+      Out.String("readAll="); Out.Int(readAll, 0); Out.Ln;
+      strUtils.append(tmpBuff, buff);
+      Out.String("-----------------------------"); Out.Ln;
+      Out.String("tmpBuff is: '"); Out.String(tmpBuff^); Out.Char("'"); Out.Ln;
+      Out.String("-----------------------------"); Out.Ln;
+      Out.String("buff is: '"); Out.String(buff^); Out.Char("'"); Out.Ln;
+      Out.String("-----------------------------"); Out.Ln;
+      Out.String("reached until"); Out.Ln;
+      IF http^.connectionFlag THEN Out.String("true") ELSE Out.String("false") END; Out.Ln;
+      Out.String("length tmpBuff "); Out.Int(Strings.Length(tmpBuff^), 0); Out.Ln;
+      Out.String("len tmpBuff "); Out.Int(LEN(tmpBuff^), 0); Out.Ln;
+      Out.String("length buff "); Out.Int(Strings.Length(buff^), 0); Out.Ln;
+      Out.String("len buff "); Out.Int(LEN(buff^), 0); Out.Ln;
+      Out.String("content length "); Out.Int(http^.rspnContentLength, 0); Out.Ln;
+      Out.String("readThisTime="); Out.Int(readThisTime, 0); Out.Ln;
+      Out.String("readAll="); Out.Int(readAll, 0); Out.Ln;
+    UNTIL (Strings.Length(buff^) >= http^.rspnContentLength) OR eof OR readFailure OR ~http^.connectionFlag OR (http^.rspnContentLength = 0);
+  UNTIL eof OR (readAll >= http^.rspnContentLength);
+    Out.String("until exited"); Out.Ln;
+  Internet.Disconnect(http^.socket);
+  Out.String("disconnected"); Out.Ln;
   RETURN buff
-  *)
 END get;
 
 PROCEDURE nextHeaderLine(key, val: ARRAY OF CHAR): strTypes.pstring;
@@ -334,10 +403,7 @@ BEGIN
   NEW(http^.reqHeader[4], 3);
   COPY(http^.eol, http^.reqHeader[4]^);
   Strings.Append(http^.null, http^.reqHeader[4]^);
-
-
 END formReqHeader;
-
 
 PROCEDURE setuseragent*(VAR http: httpClient; ua: ARRAY OF CHAR);
 BEGIN
@@ -358,14 +424,35 @@ BEGIN
 
   http^.Get := get;
   http^.setUserAgent := setuseragent;
+  http^.clearState := clearstate;
   formReqHeader(http);
+
+  http^.rspnPstrings          := NIL;
+  http^.rspnFirstLine         := NIL;
+  http^.rspnDate              := NIL;
+  http^.rspnServer            := NIL;
+  http^.rspnLastModified      := NIL;
+  http^.rspnETag              := NIL;
+  http^.rspnAcceptRanges      := NIL;
+  http^.rspnContentLength     := 0;
+  http^.rspnVary              := NIL;
+  http^.rspnContentType       := NIL;
+  http^.rspnTransferEncoding  := NIL;
+  http^.rspnConnection        := NIL;
+  http^.rspnCacheControl      := NIL;
+  http^.rspnExpires           := NIL;
+  http^.rspnLocation          := NIL;
+  http^.rspnReportTo          := NIL;
+  http^.rspnNEL               := NIL;
+  http^.rspnCFRAY             := NIL;
+
   RETURN http
 END Create;
 
 BEGIN
   (* Example usage of the get procedure *)
-   http := Create("norayr.am", "80", "/index.html");
+   http := Create("norayr.am", "80", "/test.html");
    answer := http.Get(http);
-   getClean(answer^, answer2);
-   vpkLogger.Log(answer2^);
+   (*getClean(answer^, answer2);*)
+   vpkLogger.Log(answer^);
 END vpkHttp.
