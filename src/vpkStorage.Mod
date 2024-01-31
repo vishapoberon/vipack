@@ -7,17 +7,17 @@ BEGIN
    Files.WriteBytes(r, str, Strings.Length(str));
 END WriteString;
 
-PROCEDURE fileToString*(VAR fileName: ARRAY OF CHAR; VAR returnString: strUtils.pstring);
+PROCEDURE fileToString*(fileName: ARRAY OF CHAR; VAR returnString: strUtils.pstring);
 VAR
     f: Files.File;
     r: Files.Rider;
-    i, j: LONGINT; 
+    i, j: LONGINT;
 BEGIN
     returnString := NIL;
     f := Files.Old(fileName);
-    IF f # NIL THEN 
+    IF f # NIL THEN
       Files.Set(r, f, 0);
-      i := Files.Length(f); 
+      i := Files.Length(f);
       NEW(returnString, i);
       j := 0;
       REPEAT
@@ -41,7 +41,7 @@ VAR
 BEGIN
     f := Files.New(fileName);
 
-    IF f = NIL THEN 
+    IF f = NIL THEN
         vpkLogger.Log(fileName);
         vpkLogger.Log(" not found");
         vpkLogger.Ln;
@@ -67,7 +67,7 @@ BEGIN
   vpkEnv.getTreeDir(fi.name);
   Strings.Append("/", fi.name);
   Strings.Append(json, fi.name);
-  Strings.Append(".json", fi.name); 
+  Strings.Append(".json", fi.name);
   IF vpkFiles.Exists(fi) THEN
     fileToString(fi.name, pstr);
   END
