@@ -40,15 +40,9 @@ BEGIN
                   NEW(fl, Strings.Length(vpkSettings.bldFile)+1);    (* +1 for 0X *)
                   COPY(vpkSettings.bldCommand, cm^);
                   COPY(vpkSettings.bldFile, fl^);
-                       Out.String("cm^ is"); Out.String(cm^); Out.Ln;
-                       Out.String("fl^ is"); Out.String(fl^); Out.Ln;
                   IF Json.ObjSelect(command, buildStep, cm) &
                      Json.ObjSelect(file, buildStep, fl) THEN
-                        Out.String("COMMAND FOUND"); Out.Ln;
-                             Out.String("FILE FOUND"); Out.Ln;
                     IF (command IS Json.Str) & (file IS Json.Str) THEN
-                      Out.String("Command: "); Out.String(command(Json.Str).str^);
-                      Out.String(", File: "); Out.String(file(Json.Str).str^); Out.Ln;
                       IF k = NIL THEN k := StringList.Create() END;
                       IF v = NIL THEN v := StringList.Create() END;
                       k.AppendString(k, command(Json.Str).str^);
@@ -85,20 +79,16 @@ VAR
   b, fndRemSec: BOOLEAN;
   key, val, u, t, br, remote: Json.jString;
 BEGIN
-                  Out.String("ENTERED GET URI AND TYPE"); Out.Ln;
   strUtils.zeroStr(URI);
   strUtils.zeroStr(type);
   strUtils.zeroStr(branch);
   jsonstr := NIL;
   vpkStorage.json2pstring(d.name^, jsonstr);
   IF jsonstr # NIL THEN
-                     Out.String("JSONSTR # NIL"); Out.Ln;
     NEW(errstr, ErrmessSize);
     b := Json.Parse(tree, jsonstr^, err);
     IF b THEN
-                 Out.String("b IS TRUE"); Out.Ln;
       IF tree IS Json.Obj THEN
-                 Out.String("tree IS Json.Obj"); Out.Ln;
         rootObj := tree(Json.Obj);
         NEW(u, Strings.Length(vpkSettings.rmtTreeKey) + 1); COPY(vpkSettings.rmtTreeKey, u^);
         NEW(t, Strings.Length(vpkSettings.rmtTypKey) + 1); COPY(vpkSettings.rmtTypKey, t^);
@@ -109,29 +99,20 @@ BEGIN
         REPEAT
           IF rootObj.name^ = remote^ THEN
             fndRemSec := TRUE;
-            Out.String("REMOTE SECT FOUND"); Out.Ln;
           END;
           IF ~fndRemSec THEN rootObj := rootObj.next END
         UNTIL (rootObj = NIL) OR fndRemSec;
-               Out.String("exited the loop");
 
         IF fndRemSec THEN
           WHILE rootObj # NIL DO
-            Out.String("entered while rootobj # nil"); Out.Ln;
-            Out.String("rootobj.name "); Out.String(rootObj.name^); Out.Ln;
             remoteValue := rootObj.value;
             IF remoteValue IS Json.Obj THEN
-                          Out.String(" remotevalue is jsonobj"); Out.Ln;
               singleValue := remoteValue(Json.Obj);
               WHILE singleValue # NIL DO
                 IF singleValue IS Json.Obj THEN
-                      Out.String("singlevalue is jsonobj"); Out.Ln;
                   someObj := singleValue(Json.Obj);
                   key := someObj.name;
-                     Out.String("key is "); Out.String(key^); Out.Ln;
                   val := someObj.value(Json.Str).str;
-                     Out.String("val is "); Out.String(val^); Out.Ln;
-                     Out.Ln;
                   IF key^ = vpkSettings.rmtTypKey THEN COPY(val^, type) END;
                   IF key^ = vpkSettings.rmtTreeBranchKey THEN COPY(val^, branch) END;
                   IF key^ = vpkSettings.rmtTreeKey THEN COPY(val^, URI) END;
@@ -170,48 +151,36 @@ BEGIN
     NEW(errstr, ErrmessSize);
     IF Json.Parse(tree, jsonstr^, errstr^) THEN
       IF tree IS Json.Obj THEN
-        rootObj := tree(Json.Obj);   Out.String("entering first while"); Out.Ln;
+        rootObj := tree(Json.Obj);
         (* searching for dependencies section *)
         foundDepSection := FALSE;
         REPEAT
-          IF rootObj.name^ = "Dependencies" THEN
+          IF rootObj.name^ = vpkSettings.depTypKey THEN
             foundDepSection := TRUE;
-            Out.String("dependency section found"); Out.Ln;
           END;
           IF ~foundDepSection THEN rootObj := rootObj.next END
         UNTIL (rootObj = NIL) OR foundDepSection;
-        Out.String("exited the loop"); Out.Ln;
         IF foundDepSection THEN
           WHILE rootObj # NIL DO
-                  Out.String("entered"); Out.Ln;
-                  Out.String("rootobj.name "); Out.String(rootObj.name^); Out.Ln;
-            (*IF rootObj.name^ = "Dependencies" THEN Out.String("yes name deps");Out.Ln;*)
               depsValue := rootObj.value;
-              IF depsValue IS Json.Obj THEN Out.String("depsvalue is jsonobj"); Out.Ln;
+              IF depsValue IS Json.Obj THEN
                 singleDep := depsValue(Json.Obj);
                 WHILE singleDep # NIL DO
-                  IF singleDep IS Json.Obj THEN Out.String("singledep is json obj"); Out.Ln;
+                  IF singleDep IS Json.Obj THEN
                     depObj := singleDep(Json.Obj);
                     depName := depObj.name;
-                    Out.String("name "); Out.String(depName^); Out.Ln;
-                    Out.String("assigning depVersion"); Out.Ln;
                     depVersion := depObj.value(Json.Str).str;
-                    Out.String("version "); Out.String(depVersion^); Out.Ln;
-                    Out.String("assigning depstrlist"); Out.Ln;
                     IF depstrlist = NIL THEN depstrlist := StringList.Create() END;
                     depstrlist.AppendString(depstrlist, depName^);
-                    Out.String("lets find next"); Out.Ln;
                     singleDep := depObj.next;  (* Move to the next dependency *)
                   END;
                 END;  (* End of inner WHILE loop for dependencies *)
-                Out.String("returning "); Out.Int(depstrlist.Count, 0); Out.Ln;
                 RETURN depstrlist.Count;
               END;  (* End of IF depsValue IS Json.Obj *)
             (*END;*)  (* End of IF rootObj.name^ = "Dependencies" *)
             rootObj := rootObj.next;  (* Move to the next JSON object *)
           END;  (* End of WHILE rootObj # NIL loop *)
         ELSE
-          Out.String("returnig 0"); Out.Ln;
           RETURN 0; (* found no dependencies *)
         END;
       END;  (* End of IF tree IS Json.Obj *)

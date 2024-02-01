@@ -114,7 +114,6 @@ BEGIN
 
       IF Json.ObjSelect(pathValue, rootObj, Path) THEN
         IF pathValue IS Json.Str THEN
-         Out.String("aaa");
          (*this crashes voc *)
          (* tree.url := pathValue(Json.Str).str^;*)
          COPY(pathValue(Json.Str).str^, tree.url);
