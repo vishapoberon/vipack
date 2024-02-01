@@ -100,7 +100,7 @@ BEGIN
         res := Platform.System(cmd^);
         IF res # 0 THEN Out.String("failed to run build command"); Out.Ln END;
         INC(j)
-      UNTIL j = keys.Count - 1;
+      UNTIL j = keys.Count;
     ELSE
       Out.String("no build info found for the package: "); Out.String(dep.name^); Out.Ln;
     END;

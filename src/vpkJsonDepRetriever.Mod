@@ -14,6 +14,7 @@ VAR
   cm, fl, bl: Json.jString;
   b: BOOLEAN;
 BEGIN
+  k := NIL; v := NIL;
   b := FALSE;
   jsonstr := NIL;
   vpkStorage.json2pstring(d.name^, jsonstr);
