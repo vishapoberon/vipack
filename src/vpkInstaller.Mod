@@ -14,7 +14,7 @@ BEGIN
   tree := vpkResolver.resolve(unit, vpkJsonDepRetriever.getDeps);
   Out.String(" done! (:"); Out.Ln; Out.Ln;
   lst  := vpkDot.tree2dot(tree);
-  Out.String("dependency graph:"); Out.Ln; 
+  Out.String("dependency graph:"); Out.Ln;
   Out.String("-----------------"); Out.Ln;
   StringList.DumpOut(lst);
   lst.Dump(lst, graphName);
@@ -52,7 +52,7 @@ BEGIN
   i := 0;
   REPEAT
     dep := vpkdepTree.Get(depTree, i);
-    vpkJsonDepRetriever.getURIandType(dep, URI, typ, branch); 
+    vpkJsonDepRetriever.getURIandType(dep, URI, typ, branch);
     vpkSyncer.fetch(dep.name^, URI, typ, prefix, branch);
     INC(i)
   UNTIL i = depTree.Count;
@@ -71,13 +71,13 @@ VAR
       builddir, cmd, srcPath: StringList.pstring;
       res: INTEGER;
 BEGIN
-  IF prefix # "" THEN 
+  IF prefix # "" THEN
     builddir := vpkEnv.mkBldDir(prefix)
   ELSE
     builddir := vpkEnv.mkdefBldDir();
   END;
   depTree := resolve(package);
-  IF a THEN ask END; 
+  IF a THEN ask END;
   i := 0;
   REPEAT
     dep := vpkdepTree.Get(depTree, i);

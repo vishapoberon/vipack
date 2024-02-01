@@ -74,100 +74,72 @@ BEGIN
   END;
   RETURN b;
 END getBuildInfo;
-(*
-PROCEDURE getURIandType*(VAR d: vpkdepTree.Tdep; VAR URI: ARRAY OF CHAR; VAR type: ARRAY OF CHAR; VAR branch: ARRAY OF CHAR);
-VAR
-  jsonRecord, remote: vpkJsonParser.JsonTypePointer;
-  p: strUtils.pstring;
-  k, v: StringList.pstring;
-  keys, values: StringList.TStringList;
-  i: LONGINT;
-BEGIN
-  strUtils.zeroStr(URI);
-  strUtils.zeroStr(type);
-  strUtils.zeroStr(branch);
-  p := NIL;
-  vpkStorage.json2pstring(d.name^, p);
-  IF p # NIL THEN
-    jsonRecord := vpkJsonParser.Create(p^);
-    remote := jsonRecord.GetNonTerminal(jsonRecord, vpkSettings.rmtType);
-    IF remote # NIL THEN
-      keys := NIL; values := NIL;
-      remote.GetTerminalKeys(remote, keys);
-      remote.GetTerminalValues(remote, values);
-      i := 0;
-      REPEAT
-        k := keys.GetString(keys, i);
-        v := values.GetString(values, i);
-        IF k^ = vpkSettings.rmtTypKey THEN COPY(v^, type) END;
-        IF k^ = vpkSettings.rmtTreeKey THEN COPY(v^, URI) END;
-        IF k^ = vpkSettings.rmtTreeBranchKey THEN COPY(v^, branch) END;
-        INC(i);
-      UNTIL i = keys.Count - 1;
-     ELSE
-       Out.String("malformed json: no 'Remote' section"); Out.Ln;
-       HALT(63);
-     END
-  ELSE
-    Out.String("no json file for "); Out.String(d.name^); Out.Ln;
-    Out.String("program is not expected to pass unexistent name, something is wrong in other module"); Out.Ln;
-    HALT(64);
-  END
-END getURIandType;
-*)
 
 PROCEDURE getURIandType*(VAR d: vpkdepTree.Tdep; VAR URI: ARRAY OF CHAR; VAR type: ARRAY OF CHAR; VAR branch: ARRAY OF CHAR);
 VAR
   jsonstr, errstr: strUtils.pstring;
-  tree, remoteValue, uriValue, typeValue, branchValue: Json.Value;
-  rootObj, remoteObj: Json.Obj;
+  tree, singleValue, remoteValue, uriValue, typeValue, branchValue: Json.Value;
+  rootObj, someObj, remoteObj: Json.Obj;
   err: ARRAY ErrmessSize OF CHAR;
-  b: BOOLEAN;
-  u, t, br, remote: Json.jString;
+  b, fndRemSec: BOOLEAN;
+  key, val, u, t, br, remote: Json.jString;
 BEGIN
+                  Out.String("ENTERED GET URI AND TYPE"); Out.Ln;
   strUtils.zeroStr(URI);
   strUtils.zeroStr(type);
   strUtils.zeroStr(branch);
   jsonstr := NIL;
   vpkStorage.json2pstring(d.name^, jsonstr);
   IF jsonstr # NIL THEN
+                     Out.String("JSONSTR # NIL"); Out.Ln;
     NEW(errstr, ErrmessSize);
     b := Json.Parse(tree, jsonstr^, err);
     IF b THEN
+                 Out.String("b IS TRUE"); Out.Ln;
       IF tree IS Json.Obj THEN
+                 Out.String("tree IS Json.Obj"); Out.Ln;
         rootObj := tree(Json.Obj);
         NEW(u, Strings.Length(vpkSettings.rmtTreeKey) + 1); COPY(vpkSettings.rmtTreeKey, u^);
         NEW(t, Strings.Length(vpkSettings.rmtTypKey) + 1); COPY(vpkSettings.rmtTypKey, t^);
         NEW(br, Strings.Length(vpkSettings.rmtTreeBranchKey) + 1); COPY(vpkSettings.rmtTreeBranchKey, br^);
         NEW(remote, Strings.Length(vpkSettings.rmtType)+1);
         COPY(vpkSettings.rmtType, remote^);
-        IF Json.ObjSelect(remoteValue, rootObj, remote) THEN
-                       Out.String("REMOTE FOUND"); Out.Ln;
-          IF remoteValue IS Json.Obj THEN
-            remoteObj := remoteValue(Json.Obj);
-            IF Json.ObjSelect(uriValue, remoteObj, u) THEN
-              IF uriValue IS Json.Str THEN
-                COPY(uriValue(Json.Str).str^, URI);
-                          Out.String("URI IS "); Out.String(uriValue(Json.Str).str^); Out.Ln;
-              END;
-            END;
-            IF Json.ObjSelect(typeValue, remoteObj, t) THEN
-              IF typeValue IS Json.Str THEN
-                COPY(typeValue(Json.Str).str^, type);
-                Out.String("TYPE VALUE "); Out.String(typeValue(Json.Str).str^);
-                Out.Ln;
-              END;
-            END;
-            IF Json.ObjSelect(branchValue, remoteObj, br) THEN
-              IF branchValue IS Json.Str THEN
-                COPY(branchValue(Json.Str).str^, branch);
-                    Out.String("BRANCH ");
-                    Out.String(branchValue(Json.Str).str^); Out.Ln;
-              END;
-            END;
-          ELSE
-            Out.String("Remote section is not an object."); Out.Ln;
+        fndRemSec := FALSE;
+        REPEAT
+          IF rootObj.name^ = remote^ THEN
+            fndRemSec := TRUE;
+            Out.String("REMOTE SECT FOUND"); Out.Ln;
           END;
+          IF ~fndRemSec THEN rootObj := rootObj.next END
+        UNTIL (rootObj = NIL) OR fndRemSec;
+               Out.String("exited the loop");
+
+        IF fndRemSec THEN
+          WHILE rootObj # NIL DO
+            Out.String("entered while rootobj # nil"); Out.Ln;
+            Out.String("rootobj.name "); Out.String(rootObj.name^); Out.Ln;
+            remoteValue := rootObj.value;
+            IF remoteValue IS Json.Obj THEN
+                          Out.String(" remotevalue is jsonobj"); Out.Ln;
+              singleValue := remoteValue(Json.Obj);
+              WHILE singleValue # NIL DO
+                IF singleValue IS Json.Obj THEN
+                      Out.String("singlevalue is jsonobj"); Out.Ln;
+                  someObj := singleValue(Json.Obj);
+                  key := someObj.name;
+                     Out.String("key is "); Out.String(key^); Out.Ln;
+                  val := someObj.value(Json.Str).str;
+                     Out.String("val is "); Out.String(val^); Out.Ln;
+                     Out.Ln;
+                  IF key^ = vpkSettings.rmtTypKey THEN COPY(val^, type) END;
+                  IF key^ = vpkSettings.rmtTreeBranchKey THEN COPY(val^, branch) END;
+                  IF key^ = vpkSettings.rmtTreeKey THEN COPY(val^, URI) END;
+                END; (* if singlevalue is json.obj *)
+                singleValue := someObj.next;
+              END (* while singlevalue # nil *)
+            END; (* if remotevalue is json.obj *)
+            rootObj := rootObj.next
+          END; (* while rootObj # NIL *)
         ELSE
           Out.String("Remote section not found."); Out.Ln;
         END;
