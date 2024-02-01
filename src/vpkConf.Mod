@@ -1,6 +1,6 @@
 MODULE vpkConf;
 IMPORT Out, Files, Strings, Platform,
-       vpkSettings, vpkEnv, vpkJsonParser;
+       vpkSettings, vpkEnv, Json;
 
 CONST
    open = '{"';
@@ -44,7 +44,7 @@ PROCEDURE configured*(): BOOLEAN;
 BEGIN
   RETURN vpkEnv.checkConfig()
 END configured;
-
+(*
 PROCEDURE getConfigTreeVal*(VAR tree: vpkSettings.tree);
 VAR
   f: Files.File; r: Files.Rider;
@@ -78,6 +78,74 @@ BEGIN
     tree.typ := vpkSettings.unkn;
   END;
 END getConfigTreeVal;
+*)
+
+PROCEDURE getConfigTreeVal*(VAR tree: vpkSettings.tree);
+CONST
+  defConfSize=512;
+VAR
+  f: Files.File; r: Files.Rider;
+  jsonstr, errstr: Json.jString;
+  jsonTree, pathValue, typeValue, branchValue: Json.Value;
+  rootObj: Json.Obj;
+  Path, Type, Git, HTTP: Json.jString;
+  b: BOOLEAN;
+  i: INTEGER;
+BEGIN
+  COPY("", tree.branch);
+  COPY("", tree.url);
+
+  f := vpkEnv.getConfFile();
+  Files.Set(r, f, 0);
+  NEW(jsonstr, defConfSize);
+  NEW(errstr, 4096);  (* Adjust size as needed *)
+  i := 0;
+  REPEAT
+    Files.Read(r, jsonstr^[i]);
+    INC(i)
+  UNTIL r.eof OR (i>=LEN(jsonstr^));
+  Files.Close(f);
+  b := Json.Parse(jsonTree, jsonstr^, errstr^);
+  IF b THEN
+    IF jsonTree IS Json.Obj THEN
+      rootObj := jsonTree(Json.Obj);
+      NEW(Path, Strings.Length(vpkSettings.rmtTreeKey)+1);
+      COPY(vpkSettings.rmtTreeKey, Path^);
+
+      IF Json.ObjSelect(pathValue, rootObj, Path) THEN
+        IF pathValue IS Json.Str THEN
+         Out.String("aaa");
+         (*this crashes voc *)
+         (* tree.url := pathValue(Json.Str).str^;*)
+         COPY(pathValue(Json.Str).str^, tree.url);
+        END;
+      END;
+
+
+      NEW(Type, Strings.Length(vpkSettings.rmtTypKey)+1);
+      COPY(vpkSettings.rmtTypKey, Type^);
+      IF Json.ObjSelect(typeValue, rootObj, Type) THEN
+        IF typeValue IS Json.Str THEN
+          NEW(Git, Strings.Length(vpkSettings.rmtTypGitVal)+1);
+          NEW(HTTP, Strings.Length(vpkSettings.rmtTypHttpVal)+1);
+          IF typeValue(Json.Str).str^ = "git" THEN
+            tree.typ := vpkSettings.git;
+          ELSIF typeValue(Json.Str).str^ = "http" THEN
+            tree.typ := vpkSettings.http;
+          ELSE
+            tree.typ := vpkSettings.unkn;
+          END;
+        END;
+      END;
+
+    ELSE
+      Out.String("JSON root is not an object."); Out.Ln;
+    END;
+  ELSE
+    Out.String("JSON parsing failed: "); Out.String(errstr^); Out.Ln;
+  END;
+END getConfigTreeVal;
+
 
 PROCEDURE setTreeDir*(VAR a: ARRAY OF CHAR);
 BEGIN

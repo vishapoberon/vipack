@@ -2,8 +2,8 @@ MODULE vpkEnv;
 IMPORT Files, Platform, Strings, Out, vpkSettings, vpkFiles, strTypes;
 
 VAR
-  conf, confDir : ARRAY 256 OF CHAR;
-  pkgTreeDir: POINTER TO ARRAY OF CHAR;
+  conf-, confDir- : ARRAY 256 OF CHAR;
+  pkgTreeDir-: POINTER TO ARRAY OF CHAR;
 
 PROCEDURE getHome*(VAR path: ARRAY OF CHAR);
 BEGIN
@@ -35,7 +35,7 @@ VAR
 BEGIN
   len := 9 + Strings.Length(depName) + Strings.Length(path0);
   (* 5 chars are ../, /, /, plus a couple of chars  *)
-  NEW(p, len); 
+  NEW(p, len);
   COPY("../", p^);
   Strings.Append(vpkSettings.vpkDepDir, p^);
   Strings.Append("/", p^);
@@ -58,7 +58,7 @@ VAR
   ln : INTEGER;
 BEGIN
   ln := 3 + Strings.Length(prefix) + Strings.Length(vpkSettings.vpkBldDir);
-  NEW(builddir, ln); 
+  NEW(builddir, ln);
   COPY(prefix, builddir^);
   createIfNotThere(builddir^);
   Strings.Append("/", builddir^);
@@ -211,7 +211,7 @@ BEGIN
         HALT(1);
       END;
     END;
-  END;  
+  END;
     tmp := confDir;
     Strings.Append('/', tmp);
     Strings.Append(vpkSettings.vpkTreeDir, tmp);

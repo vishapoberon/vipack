@@ -1,4 +1,4 @@
-DEPEND = github.com/norayr/lists github.com/norayr/Internet github.com/norayr/opts github.com/norayr/skprLogger github.com/norayr/skprJson codeberg.org/sts-q/vishaps-ssqJson
+DEPEND = github.com/norayr/dbg github.com/norayr/strutils github.com/norayr/Internet github.com/norayr/http github.com/norayr/lists github.com/norayr/opts github.com/norayr/skprLogger github.com/norayr/skprJson codeberg.org/sts-q/vishaps-ssqJson
 
 VOC = /opt/voc/bin/voc
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
@@ -19,28 +19,28 @@ all: get_deps build_deps buildThis
 
 get_deps:
 	@for i in $(DEPEND); do \
-			if [ -d "$(DPS)/$${i}" ]; then \
-				 cd "$(DPS)/$${i}"; \
-				 git pull; \
-				 cd - ;    \
-				 else \
-				 mkdir -p "$(DPS)/$${i}"; \
-				 cd "$(DPS)/$${i}"; \
-				 cd .. ; \
-				 git clone "https://$${i}"; \
-				 cd - ; \
-			fi; \
+	if [ -d "$(DPS)/$${i}" ]; then \
+	cd "$(DPS)/$${i}"; \
+	git pull; \
+	cd - ;    \
+	else \
+	mkdir -p "$(DPS)/$${i}"; \
+	cd "$(DPS)/$${i}"; \
+	cd .. ; \
+	git clone "https://$${i}"; \
+	cd - ; \
+	fi; \
 	done
 
 build_deps:
 	mkdir -p $(BLD)
 	cd $(BLD); \
 	for i in $(DEPEND); do \
-		if [ -f "$(DPS)/$${i}/GNUmakefile" ]; then \
-			make -f "$(DPS)/$${i}/GNUmakefile" BUILD=$(BLD); \
-		else \
-			make -f "$(DPS)/$${i}/Makefile" BUILD=$(BLD); \
-		fi; \
+	if [ -f "$(DPS)/$${i}/GNUmakefile" ]; then \
+	make -f "$(DPS)/$${i}/GNUmakefile" BUILD=$(BLD); \
+	else \
+	make -f "$(DPS)/$${i}/Makefile" BUILD=$(BLD); \
+	fi; \
 	done
 
 buildThis:
@@ -48,13 +48,10 @@ buildThis:
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkLinuxFiles.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkTime.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkLogger.Mod
-	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkHttp.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkEnv.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkGit.Mod
-	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkCharacterStack.Mod
-	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkJsonParser.Mod
-	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkConf.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkStorage.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkConf.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkSyncer.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkdepTree.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkDot.Mod

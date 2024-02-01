@@ -1,5 +1,5 @@
 MODULE vpkDot;
-IMPORT Strings, vpkdepTree, StringList;
+IMPORT Out, Strings, vpkdepTree, StringList;
 
 CONST
   first = "digraph dependencies {";
@@ -19,11 +19,15 @@ BEGIN
   lst.AppendString(lst, line);
   i := 0;
   REPEAT
+                Out.String("entered repeat"); Out.Ln;
     dep := tree.Get(tree, i);
     IF dep # NIL THEN
+                           Out.String("dep # nil"); Out.Ln;
       IF dep.deps # NIL THEN
+                           Out.String("dep.deps # nil"); Out.Ln;
         j := 0;
         REPEAT
+                        Out.String("othe repeat");Out.Ln;
           IF dep.deps[j]^.name # NIL THEN
             COPY("", line);
             Strings.Append(tab, line);
@@ -31,9 +35,12 @@ BEGIN
             Strings.Append(arrow, line);
             Strings.Append(dep.deps[j]^.name^, line);
             lst.AppendString(lst, line);
+                            Out.String("appends over"); Out.Ln;
           END;
-          INC(j)
-        UNTIL j = (LEN(dep.deps^) -1 );
+          INC(j);
+                 Out.String("j="); Out.Int(j,0); Out.Ln;
+                 Out.String("len dep.deps"); Out.Int(LEN(dep.deps^), 0); Out.Ln;
+        UNTIL j = (LEN(dep.deps^));
       END
     END;
     INC(i)
