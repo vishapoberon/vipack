@@ -177,7 +177,6 @@ BEGIN
                 END;  (* End of inner WHILE loop for dependencies *)
                 RETURN depstrlist.Count;
               END;  (* End of IF depsValue IS Json.Obj *)
-            (*END;*)  (* End of IF rootObj.name^ = "Dependencies" *)
             rootObj := rootObj.next;  (* Move to the next JSON object *)
           END;  (* End of WHILE rootObj # NIL loop *)
         ELSE
