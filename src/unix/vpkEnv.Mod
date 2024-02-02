@@ -28,16 +28,18 @@ BEGIN
 
 END createIfNotThere;
 
-PROCEDURE getSrcRelPath*(VAR depName, path0: ARRAY OF CHAR): strTypes.pstring;
+PROCEDURE getSrcRelPath*(VAR depName, domain, path0: ARRAY OF CHAR): strTypes.pstring;
 VAR
   p: strTypes.pstring;
   len: INTEGER;
 BEGIN
-  len := 9 + Strings.Length(depName) + Strings.Length(path0);
+  len := 12 + Strings.Length(depName) + Strings.Length(path0) + Strings.Length(domain);
   (* 5 chars are ../, /, /, plus a couple of chars  *)
   NEW(p, len);
   COPY("../", p^);
   Strings.Append(vpkSettings.vpkDepDir, p^);
+  Strings.Append("/", p^);
+  Strings.Append(domain, p^);
   Strings.Append("/", p^);
   Strings.Append(depName, p^);
   Strings.Append("/", p^);
@@ -87,7 +89,7 @@ BEGIN
   RETURN builddir
 END mkdefBldDir;
 
-PROCEDURE mkdefPkgDirPath*(VAR name, path: ARRAY OF CHAR);
+PROCEDURE mkdefPkgDirPath*(VAR domain, name, path: ARRAY OF CHAR);
 VAR
   home: ARRAY 128 OF CHAR;
 BEGIN
@@ -100,18 +102,24 @@ BEGIN
   Strings.Append(vpkSettings.vpkDepDir, path);
   createIfNotThere(path);
   Strings.Append("/", path);
+  Strings.Append(domain, path);
+  createIfNotThere(path);
+  Strings.Append("/", path);
   Strings.Append(name, path);
   createIfNotThere(path);
   Strings.Append("/", path);
 END mkdefPkgDirPath;
 
-PROCEDURE mkPkgDirPath*(VAR name, path: ARRAY OF CHAR);
+PROCEDURE mkPkgDirPath*(VAR domain, name, path: ARRAY OF CHAR);
 BEGIN
   Strings.Append("/", path);
   createIfNotThere(path);
   Strings.Append(vpkSettings.vpkDepDir, path);
   Strings.Append("/", path);
   createIfNotThere(path);
+  Strings.Append(domain, path);
+  createIfNotThere(path);
+  Strings.Append("/", path);
   Strings.Append(name, path);
   createIfNotThere(path);
   Strings.Append("/", path);

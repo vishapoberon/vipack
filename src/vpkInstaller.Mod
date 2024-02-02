@@ -39,12 +39,40 @@ BEGIN
   IF ch # 'y' THEN Out.Ln; Out.String('quitting'); Out.Ln; HALT(0); END
 END ask;
 
+PROCEDURE extractDomainFromUrl(VAR url: ARRAY OF CHAR; VAR domain: ARRAY OF CHAR);
+VAR
+  start, i, j: INTEGER;
+BEGIN
+  start := 0;
+  (* Skip protocol to find the start of the domain *)
+  WHILE (start < LEN(url) - 1) & (url[start] # 0X) & ((url[start] # ':') OR (url[start+1] # '/')) DO
+    INC(start);
+  END;
+
+  (* Skip the "://" part to actually reach the start of the domain *)
+  INC(start, 3);  (* Assuming we stopped at ':', so we skip "://" *)
+
+  i := start;
+  (* Now 'start' is at the beginning of the domain, find the end of the domain *)
+  WHILE (i < LEN(url)) & (url[i] # 0X) & (url[i] # '/') DO
+    INC(i);
+  END;
+
+  (* Copy domain from url *)
+  j := 0;
+  WHILE (start < i) & (j < LEN(domain) - 1) DO
+    domain[j] := url[start];
+    INC(j); INC(start);
+  END;
+  domain[j] := 0X;  (* Ensure the domain string is null-terminated *)
+END extractDomainFromUrl;
+
 PROCEDURE fetch*(VAR package, prefix, pkgTree: ARRAY OF CHAR; a: BOOLEAN);
 VAR
   depTree: vpkdepTree.TdepTree;
       dep: vpkdepTree.Tdep;
         i: LONGINT;
-      URI, branch: ARRAY 128 OF CHAR;
+      URI, branch, domain: ARRAY 128 OF CHAR;
       typ: ARRAY 16 OF CHAR;
 BEGIN
   depTree := resolve(package);
@@ -53,7 +81,8 @@ BEGIN
   REPEAT
     dep := vpkdepTree.Get(depTree, i);
     vpkJsonDepRetriever.getURIandType(dep, URI, typ, branch);
-    vpkSyncer.fetch(dep.name^, URI, typ, prefix, branch);
+    extractDomainFromUrl(URI, domain);
+    vpkSyncer.fetch(dep.name^, URI, domain, typ, prefix, branch);
     INC(i)
   UNTIL i = depTree.Count;
 END fetch;
@@ -63,7 +92,7 @@ VAR
   depTree: vpkdepTree.TdepTree;
       dep: vpkdepTree.Tdep;
      i, j: LONGINT;
-      URI, branch: ARRAY 128 OF CHAR;
+      URI, branch, domain: ARRAY 128 OF CHAR;
       typ: ARRAY 16  OF CHAR;
       keys, values: StringList.TStringList;
       k, v: StringList.pstring;
@@ -82,7 +111,8 @@ BEGIN
   REPEAT
     dep := vpkdepTree.Get(depTree, i);
     vpkJsonDepRetriever.getURIandType(dep, URI, typ, branch);
-    vpkSyncer.fetch(dep.name^, URI, typ, prefix, branch);
+    extractDomainFromUrl(URI, domain);
+    vpkSyncer.fetch(dep.name^, URI, domain, typ, prefix, branch);
     b := FALSE;
     b := vpkJsonDepRetriever.getBuildInfo(dep, keys, values);
     IF b THEN
@@ -90,7 +120,7 @@ BEGIN
       REPEAT
         k := keys.GetString(keys, j);
         v := values.GetString(values, j);
-        srcPath := vpkEnv.getSrcRelPath(dep.name^, v^);
+        srcPath := vpkEnv.getSrcRelPath(dep.name^, domain, v^);
         cmd := vpkEnv.mkCmd(k^, srcPath^);
         Out.String(cmd^); Out.Ln;
         res := Platform.Chdir(builddir^);
@@ -107,4 +137,5 @@ BEGIN
     INC(i);
   UNTIL i = depTree.Count;
 END build;
+
 END vpkInstaller.

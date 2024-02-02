@@ -1,5 +1,6 @@
 MODULE vpkSyncer;
 IMPORT Strings, Out,
+       strUtils,
        vpkSettings, vpkEnv, vpkConf, vpkGit;
 
 PROCEDURE mkTreePath(VAR path: ARRAY OF CHAR);
@@ -22,15 +23,15 @@ BEGIN
     END;
 END sync;
 
-PROCEDURE fetch*(name, url, typ, dst, branch: ARRAY OF CHAR);
+PROCEDURE fetch*(name, url, dmn, typ, dst, branch: ARRAY OF CHAR);
 BEGIN
   IF dst = "" THEN
-    vpkEnv.mkdefPkgDirPath(name, dst);
+    vpkEnv.mkdefPkgDirPath(dmn, name, dst);
   ELSE
-    vpkEnv.mkPkgDirPath(name, dst);
+    vpkEnv.mkPkgDirPath(dmn, name, dst);
   END;
-
-  IF typ = vpkSettings.rmtTypGitVal THEN 
+  (* dst is changed by mkdefPkgDirPath and mkPkgdirPath *)
+  IF typ = vpkSettings.rmtTypGitVal THEN
     vpkGit.fetchRepo(url, dst, branch);
   ELSE
     Out.String("TODO: not a git url"); Out.Ln
