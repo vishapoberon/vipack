@@ -1,4 +1,4 @@
-DEPEND = github.com/norayr/dbg github.com/norayr/strutils github.com/norayr/Internet github.com/norayr/http github.com/norayr/lists github.com/norayr/opts github.com/norayr/skprLogger github.com/norayr/skprJson codeberg.org/sts-q/vishaps-ssqJson
+DEPEND = github.com/norayr/strutils github.com/norayr/base64 github.com/norayr/dbg github.com/norayr/Internet github.com/norayr/http github.com/norayr/mbedtls github.com/norayr/lists github.com/norayr/opts github.com/norayr/skprLogger codeberg.org/sts-q/vishaps-ssqJson
 
 VOC = /opt/voc/bin/voc
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
@@ -37,9 +37,9 @@ build_deps:
 	cd $(BLD); \
 	for i in $(DEPEND); do \
 	if [ -f "$(DPS)/$${i}/GNUmakefile" ]; then \
-	make -f "$(DPS)/$${i}/GNUmakefile" BUILD=$(BLD); \
+		make -f "$(DPS)/$${i}/GNUmakefile" BUILD=$(BLD); \
 	else \
-	make -f "$(DPS)/$${i}/Makefile" BUILD=$(BLD); \
+		make -f "$(DPS)/$${i}/Makefile" BUILD=$(BLD); \
 	fi; \
 	done
 
