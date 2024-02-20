@@ -15,7 +15,8 @@ DPD  =  deps
 ifndef DPS
 DPS := $(mkfile_dir_path)/$(DPD)
 endif
-all: get_deps build_deps buildThis
+#all: get_deps build_deps buildThis
+all:  build_deps buildThis
 
 get_deps:
 	@echo "getting deps"
@@ -59,12 +60,15 @@ buildThis:
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkStorage.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkConf.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkdepTree.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkHttps.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkSyncer.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkDot.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkResolver.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkJsonDepRetriever.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkInstaller.Mod
-	cd $(BUILD) && $(VOC) $(mkfile_dir_path)/src/vipack.Mod -m
+	cd $(BUILD) && $(VOC) $(mkfile_dir_path)/src/vipack.Mod -cm
+	cd $(BUILD) && rm testHttps.o
+	cd $(BUILD) && gcc -o vipack *.o -static -L/opt/voc/lib -lvoc-O2 /opt/voc/lib/libvoc-O2.a -L. -lmbedtls -lmbedcrypto -lmbedx509 libmbedcrypto.a libmbedtls.a libmbedx509.a
 	@echo "________________________________________"
 
 tests:

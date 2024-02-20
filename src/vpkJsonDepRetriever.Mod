@@ -1,6 +1,6 @@
 MODULE vpkJsonDepRetriever;
 IMPORT Strings, Out,
-       StringList, strUtils, Json, vpkStorage, vpkSettings, vpkdepTree;
+       List, StringList, strUtils, Json, vpkStorage, vpkSettings, vpkdepTree;
 
 CONST
   ErrmessSize = 4096;
@@ -80,10 +80,11 @@ VAR
   err: ARRAY ErrmessSize OF CHAR;
   b, fndRemSec, fndTypeHttps, fndFiles: BOOLEAN;
   key, val, u, t, br, remote,
-    url, urlStr, authType, authTypeStr,
-    md5,  md5Str, authCr, authCrStr,
-    user, userStr, password, passwordStr: Json.jString;
+    url, authType, authTypeStr,
+    md5,  authCr, authCrStr,
+    user, password : Json.jString;
     httpsRemote: vpkdepTree.RemoteHttps; gitRemote: vpkdepTree.RemoteGit;
+    httpsFile: vpkdepTree.File;
 BEGIN
   jsonstr := NIL;
   vpkStorage.json2pstring(d.name^, jsonstr);
@@ -121,8 +122,11 @@ BEGIN
                   val := someObj.value(Json.Str).str;
                   IF key^ = vpkSettings.rmtTypKey THEN (* type *)
                     IF val^ = vpkSettings.rmtTypHttpsVal THEN
+
                       NEW(httpsRemote); d^.rmt := httpsRemote;
-          d^.Type := vpkSettings.https;
+                      d^.Type := vpkSettings.https;
+                      httpsRemote^.Files := List.Create();
+                      d^.Type := vpkSettings.https;
                       WHILE singleValue # NIL DO
                         someObj := singleValue(Json.Obj);
 
@@ -138,12 +142,14 @@ BEGIN
                                 Out.Ln;
                               IF fileObjValue IS Json.Obj THEN
                                 fileObj := fileObjValue(Json.Obj);
+                                NEW(httpsFile);
+                                httpsFile^.auth := FALSE; (* default *)
                                 (* extract url *)
                                 NEW(url, Strings.Length(vpkSettings.rmtFileURL)+1);
                                 COPY(vpkSettings.rmtFileURL, url^);
                                 IF Json.ObjSelect(urlValue, fileObj, url) & (urlValue IS Json.Str) THEN
-                                  urlStr := urlValue(Json.Str).str;
-                                  Out.String("url: "); Out.String(urlStr^); Out.Ln;
+                                  COPY(urlValue(Json.Str).str^, httpsFile^.URI);
+                                  Out.String("url: "); Out.String(httpsFile^.URI); Out.Ln;
                                 END;
                                 (* extract authtype *)
                                 NEW(authType, Strings.Length(vpkSettings.rmtFileAuthType)+1);
@@ -152,6 +158,11 @@ BEGIN
                                    & (authTypeValue IS Json.Str) THEN
                                   authTypeStr := authTypeValue(Json.Str).str;
                                     Out.String("authtype: "); Out.String(authTypeStr^); Out.Ln;
+                                    IF authTypeValue(Json.Str).str^ = vpkSettings.rmtFileAuthValBasic THEN
+                                      httpsFile^.auth := TRUE;
+                                    ELSE
+                                      httpsFile^.auth := FALSE;
+                                    END
                                 END;
                                 (* extract auth credentials *)
                                 NEW(authCr, Strings.Length(vpkSettings.rmtFileAuthCreds)+1);
@@ -165,14 +176,14 @@ BEGIN
                                     NEW(user, Strings.Length(vpkSettings.rmtFileAuthUsr) + 1);
                                     COPY(vpkSettings.rmtFileAuthUsr, user^);
                                     IF Json.ObjSelect(userValue, authObj, user) & (userValue IS Json.Str) THEN
-                                      userStr := userValue(Json.Str).str;
-                                      Out.String("user: "); Out.String(userStr^); Out.Ln;
+                                      COPY(userValue(Json.Str).str^, httpsFile^.username);
+                                      Out.String("user: "); Out.String(httpsFile^.username); Out.Ln;
                                     END;
                                     NEW(password, Strings.Length(vpkSettings.rmtFileAuthPwd) + 1);
                                     COPY(vpkSettings.rmtFileAuthPwd, password^);
                                     IF Json.ObjSelect(passwordValue, authObj, password) & (passwordValue IS Json.Str) THEN
-                                      passwordStr := passwordValue(Json.Str).str;
-                                        Out.String("pw: "); Out.String(passwordStr^); Out.Ln;
+                                      COPY(passwordValue(Json.Str).str^, httpsFile^.password);
+                                        Out.String("pw: "); Out.String(httpsFile^.password); Out.Ln;
                                     END;
                                   END; (* if authcradsvalue is json.obj *)
                                 END; (* if json objselect authcredsval *)
@@ -180,14 +191,17 @@ BEGIN
                                 NEW(md5, Strings.Length(vpkSettings.rmtFileMD5)+1);
                                 COPY(vpkSettings.rmtFileMD5, md5^);
                                 IF Json.ObjSelect(md5Value, fileObj, md5) & (md5Value IS Json.Str) THEN
-                                  md5Str := md5Value(Json.Str).str;
-                                     Out.String("md5: "); Out.String(md5Str^); Out.Ln;
+                                  COPY(md5Value(Json.Str).str^, httpsFile^.md5);
+                                     Out.String("md5: "); Out.String(httpsFile^.md5); Out.Ln;
                                 END;
+                                httpsRemote^.Files.Append(httpsRemote^.Files, httpsFile);
+                                Out.String("appending "); Out.String(httpsFile^.URI); Out.Ln;
+                                Out.String("list count is :");
+                                Out.Int(d^.rmt(vpkdepTree.RemoteHttps)^.Files.Count, 0); Out.Ln;
                               END; (*fileobj is json.obj *)
                             END; (*filesarray is json arr *)
                             filesArray := filesArray(Json.Arr).next;
                           END; (* while filesarray # nil *)
-
 
                         END;
                         singleValue := someObj.next;

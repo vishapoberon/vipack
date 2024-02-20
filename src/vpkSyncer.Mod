@@ -1,7 +1,7 @@
 MODULE vpkSyncer;
 IMPORT Strings, Out,
-       strUtils,
-       vpkSettings, vpkEnv, vpkConf, vpkGit, vpkdepTree, vpkTools;
+       strUtils, List,
+       vpkSettings, vpkEnv, vpkConf, vpkGit, vpkdepTree, vpkTools, vpkHttps;
 
 PROCEDURE mkTreePath(VAR path: ARRAY OF CHAR);
 BEGIN
@@ -37,8 +37,12 @@ BEGIN
   IF dep^.rmt # NIL THEN
     IF dep^.rmt IS vpkdepTree.RemoteGit THEN
       vpkGit.fetchRepo(dep^.rmt^.URI, dst, dep^.rmt(vpkdepTree.RemoteGit).branch);
+    ELSIF dep^.rmt IS vpkdepTree.RemoteHttps THEN
+      vpkHttps.fetchFiles(dep, dst);
     ELSE
-      Out.String("TODO: not a git url"); Out.Ln
+      Out.String("TODO: neither git nor https url"); Out.Ln;
+      Out.String("not handled");
+      Out.Ln;
     END
   ELSE
     Out.String("deps remote is not set, this should not happen"); Out.Ln;

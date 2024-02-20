@@ -42,22 +42,22 @@ TYPE
            tag* : ARRAY 16 OF CHAR;
   END;
 
+  File* = POINTER TO FileDesc;
+  FileDesc* = RECORD (List.TObjectDesc)
+     URI* : ARRAY 256 OF CHAR;
+    auth* : BOOLEAN;
+    username*, password*: ARRAY 32 OF CHAR;
+    md5*  : ARRAY 33 OF CHAR;
+  END;
+
   RemoteHttp* = POINTER TO RemoteHttpDesc;
   RemoteHttpDesc* = RECORD(RemoteDesc)
-        HttpAuth* : BOOLEAN;
-           files* : StringList.TStringList;
-       usernames* : StringList.TStringList;
-       passwords* : StringList.TStringList;
-          hashes* : StringList.TStringList;
+           Files* : List.TList;
   END;
 
   RemoteHttps* = POINTER TO RemoteHttpDesc;
   RemoteHttpsDesc* = RECORD(RemoteDesc)
-        HttpAuth* : BOOLEAN;
-           files* : StringList.TStringList;
-       usernames* : StringList.TStringList;
-       passwords* : StringList.TStringList;
-          hashes* : StringList.TStringList;
+           Files* : List.TList;
   END;
 
   TdepDesc* = RECORD

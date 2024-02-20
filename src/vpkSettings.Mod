@@ -14,7 +14,7 @@ VAR
   rmtType-, rmtTypKey-, rmtTypGitVal-, rmtTypHttpVal-, rmtTypHttpsVal-,
   rmtTypGemiVal-, rmtTreeKey-, rmtTreeBranchKey-, rmtTreeTagKey-,
   rmtFiles-, rmtFileURL-, rmtFileAuthType-, rmtFileAuthCreds-, rmtFileMD5-,
-  rmtFileAuthUsr-, rmtFileAuthPwd-,
+  rmtFileAuthValBasic-, rmtFileAuthValNone-, rmtFileAuthUsr-, rmtFileAuthPwd-,
   bldType-, bldCommand-, bldFile-,
   defTreeVal-, confTreeVal-,
   defTypVal-, pkgTypKey-, depTypKey-, packageFileName-,
@@ -49,6 +49,8 @@ BEGIN
   rmtFiles          := "Files";
   rmtFileURL        := "URL";
   rmtFileAuthType   := "AuthType";
+  rmtFileAuthValBasic   := "BasicAuth";
+  rmtFileAuthValNone    :=  "None";
   rmtFileAuthCreds  := "AuthCredentials";
   rmtFileAuthUsr    := "User";
   rmtFileAuthPwd    := "Password";
