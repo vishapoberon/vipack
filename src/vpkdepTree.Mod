@@ -2,6 +2,9 @@ MODULE vpkdepTree;
 IMPORT Out, Strings,
        strUtils, List, StringList,
        vpkSettings;
+
+
+
 TYPE
 
   pstring = strUtils.pstring;
@@ -27,19 +30,36 @@ TYPE
 
   retriever- = PROCEDURE (VAR d: Tdep; VAR strlist: StringList.TStringList): LONGINT;
 
- (* to be added to Tdep?
-  bldSeq* = POINTER TO bldSeqDesc;
-  bldSeqDesc* = RECORD
-    cmd*, file*: StringList.TStringList;
+  Remote* = POINTER TO RemoteDesc;
+  RemoteDesc* = RECORD
+         URI* : ARRAY 512 OF CHAR;
   END;
 
-  file* = POINTER to fileDesc;
-  fileDesc* = RECORD
-     url*, authType*, MD5*: ARRAY 512 OF CHAR;
-     authUsr*, authPwd*: ARRAY 64 OF CHAR;
+ RemoteGit* = POINTER TO RemoteGitDesc;
+ RemoteGitDesc* = RECORD(RemoteDesc)
+          hash* : ARRAY 64 OF CHAR;
+        branch* : ARRAY 32 OF CHAR;
+           tag* : ARRAY 16 OF CHAR;
   END;
-  files* = List.TList;
-*)
+
+  RemoteHttp* = POINTER TO RemoteHttpDesc;
+  RemoteHttpDesc* = RECORD(RemoteDesc)
+        HttpAuth* : BOOLEAN;
+           files* : StringList.TStringList;
+       usernames* : StringList.TStringList;
+       passwords* : StringList.TStringList;
+          hashes* : StringList.TStringList;
+  END;
+
+  RemoteHttps* = POINTER TO RemoteHttpDesc;
+  RemoteHttpsDesc* = RECORD(RemoteDesc)
+        HttpAuth* : BOOLEAN;
+           files* : StringList.TStringList;
+       usernames* : StringList.TStringList;
+       passwords* : StringList.TStringList;
+          hashes* : StringList.TStringList;
+  END;
+
   TdepDesc* = RECORD
          prev-, next-: Tdep;
          name- : pstring;
@@ -49,12 +69,8 @@ TYPE
  RetrieveDeps- : retriever;
   InstallRetriever*: PROCEDURE(VAR d: Tdep; r: retriever);
 
-       Type*   : LONGINT; (* from vpkSettings http=0, https=1, gemini=2, git=3 *)
-       (*
-       gitPath* : ARRAY 256 OF CHAR;
-       gitTag*  : ARRAY 64 OF CHAR;
-       bldSequence*: bldSeq;:
-*)
+       Type*   : LONGINT; (* from vpkSettings: http, https, gemini, git... *)
+       rmt*    : Remote;
        END;
 
 PROCEDURE AssignDeps*(VAR d: Tdep; VAR deps: Tdeps);
@@ -77,6 +93,7 @@ BEGIN
   dep.AssignDeps := AssignDeps;
   dep.InstallRetriever := InstallRetriever;
   dep.RetrieveDeps := NIL;
+  dep.rmt := NIL;
   RETURN dep
 END CreateDep;
 

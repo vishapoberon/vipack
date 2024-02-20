@@ -18,6 +18,7 @@ endif
 all: get_deps build_deps buildThis
 
 get_deps:
+	@echo "getting deps"
 	@for i in $(DEPEND); do \
 	if [ -d "$(DPS)/$${i}" ]; then \
 	cd "$(DPS)/$${i}"; \
@@ -31,8 +32,10 @@ get_deps:
 	cd - ; \
 	fi; \
 	done
+	@echo "________________________________________"
 
 build_deps:
+	@echo "building deps"
 	mkdir -p $(BLD)
 	cd $(BLD); \
 	for i in $(DEPEND); do \
@@ -42,8 +45,11 @@ build_deps:
 		make -f "$(DPS)/$${i}/Makefile" BUILD=$(BLD); \
 	fi; \
 	done
+	@echo "________________________________________"
 
 buildThis:
+	@echo "building vipack"
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkTools.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkSettings.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkLinuxFiles.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkTime.Mod
@@ -52,13 +58,14 @@ buildThis:
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkGit.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkStorage.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkConf.Mod
-	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkSyncer.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkdepTree.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkSyncer.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkDot.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkResolver.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkJsonDepRetriever.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkInstaller.Mod
 	cd $(BUILD) && $(VOC) $(mkfile_dir_path)/src/vipack.Mod -m
+	@echo "________________________________________"
 
 tests:
 	#cd $(BUILD) && $(VOC) $(mkfile_dir_path)/test/testList.Mod -m

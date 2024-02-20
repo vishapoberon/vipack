@@ -70,7 +70,7 @@ BEGIN
   RETURN b;
 END getBuildInfo;
 
-PROCEDURE getURIandType*(VAR d: vpkdepTree.Tdep; VAR URI: ARRAY OF CHAR; VAR type: ARRAY OF CHAR; VAR branch: ARRAY OF CHAR);
+PROCEDURE getURIandType*(VAR d: vpkdepTree.Tdep);
 VAR
   jsonstr, errstr: strUtils.pstring;
   tree, singleValue, remoteValue: Json.Value;
@@ -83,10 +83,8 @@ VAR
     url, urlStr, authType, authTypeStr,
     md5,  md5Str, authCr, authCrStr,
     user, userStr, password, passwordStr: Json.jString;
+    httpsRemote: vpkdepTree.RemoteHttps; gitRemote: vpkdepTree.RemoteGit;
 BEGIN
-  strUtils.zeroStr(URI);
-  strUtils.zeroStr(type);
-  strUtils.zeroStr(branch);
   jsonstr := NIL;
   vpkStorage.json2pstring(d.name^, jsonstr);
   IF jsonstr # NIL THEN
@@ -122,10 +120,9 @@ BEGIN
                 IF someObj.value IS Json.Str THEN
                   val := someObj.value(Json.Str).str;
                   IF key^ = vpkSettings.rmtTypKey THEN (* type *)
-                    COPY(val^, type);
-                       Out.String("type found: "); Out.String(type); Out.Ln;
                     IF val^ = vpkSettings.rmtTypHttpsVal THEN
-
+                      NEW(httpsRemote); d^.rmt := httpsRemote;
+          d^.Type := vpkSettings.https;
                       WHILE singleValue # NIL DO
                         someObj := singleValue(Json.Obj);
 
@@ -199,16 +196,20 @@ BEGIN
 
 
                     ELSIF val^ = vpkSettings.rmtTypGitVal THEN
+          NEW(gitRemote); d^.rmt := gitRemote;
+          d^.Type := vpkSettings.git;
                       WHILE singleValue # NIL DO
                         IF singleValue IS Json.Obj THEN
                           someObj := singleValue(Json.Obj);
                           key := someObj.name;
                             Out.String("git key: "); Out.String(key^); Out.Ln;
                           val := someObj.value(Json.Str).str;
-                          IF key^ = vpkSettings.rmtTreeBranchKey THEN COPY(val^, branch) END;
+                          IF key^ = vpkSettings.rmtTreeBranchKey THEN
+          COPY(val^, d^.rmt(vpkdepTree.RemoteGit)^.branch);
+        END;
                           IF key^ = vpkSettings.rmtTreeKey THEN
-                            COPY(val^, URI);
-                            Out.String("uri found: "); Out.String(URI); Out.Ln;
+          COPY(val^, d^.rmt^.URI);
+                            Out.String("uri found: "); Out.String(d^.rmt^.URI); Out.Ln;
                           END;
                         END;
                         singleValue := someObj.next;

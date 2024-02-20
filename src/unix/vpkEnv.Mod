@@ -54,7 +54,7 @@ BEGIN
   Strings.Append(vpkSettings.vpkConfDir, path);
 END mkConfDirPath;
 
-PROCEDURE mkBldDir*(VAR prefix: ARRAY OF CHAR): strTypes.pstring;
+PROCEDURE mkBldDir*(prefix: ARRAY OF CHAR): strTypes.pstring;
 VAR
   builddir: strTypes.pstring;
   ln : INTEGER;

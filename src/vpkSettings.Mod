@@ -1,10 +1,11 @@
 MODULE vpkSettings;
 IMPORT Platform, Out;
 CONST
-  http*   = 0;
-  https*  = 1;
-  gemini* = 2;
-     git* = 3;
+  (* remotes *)
+  http*   = 0; httpWithAuth* = 1;
+  https*  = 2; httpsWithAuth* = 3;
+  gemini* = 4;
+     git* = 5;
   unkn*   = -1;
 
 VAR

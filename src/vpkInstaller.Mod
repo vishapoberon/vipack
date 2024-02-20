@@ -1,5 +1,8 @@
 MODULE vpkInstaller;
-IMPORT In, Out, StringList, vpkResolver, vpkdepTree, vpkDot, vpkEnv, vpkJsonDepRetriever, vpkSyncer, Platform;
+IMPORT In, Out, Platform,
+       StringList,
+       vpkResolver, vpkdepTree, vpkDot, vpkEnv, vpkJsonDepRetriever,vpkSyncer,
+       vpkTools, vpkSettings;
 
 PROCEDURE resolve*(VAR unit: ARRAY OF CHAR): vpkdepTree.TdepTree;
 VAR
@@ -39,70 +42,45 @@ BEGIN
   IF ch # 'y' THEN Out.Ln; Out.String('quitting'); Out.Ln; HALT(0); END
 END ask;
 
-PROCEDURE extractDomainFromUrl(VAR url: ARRAY OF CHAR; VAR domain: ARRAY OF CHAR);
-VAR
-  start, i, j: INTEGER;
-BEGIN
-  start := 0;
-  (* Skip protocol to find the start of the domain *)
-  WHILE (start < LEN(url) - 1) & (url[start] # 0X) & ((url[start] # ':') OR (url[start+1] # '/')) DO
-    INC(start);
-  END;
-
-  (* Skip the "://" part to actually reach the start of the domain *)
-  INC(start, 3);  (* Assuming we stopped at ':', so we skip "://" *)
-
-  i := start;
-  (* Now 'start' is at the beginning of the domain, find the end of the domain *)
-  WHILE (i < LEN(url)) & (url[i] # 0X) & (url[i] # '/') DO
-    INC(i);
-  END;
-
-  (* Copy domain from url *)
-  j := 0;
-  WHILE (start < i) & (j < LEN(domain) - 1) DO
-    domain[j] := url[start];
-    INC(j); INC(start);
-  END;
-  domain[j] := 0X;  (* Ensure the domain string is null-terminated *)
-END extractDomainFromUrl;
-
-PROCEDURE fetch*(VAR package, prefix, pkgTree: ARRAY OF CHAR; a: BOOLEAN);
+PROCEDURE fetch*(VAR package:ARRAY OF CHAR; prefix: ARRAY OF CHAR; VAR pkgTree: ARRAY OF CHAR; a: BOOLEAN);
 VAR
   depTree: vpkdepTree.TdepTree;
       dep: vpkdepTree.Tdep;
         i: LONGINT;
-      URI, branch, domain: ARRAY 128 OF CHAR;
-      typ: ARRAY 16 OF CHAR;
 BEGIN
+     Out.String("entered vpkInstaller.fetch, prefix="); Out.String(prefix); Out.Ln;
   depTree := resolve(package);
   IF a THEN ask END;
   i := 0;
   REPEAT
     dep := vpkdepTree.Get(depTree, i);
-    vpkJsonDepRetriever.getURIandType(dep, URI, typ, branch);
-    extractDomainFromUrl(URI, domain);
-    vpkSyncer.fetch(dep.name^, URI, domain, typ, prefix, branch);
+    vpkJsonDepRetriever.getURIandType(dep);
+       Out.String("vpkInstaller.fetch, repeat bfr vpkSyncer.fetch, prefix=");
+       Out.String(prefix); Out.Ln;
+    vpkSyncer.fetch(dep, prefix);
+       Out.String("vpkInstaller.fetch, repeat aftr vpkSyncer.fetch, prefix=");
+       Out.String(prefix); Out.Ln;
     INC(i)
   UNTIL i = depTree.Count;
 END fetch;
 
-PROCEDURE build*(VAR package, prefix, tree: ARRAY OF CHAR; a : BOOLEAN);
+PROCEDURE build*(VAR package: ARRAY OF CHAR; prefix: ARRAY OF CHAR; VAR tree: ARRAY OF CHAR; a : BOOLEAN);
 VAR
   depTree: vpkdepTree.TdepTree;
       dep: vpkdepTree.Tdep;
-     i, j: LONGINT;
-      URI, branch, domain: ARRAY 128 OF CHAR;
-      typ: ARRAY 16  OF CHAR;
+      i, j: LONGINT;
       keys, values: StringList.TStringList;
       k, v: StringList.pstring;
       b: BOOLEAN;
       builddir, cmd, srcPath: StringList.pstring;
       res: INTEGER;
+      domain: ARRAY 256 OF CHAR;
 BEGIN
+     Out.String("entered vpkInstaller.build, prefix="); Out.String(prefix); Out.Ln;
   IF prefix # "" THEN
     builddir := vpkEnv.mkBldDir(prefix)
   ELSE
+      Out.String("calling vpkEnv.mkdefBldDir"); Out.Ln;
     builddir := vpkEnv.mkdefBldDir();
   END;
   depTree := resolve(package);
@@ -110,16 +88,22 @@ BEGIN
   i := 0;
   REPEAT
     dep := vpkdepTree.Get(depTree, i);
-    vpkJsonDepRetriever.getURIandType(dep, URI, typ, branch);
+    vpkJsonDepRetriever.getURIandType(dep);
            Out.String("aftergetURIandType"); Out.Ln;
-           Out.String("got uri: "); Out.String(URI); Out.Ln;
-           Out.String("got type: "); Out.String(typ); Out.Ln;
-    extractDomainFromUrl(URI, domain);
-              Out.String("extracted domain; "); Out.String(domain); Out.Ln;
-    vpkSyncer.fetch(dep.name^, URI, domain, typ, prefix, branch);
+           Out.String("got uri: "); Out.String(dep^.rmt^.URI); Out.Ln;
+           Out.String("got type: ");
+           IF dep^.Type = vpkSettings.git THEN Out.String("git");
+           ELSIF dep^.Type = vpkSettings.https THEN Out.String("https") END;
+           Out.Ln;
+       Out.String("vpkInstaller.build, repeat bfr vpkSyncer.fetch, prefix=");
+       Out.String(prefix); Out.Ln;
+    vpkSyncer.fetch(dep, prefix);
+       Out.String("vpkInstaller.build, repeat bfr vpkSyncer.fetch, prefix=");
+       Out.String(prefix); Out.Ln;
     b := FALSE;
     b := vpkJsonDepRetriever.getBuildInfo(dep, keys, values);
     IF b THEN
+      vpkTools.extractDomainFromUrl(dep^.rmt.URI, domain);
       j := 0;
       REPEAT
         k := keys.GetString(keys, j);
