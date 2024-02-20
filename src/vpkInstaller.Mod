@@ -48,18 +48,13 @@ VAR
       dep: vpkdepTree.Tdep;
         i: LONGINT;
 BEGIN
-     Out.String("entered vpkInstaller.fetch, prefix="); Out.String(prefix); Out.Ln;
   depTree := resolve(package);
   IF a THEN ask END;
   i := 0;
   REPEAT
     dep := vpkdepTree.Get(depTree, i);
     vpkJsonDepRetriever.getURIandType(dep);
-       Out.String("vpkInstaller.fetch, repeat bfr vpkSyncer.fetch, prefix=");
-       Out.String(prefix); Out.Ln;
     vpkSyncer.fetch(dep, prefix);
-       Out.String("vpkInstaller.fetch, repeat aftr vpkSyncer.fetch, prefix=");
-       Out.String(prefix); Out.Ln;
     INC(i)
   UNTIL i = depTree.Count;
 END fetch;
@@ -76,11 +71,9 @@ VAR
       res: INTEGER;
       domain: ARRAY 256 OF CHAR;
 BEGIN
-     Out.String("entered vpkInstaller.build, prefix="); Out.String(prefix); Out.Ln;
   IF prefix # "" THEN
     builddir := vpkEnv.mkBldDir(prefix)
   ELSE
-      Out.String("calling vpkEnv.mkdefBldDir"); Out.Ln;
     builddir := vpkEnv.mkdefBldDir();
   END;
   depTree := resolve(package);
@@ -95,11 +88,7 @@ BEGIN
            IF dep^.Type = vpkSettings.git THEN Out.String("git");
            ELSIF dep^.Type = vpkSettings.https THEN Out.String("https") END;
            Out.Ln;
-       Out.String("vpkInstaller.build, repeat bfr vpkSyncer.fetch, prefix=");
-       Out.String(prefix); Out.Ln;
     vpkSyncer.fetch(dep, prefix);
-       Out.String("vpkInstaller.build, repeat bfr vpkSyncer.fetch, prefix=");
-       Out.String(prefix); Out.Ln;
     b := FALSE;
     b := vpkJsonDepRetriever.getBuildInfo(dep, keys, values);
     IF b THEN
