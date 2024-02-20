@@ -10,7 +10,7 @@ CONST
 
 PROCEDURE mkConfContent(VAR path: ARRAY OF CHAR);
 (* constructing the line like:
-{"path" : "https://github.com/vishaps/vipackTree"}, "type" : "git"}
+{"Path" : "https://github.com/vishaps/vipackTree"}, "Type" : "git"}
 *)
 BEGIN
   COPY("", path);

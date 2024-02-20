@@ -11,7 +11,9 @@ VAR
   vpkConfDir-, vpkConfFile-, vpkTreeDir-, vpkPkgDir-, vpkDepDir-, vpkBldDir-,
   graphName-,
   rmtType-, rmtTypKey-, rmtTypGitVal-, rmtTypHttpVal-, rmtTypHttpsVal-,
-  rmtTypGemiVal-, rmtTreeKey-, rmtTreeBranchKey-,
+  rmtTypGemiVal-, rmtTreeKey-, rmtTreeBranchKey-, rmtTreeTagKey-,
+  rmtFiles-, rmtFileURL-, rmtFileAuthType-, rmtFileAuthCreds-, rmtFileMD5-,
+  rmtFileAuthUsr-, rmtFileAuthPwd-,
   bldType-, bldCommand-, bldFile-,
   defTreeVal-, confTreeVal-,
   defTypVal-, pkgTypKey-, depTypKey-, packageFileName-,
@@ -35,16 +37,24 @@ BEGIN
   graphName         := "deps.dot";
 
   rmtType           := "Remote";
-  rmtTypKey         := "type";
+  rmtTypKey         := "Type";
   rmtTypGitVal      := "git";
   rmtTypHttpVal     := "http";
   rmtTypHttpsVal    := "https";
   rmtTypGemiVal     := "gemini";
-  rmtTreeKey        := "path";
-  rmtTreeBranchKey  := "branch";
+  rmtTreeKey        := "Path";
+  rmtTreeBranchKey  := "Branch";
+  rmtTreeTagKey     := "Tag";
+  rmtFiles          := "Files";
+  rmtFileURL        := "URL";
+  rmtFileAuthType   := "AuthType";
+  rmtFileAuthCreds  := "AuthCredentials";
+  rmtFileAuthUsr    := "User";
+  rmtFileAuthPwd    := "Password";
+  rmtFileMD5        := "MD5";
   bldType           := "Build";
-  bldCommand        := "command";
-  bldFile           := "file";
+  bldCommand        := "Command";
+  bldFile           := "File";
   defTreeVal        := "https://github.com/vishaps/vipackTree";
   (*defTreeVal      := "git@github.com:vishaps/vipackTree";*)
   confTreeVal       := defTreeVal;

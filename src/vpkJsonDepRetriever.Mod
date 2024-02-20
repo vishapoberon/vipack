@@ -73,11 +73,16 @@ END getBuildInfo;
 PROCEDURE getURIandType*(VAR d: vpkdepTree.Tdep; VAR URI: ARRAY OF CHAR; VAR type: ARRAY OF CHAR; VAR branch: ARRAY OF CHAR);
 VAR
   jsonstr, errstr: strUtils.pstring;
-  tree, singleValue, remoteValue, uriValue, typeValue, branchValue: Json.Value;
-  rootObj, someObj, remoteObj: Json.Obj;
+  tree, singleValue, remoteValue: Json.Value;
+  rootObj, someObj, remoteObj, fileObj, authObj: Json.Obj;
+  filesArray, fileObjValue: Json.Value;
+  fileValue, urlValue, authTypeValue, md5Value, authCredsValue, userValue, passwordValue: Json.Value;
   err: ARRAY ErrmessSize OF CHAR;
-  b, fndRemSec: BOOLEAN;
-  key, val, u, t, br, remote: Json.jString;
+  b, fndRemSec, fndTypeHttps, fndFiles: BOOLEAN;
+  key, val, u, t, br, remote,
+    url, urlStr, authType, authTypeStr,
+    md5,  md5Str, authCr, authCrStr,
+    user, userStr, password, passwordStr: Json.jString;
 BEGIN
   strUtils.zeroStr(URI);
   strUtils.zeroStr(type);
@@ -96,6 +101,7 @@ BEGIN
         NEW(remote, Strings.Length(vpkSettings.rmtType)+1);
         COPY(vpkSettings.rmtType, remote^);
         fndRemSec := FALSE;
+        fndTypeHttps   := FALSE;
         REPEAT
           IF rootObj.name^ = remote^ THEN
             fndRemSec := TRUE;
@@ -108,18 +114,113 @@ BEGIN
             remoteValue := rootObj.value;
             IF remoteValue IS Json.Obj THEN
               singleValue := remoteValue(Json.Obj);
-              WHILE singleValue # NIL DO
-                IF singleValue IS Json.Obj THEN
-                  someObj := singleValue(Json.Obj);
-                  key := someObj.name;
+
+              IF singleValue IS Json.Obj THEN
+                someObj := singleValue(Json.Obj);
+                key := someObj.name;
+                  Out.String("key: "); Out.String(key^); Out.Ln;
+                IF someObj.value IS Json.Str THEN
                   val := someObj.value(Json.Str).str;
-                  IF key^ = vpkSettings.rmtTypKey THEN COPY(val^, type) END;
-                  IF key^ = vpkSettings.rmtTreeBranchKey THEN COPY(val^, branch) END;
-                  IF key^ = vpkSettings.rmtTreeKey THEN COPY(val^, URI) END;
-                END; (* if singlevalue is json.obj *)
-                singleValue := someObj.next;
-              END (* while singlevalue # nil *)
+                  IF key^ = vpkSettings.rmtTypKey THEN (* type *)
+                    COPY(val^, type);
+                       Out.String("type found: "); Out.String(type); Out.Ln;
+                    IF val^ = vpkSettings.rmtTypHttpsVal THEN
+
+                      WHILE singleValue # NIL DO
+                        someObj := singleValue(Json.Obj);
+
+                        IF someObj.value IS Json.Arr THEN
+
+                          filesArray := someObj.value(Json.Arr);
+                            Out.String("assigned"); Out.Ln;
+                          WHILE filesArray # NIL DO
+                            IF filesArray IS Json.Arr THEN
+                              Out.String(" files array is json.arr "); Out.Ln;
+                              fileObjValue := filesArray(Json.Arr).value;
+                                Out.String("fileobjval := filesArray(json.obj).value");
+                                Out.Ln;
+                              IF fileObjValue IS Json.Obj THEN
+                                fileObj := fileObjValue(Json.Obj);
+                                (* extract url *)
+                                NEW(url, Strings.Length(vpkSettings.rmtFileURL)+1);
+                                COPY(vpkSettings.rmtFileURL, url^);
+                                IF Json.ObjSelect(urlValue, fileObj, url) & (urlValue IS Json.Str) THEN
+                                  urlStr := urlValue(Json.Str).str;
+                                  Out.String("url: "); Out.String(urlStr^); Out.Ln;
+                                END;
+                                (* extract authtype *)
+                                NEW(authType, Strings.Length(vpkSettings.rmtFileAuthType)+1);
+                                COPY(vpkSettings.rmtFileAuthType, authType^);
+                                IF Json.ObjSelect(authTypeValue, fileObj, authType)
+                                   & (authTypeValue IS Json.Str) THEN
+                                  authTypeStr := authTypeValue(Json.Str).str;
+                                    Out.String("authtype: "); Out.String(authTypeStr^); Out.Ln;
+                                END;
+                                (* extract auth credentials *)
+                                NEW(authCr, Strings.Length(vpkSettings.rmtFileAuthCreds)+1);
+                                COPY(vpkSettings.rmtFileAuthCreds, authCr^);
+                                  Out.String("searching for authcreds"); Out.Ln;
+                                IF Json.ObjSelect(authCredsValue, fileObj, authCr) & (authCredsValue IS Json.Obj) THEN
+                                  Out.String("found auth creds"); Out.Ln;
+                                  IF authCredsValue IS Json.Obj THEN
+                                    authObj := authCredsValue(Json.Obj);
+                                    Out.String("authcredsval is json.obj"); Out.Ln;
+                                    NEW(user, Strings.Length(vpkSettings.rmtFileAuthUsr) + 1);
+                                    COPY(vpkSettings.rmtFileAuthUsr, user^);
+                                    IF Json.ObjSelect(userValue, authObj, user) & (userValue IS Json.Str) THEN
+                                      userStr := userValue(Json.Str).str;
+                                      Out.String("user: "); Out.String(userStr^); Out.Ln;
+                                    END;
+                                    NEW(password, Strings.Length(vpkSettings.rmtFileAuthPwd) + 1);
+                                    COPY(vpkSettings.rmtFileAuthPwd, password^);
+                                    IF Json.ObjSelect(passwordValue, authObj, password) & (passwordValue IS Json.Str) THEN
+                                      passwordStr := passwordValue(Json.Str).str;
+                                        Out.String("pw: "); Out.String(passwordStr^); Out.Ln;
+                                    END;
+                                  END; (* if authcradsvalue is json.obj *)
+                                END; (* if json objselect authcredsval *)
+                                (* extract md5 *)
+                                NEW(md5, Strings.Length(vpkSettings.rmtFileMD5)+1);
+                                COPY(vpkSettings.rmtFileMD5, md5^);
+                                IF Json.ObjSelect(md5Value, fileObj, md5) & (md5Value IS Json.Str) THEN
+                                  md5Str := md5Value(Json.Str).str;
+                                     Out.String("md5: "); Out.String(md5Str^); Out.Ln;
+                                END;
+                              END; (*fileobj is json.obj *)
+                            END; (*filesarray is json arr *)
+                            filesArray := filesArray(Json.Arr).next;
+                          END; (* while filesarray # nil *)
+
+
+                        END;
+                        singleValue := someObj.next;
+                      END;
+
+
+
+                    ELSIF val^ = vpkSettings.rmtTypGitVal THEN
+                      WHILE singleValue # NIL DO
+                        IF singleValue IS Json.Obj THEN
+                          someObj := singleValue(Json.Obj);
+                          key := someObj.name;
+                            Out.String("git key: "); Out.String(key^); Out.Ln;
+                          val := someObj.value(Json.Str).str;
+                          IF key^ = vpkSettings.rmtTreeBranchKey THEN COPY(val^, branch) END;
+                          IF key^ = vpkSettings.rmtTreeKey THEN
+                            COPY(val^, URI);
+                            Out.String("uri found: "); Out.String(URI); Out.Ln;
+                          END;
+                        END;
+                        singleValue := someObj.next;
+                      END;
+                    ELSE
+                      Out.String("unhandled remote type"); Out.Ln; HALT(5);
+                    END;
+                  END;
+                END;
+              END; (* if single value is json.obj *)
             END; (* if remotevalue is json.obj *)
+
             rootObj := rootObj.next
           END; (* while rootObj # NIL *)
         ELSE

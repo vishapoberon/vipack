@@ -1,7 +1,9 @@
 MODULE vpkdepTree;
-IMPORT Out, Strings, strUtils, StringList;
+IMPORT Out, Strings,
+       strUtils, List, StringList,
+       vpkSettings;
 TYPE
- 
+
   pstring = strUtils.pstring;
   pstrings = strUtils.pstrings;
 
@@ -25,6 +27,19 @@ TYPE
 
   retriever- = PROCEDURE (VAR d: Tdep; VAR strlist: StringList.TStringList): LONGINT;
 
+ (* to be added to Tdep?
+  bldSeq* = POINTER TO bldSeqDesc;
+  bldSeqDesc* = RECORD
+    cmd*, file*: StringList.TStringList;
+  END;
+
+  file* = POINTER to fileDesc;
+  fileDesc* = RECORD
+     url*, authType*, MD5*: ARRAY 512 OF CHAR;
+     authUsr*, authPwd*: ARRAY 64 OF CHAR;
+  END;
+  files* = List.TList;
+*)
   TdepDesc* = RECORD
          prev-, next-: Tdep;
          name- : pstring;
@@ -32,7 +47,14 @@ TYPE
        Create* : PROCEDURE (VAR name: ARRAY OF CHAR): Tdep;
    AssignDeps* : PROCEDURE (VAR d: Tdep; VAR deps: Tdeps);
  RetrieveDeps- : retriever;
-  InstallRetriever*: PROCEDURE(VAR d: Tdep; r: retriever); 
+  InstallRetriever*: PROCEDURE(VAR d: Tdep; r: retriever);
+
+       Type*   : LONGINT; (* from vpkSettings http=0, https=1, gemini=2, git=3 *)
+       (*
+       gitPath* : ARRAY 256 OF CHAR;
+       gitTag*  : ARRAY 64 OF CHAR;
+       bldSequence*: bldSeq;:
+*)
        END;
 
 PROCEDURE AssignDeps*(VAR d: Tdep; VAR deps: Tdeps);

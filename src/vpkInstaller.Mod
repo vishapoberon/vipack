@@ -111,7 +111,11 @@ BEGIN
   REPEAT
     dep := vpkdepTree.Get(depTree, i);
     vpkJsonDepRetriever.getURIandType(dep, URI, typ, branch);
+           Out.String("aftergetURIandType"); Out.Ln;
+           Out.String("got uri: "); Out.String(URI); Out.Ln;
+           Out.String("got type: "); Out.String(typ); Out.Ln;
     extractDomainFromUrl(URI, domain);
+              Out.String("extracted domain; "); Out.String(domain); Out.Ln;
     vpkSyncer.fetch(dep.name^, URI, domain, typ, prefix, branch);
     b := FALSE;
     b := vpkJsonDepRetriever.getBuildInfo(dep, keys, values);
