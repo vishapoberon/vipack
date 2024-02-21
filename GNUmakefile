@@ -15,8 +15,8 @@ DPD  =  deps
 ifndef DPS
 DPS := $(mkfile_dir_path)/$(DPD)
 endif
-#all: get_deps build_deps buildThis
-all:  build_deps buildThis
+all: get_deps build_deps buildThis
+#all:  build_deps buildThis
 
 get_deps:
 	@echo "getting deps"
@@ -60,6 +60,7 @@ buildThis:
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkStorage.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkConf.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkdepTree.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkMD5Checker.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkHttps.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkSyncer.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkDot.Mod

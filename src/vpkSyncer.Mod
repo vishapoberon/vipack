@@ -26,18 +26,18 @@ END sync;
 PROCEDURE fetch*(VAR dep: vpkdepTree.Tdep; dst: ARRAY OF CHAR);
 VAR domain: ARRAY 64 OF CHAR;
 BEGIN
-  vpkTools.extractDomainFromUrl(dep^.rmt^.URI, domain);
-  IF dst = "" THEN
-    vpkEnv.mkdefPkgDirPath(domain, dep^.name^, dst);
-  ELSE
-    vpkEnv.mkPkgDirPath(domain, dep^.name^, dst);
-  END;
-  (* dst is changed by mkdefPkgDirPath and mkPkgdirPath *)
-  (*IF dep^.Type = vpkSettings.git THEN*)
   IF dep^.rmt # NIL THEN
     IF dep^.rmt IS vpkdepTree.RemoteGit THEN
+      vpkTools.extractDomainFromUrl(dep^.rmt^.URI, domain);
+      (* dst is changed by mkdefPkgDirPath and mkPkgdirPath *)
+      IF dst = "" THEN
+        vpkEnv.mkdefPkgDirPath(domain, dep^.name^, dst);
+      ELSE
+        vpkEnv.mkPkgDirPath(domain, dep^.name^, dst);
+      END;
       vpkGit.fetchRepo(dep^.rmt^.URI, dst, dep^.rmt(vpkdepTree.RemoteGit).branch);
     ELSIF dep^.rmt IS vpkdepTree.RemoteHttps THEN
+      (* full dst will be determined in vpkHttps.fetchFiles for each file *)
       vpkHttps.fetchFiles(dep, dst);
     ELSE
       Out.String("TODO: neither git nor https url"); Out.Ln;

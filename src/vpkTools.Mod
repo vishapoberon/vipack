@@ -1,4 +1,6 @@
 MODULE vpkTools;
+IMPORT Strings, strUtils;
+
 
 PROCEDURE extractDomainFromUrl*(VAR url: ARRAY OF CHAR; VAR domain: ARRAY OF CHAR);
 VAR
@@ -27,6 +29,54 @@ BEGIN
   END;
   domain[j] := 0X;  (* Ensure the domain string is null-terminated *)
 END extractDomainFromUrl;
+
+PROCEDURE extractPathFromUrl*(VAR url: ARRAY OF CHAR; VAR path: ARRAY OF CHAR);
+VAR
+  i, j, domainEnd: INTEGER;
+  foundDomain: BOOLEAN;
+BEGIN
+  i := 0; foundDomain := FALSE;
+  WHILE ~foundDomain & (i < LEN(url) - 1) & (url[i] # 0X) DO
+    IF (url[i] = ':') & (url[i + 1] = '/') & (url[i + 2] = '/') THEN
+      foundDomain := TRUE;
+      i := i + 3;
+    END;
+    INC(i);
+  END;
+
+  IF foundDomain THEN
+    domainEnd := i;
+    WHILE (domainEnd < LEN(url)) & (url[domainEnd] # 0X) & (url[domainEnd] # '/') DO
+      INC(domainEnd);
+    END;
+
+    j := 0;
+    WHILE (domainEnd < LEN(url)) & (url[domainEnd] # 0X) & (j < LEN(path) - 1) DO
+      path[j] := url[domainEnd];
+      INC(j); INC(domainEnd);
+    END;
+    path[j] := 0X;
+  ELSE
+    path[0] := 0X; (* if no domain found *)
+  END;
+END extractPathFromUrl;
+
+PROCEDURE extractFilenameFromUrl*(VAR url: ARRAY OF CHAR; VAR result: ARRAY OF CHAR);
+VAR
+  lastSlashPos: INTEGER;
+BEGIN
+  (* Find the position of the last '/' character in the URL *)
+  lastSlashPos := -1;
+  lastSlashPos := strUtils.Rpos(url, '/');
+
+  (* Extract the part of the URL after the last '/' to get the filename *)
+  IF lastSlashPos >= 0 THEN
+    Strings.Extract(url, lastSlashPos + 1, Strings.Length(url) - lastSlashPos - 1, result);
+  ELSE
+    (* If '/' is not found, assume the entire URL is a filename *)
+    COPY(url, result);
+  END;
+END extractFilenameFromUrl;
 
 
 END vpkTools.

@@ -1,6 +1,6 @@
 MODULE vpkInstaller;
 IMPORT In, Out, Platform,
-       StringList,
+       List, StringList,
        vpkResolver, vpkdepTree, vpkDot, vpkEnv, vpkJsonDepRetriever,vpkSyncer,
        vpkTools, vpkSettings;
 
@@ -70,6 +70,7 @@ VAR
       builddir, cmd, srcPath: StringList.pstring;
       res: INTEGER;
       domain: ARRAY 256 OF CHAR;
+      node: List.Node;
 BEGIN
   IF prefix # "" THEN
     builddir := vpkEnv.mkBldDir(prefix)
@@ -82,24 +83,26 @@ BEGIN
   REPEAT
     dep := vpkdepTree.Get(depTree, i);
     vpkJsonDepRetriever.getURIandType(dep);
-           Out.String("aftergetURIandType"); Out.Ln;
-           Out.String("got uri: "); Out.String(dep^.rmt^.URI); Out.Ln;
-           Out.String("got type: ");
-           IF dep^.Type = vpkSettings.git THEN Out.String("git");
-           ELSIF dep^.Type = vpkSettings.https THEN Out.String("https") END;
-           Out.Ln;
     vpkSyncer.fetch(dep, prefix);
     b := FALSE;
     b := vpkJsonDepRetriever.getBuildInfo(dep, keys, values);
     IF b THEN
-      vpkTools.extractDomainFromUrl(dep^.rmt.URI, domain);
       j := 0;
       REPEAT
-        k := keys.GetString(keys, j);
+        IF dep^.rmt IS vpkdepTree.RemoteGit THEN
+          vpkTools.extractDomainFromUrl(dep^.rmt.URI, domain);
+        ELSIF dep^.rmt IS vpkdepTree.RemoteHttps THEN
+          node := dep^.rmt(vpkdepTree.RemoteHttps)^.Files.Get(dep^.rmt(vpkdepTree.RemoteHttps)^.Files, j);
+          vpkTools.extractDomainFromUrl(node^.obj(vpkdepTree.File)^.URI, domain)
+        ELSE
+          Out.String("WARNING: building for neither git nor https sources not supported yet"); Out.Ln;
+        END;
+k := keys.GetString(keys, j);
         v := values.GetString(values, j);
         srcPath := vpkEnv.getSrcRelPath(dep.name^, domain, v^);
         cmd := vpkEnv.mkCmd(k^, srcPath^);
         Out.String(cmd^); Out.Ln;
+        Out.String("building in "); Out.String(builddir^); Out.Ln;
         res := Platform.Chdir(builddir^);
         IF res # 0 THEN
           Out.String("failed to change directory to "); Out.String(builddir^); Out.Ln; Out.String("this should never happen."); Out.Ln; HALT(66);

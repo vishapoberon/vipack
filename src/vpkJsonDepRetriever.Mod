@@ -74,7 +74,7 @@ PROCEDURE getURIandType*(VAR d: vpkdepTree.Tdep);
 VAR
   jsonstr, errstr: strUtils.pstring;
   tree, singleValue, remoteValue: Json.Value;
-  rootObj, someObj, remoteObj, fileObj, authObj: Json.Obj;
+  rootObj, someObj, remoteObj, fileObj, fileObj2, authObj: Json.Obj;
   filesArray, fileObjValue: Json.Value;
   fileValue, urlValue, authTypeValue, md5Value, authCredsValue, userValue, passwordValue: Json.Value;
   err: ARRAY ErrmessSize OF CHAR;
@@ -117,7 +117,6 @@ BEGIN
               IF singleValue IS Json.Obj THEN
                 someObj := singleValue(Json.Obj);
                 key := someObj.name;
-                  Out.String("key: "); Out.String(key^); Out.Ln;
                 IF someObj.value IS Json.Str THEN
                   val := someObj.value(Json.Str).str;
                   IF key^ = vpkSettings.rmtTypKey THEN (* type *)
@@ -133,12 +132,9 @@ BEGIN
                         IF someObj.value IS Json.Arr THEN
 
                           filesArray := someObj.value(Json.Arr);
-                            Out.String("assigned"); Out.Ln;
                           WHILE filesArray # NIL DO
                             IF filesArray IS Json.Arr THEN
-                              Out.String(" files array is json.arr "); Out.Ln;
                               fileObjValue := filesArray(Json.Arr).value;
-                                Out.String("fileobjval := filesArray(json.obj).value");
                                 Out.Ln;
                               IF fileObjValue IS Json.Obj THEN
                                 fileObj := fileObjValue(Json.Obj);
@@ -149,55 +145,48 @@ BEGIN
                                 COPY(vpkSettings.rmtFileURL, url^);
                                 IF Json.ObjSelect(urlValue, fileObj, url) & (urlValue IS Json.Str) THEN
                                   COPY(urlValue(Json.Str).str^, httpsFile^.URI);
-                                  Out.String("url: "); Out.String(httpsFile^.URI); Out.Ln;
                                 END;
+                                fileObj2 := fileObj;
                                 (* extract authtype *)
                                 NEW(authType, Strings.Length(vpkSettings.rmtFileAuthType)+1);
                                 COPY(vpkSettings.rmtFileAuthType, authType^);
-                                IF Json.ObjSelect(authTypeValue, fileObj, authType)
+                                IF Json.ObjSelect(authTypeValue, fileObj2, authType)
                                    & (authTypeValue IS Json.Str) THEN
                                   authTypeStr := authTypeValue(Json.Str).str;
-                                    Out.String("authtype: "); Out.String(authTypeStr^); Out.Ln;
-                                    IF authTypeValue(Json.Str).str^ = vpkSettings.rmtFileAuthValBasic THEN
-                                      httpsFile^.auth := TRUE;
-                                    ELSE
-                                      httpsFile^.auth := FALSE;
-                                    END
+                                  IF authTypeValue(Json.Str).str^ = vpkSettings.rmtFileAuthValBasic THEN
+                                    httpsFile^.auth := TRUE;
+                                    (* extract auth credentials *)
+                                    NEW(authCr, Strings.Length(vpkSettings.rmtFileAuthCreds)+1);
+                                    COPY(vpkSettings.rmtFileAuthCreds, authCr^);
+                                    IF Json.ObjSelect(authCredsValue, fileObj2, authCr) & (authCredsValue IS Json.Obj) THEN
+                                      IF authCredsValue IS Json.Obj THEN
+                                        authObj := authCredsValue(Json.Obj);
+                                        NEW(user, Strings.Length(vpkSettings.rmtFileAuthUsr) + 1);
+                                        COPY(vpkSettings.rmtFileAuthUsr, user^);
+                                        IF Json.ObjSelect(userValue, authObj, user) & (userValue IS Json.Str) THEN
+                                          COPY(userValue(Json.Str).str^, httpsFile^.username);
+                                        END;
+                                        NEW(password, Strings.Length(vpkSettings.rmtFileAuthPwd) + 1);
+                                        COPY(vpkSettings.rmtFileAuthPwd, password^);
+                                        IF Json.ObjSelect(passwordValue, authObj, password) & (passwordValue IS Json.Str) THEN
+                                          COPY(passwordValue(Json.Str).str^, httpsFile^.password);
+                                        END;
+                                      END; (* if authcradsvalue is json.obj *)
+                                    END; (* if json objselect authcredsval *)
+
+                                  ELSE
+                                    httpsFile^.auth := FALSE;
+                                  END
                                 END;
-                                (* extract auth credentials *)
-                                NEW(authCr, Strings.Length(vpkSettings.rmtFileAuthCreds)+1);
-                                COPY(vpkSettings.rmtFileAuthCreds, authCr^);
-                                  Out.String("searching for authcreds"); Out.Ln;
-                                IF Json.ObjSelect(authCredsValue, fileObj, authCr) & (authCredsValue IS Json.Obj) THEN
-                                  Out.String("found auth creds"); Out.Ln;
-                                  IF authCredsValue IS Json.Obj THEN
-                                    authObj := authCredsValue(Json.Obj);
-                                    Out.String("authcredsval is json.obj"); Out.Ln;
-                                    NEW(user, Strings.Length(vpkSettings.rmtFileAuthUsr) + 1);
-                                    COPY(vpkSettings.rmtFileAuthUsr, user^);
-                                    IF Json.ObjSelect(userValue, authObj, user) & (userValue IS Json.Str) THEN
-                                      COPY(userValue(Json.Str).str^, httpsFile^.username);
-                                      Out.String("user: "); Out.String(httpsFile^.username); Out.Ln;
-                                    END;
-                                    NEW(password, Strings.Length(vpkSettings.rmtFileAuthPwd) + 1);
-                                    COPY(vpkSettings.rmtFileAuthPwd, password^);
-                                    IF Json.ObjSelect(passwordValue, authObj, password) & (passwordValue IS Json.Str) THEN
-                                      COPY(passwordValue(Json.Str).str^, httpsFile^.password);
-                                        Out.String("pw: "); Out.String(httpsFile^.password); Out.Ln;
-                                    END;
-                                  END; (* if authcradsvalue is json.obj *)
-                                END; (* if json objselect authcredsval *)
-                                (* extract md5 *)
+                                                                (* extract md5 *)
                                 NEW(md5, Strings.Length(vpkSettings.rmtFileMD5)+1);
                                 COPY(vpkSettings.rmtFileMD5, md5^);
                                 IF Json.ObjSelect(md5Value, fileObj, md5) & (md5Value IS Json.Str) THEN
                                   COPY(md5Value(Json.Str).str^, httpsFile^.md5);
-                                     Out.String("md5: "); Out.String(httpsFile^.md5); Out.Ln;
+                                Out.String("found md5 "); Out.String(httpsFile^.md5); Out.Ln;
                                 END;
                                 httpsRemote^.Files.Append(httpsRemote^.Files, httpsFile);
-                                Out.String("appending "); Out.String(httpsFile^.URI); Out.Ln;
-                                Out.String("list count is :");
-                                Out.Int(d^.rmt(vpkdepTree.RemoteHttps)^.Files.Count, 0); Out.Ln;
+                                (*Out.Int(d^.rmt(vpkdepTree.RemoteHttps)^.Files.Count, 0); Out.Ln;*)
                               END; (*fileobj is json.obj *)
                             END; (*filesarray is json arr *)
                             filesArray := filesArray(Json.Arr).next;
@@ -216,14 +205,12 @@ BEGIN
                         IF singleValue IS Json.Obj THEN
                           someObj := singleValue(Json.Obj);
                           key := someObj.name;
-                            Out.String("git key: "); Out.String(key^); Out.Ln;
                           val := someObj.value(Json.Str).str;
                           IF key^ = vpkSettings.rmtTreeBranchKey THEN
           COPY(val^, d^.rmt(vpkdepTree.RemoteGit)^.branch);
         END;
                           IF key^ = vpkSettings.rmtTreeKey THEN
           COPY(val^, d^.rmt^.URI);
-                            Out.String("uri found: "); Out.String(d^.rmt^.URI); Out.Ln;
                           END;
                         END;
                         singleValue := someObj.next;
