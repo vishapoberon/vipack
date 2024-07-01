@@ -49,7 +49,7 @@ END getSrcRelPath;
 
 PROCEDURE mkConfDirPath(home: ARRAY OF CHAR; VAR path: ARRAY OF CHAR);
 BEGIN
-  confDir := home;
+  COPY(home, confDir);
   Strings.Append("/", path);
   Strings.Append(vpkSettings.vpkConfDir, path);
 END mkConfDirPath;
