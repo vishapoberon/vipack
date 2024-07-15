@@ -26,28 +26,40 @@ END sync;
 PROCEDURE fetch*(VAR dep: vpkdepTree.Tdep; dst: ARRAY OF CHAR);
 VAR domain: ARRAY 64 OF CHAR;
 BEGIN
-  IF dep^.rmt # NIL THEN
+  Out.String("Starting fetch process..."); Out.Ln;
+  Out.String("Destination: "); Out.String(dst); Out.Ln;
+  IF dep = NIL THEN
+    Out.String("Dependency is NIL"); Out.Ln;
+    HALT(1);
+  END;
+  IF dep^.rmt = NIL THEN
+    Out.String("Dependency remote is NIL"); Out.Ln;
+    HALT(5);
+  ELSE
     IF dep^.rmt IS vpkdepTree.RemoteGit THEN
+      Out.String("Remote type is Git"); Out.Ln;
       vpkTools.extractDomainFromUrl(dep^.rmt^.URI, domain);
+      Out.String("Extracted domain: "); Out.String(domain); Out.Ln;
       (* dst is changed by mkdefPkgDirPath and mkPkgdirPath *)
       IF dst = "" THEN
         vpkEnv.mkdefPkgDirPath(domain, dep^.name^, dst);
       ELSE
         vpkEnv.mkPkgDirPath(domain, dep^.name^, dst);
       END;
+      Out.String("Final destination path: "); Out.String(dst); Out.Ln;
+      Out.String("Fetching repository..."); Out.Ln;
       vpkGit.fetchRepo(dep^.rmt^.URI, dst, dep^.rmt(vpkdepTree.RemoteGit).branch);
     ELSIF dep^.rmt IS vpkdepTree.RemoteHttps THEN
+      Out.String("Remote type is HTTPS"); Out.Ln;
       (* full dst will be determined in vpkHttps.fetchFiles for each file *)
       vpkHttps.fetchFiles(dep, dst);
     ELSE
       Out.String("TODO: neither git nor https url"); Out.Ln;
       Out.String("not handled");
       Out.Ln;
-    END
-  ELSE
-    Out.String("deps remote is not set, this should not happen"); Out.Ln;
-    HALT(5);
+    END;
   END;
+  Out.String("Fetch process completed."); Out.Ln;
 END fetch;
 
 END vpkSyncer.
