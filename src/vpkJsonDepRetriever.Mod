@@ -18,7 +18,6 @@ BEGIN
   END;
 END ToLower;
 
-
 PROCEDURE getBuildInfo*(VAR d: vpkdepTree.Tdep; VAR k, v: StringList.TStringList): BOOLEAN;
 VAR
   jsonstr, errstr: strUtils.pstring;
@@ -45,51 +44,46 @@ BEGIN
             buildArray := buildValue(Json.Arr);
             WHILE buildArray # NIL DO
               buildStep := buildArray.value(Json.Obj);
-              Out.String("Examining build step object"); Out.Ln;
-              IF buildStep # NIL THEN
-                Out.String("buildStep keys: "); 
-                rootObj := buildStep;
-                WHILE rootObj # NIL DO
-                  Out.String(rootObj.name^); Out.String(" "); 
-                  rootObj := rootObj.next;
-                END;
-                Out.Ln;
-              ELSE
-                Out.String("buildStep is NIL"); Out.Ln;
-              END;
-
               NEW(cm, Strings.Length(vpkSettings.bldCommand) + 1); (* +1 for 0X *)
               NEW(fl, Strings.Length(vpkSettings.bldFile) + 1);    (* +1 for 0X *)
               COPY(vpkSettings.bldCommand, cm^);
               COPY(vpkSettings.bldFile, fl^);
-
-              NEW(cmLower, Strings.Length(cm^) + 1);
-              NEW(flLower, Strings.Length(fl^) + 1);
-              COPY(cm^, cmLower^);
-              COPY(fl^, flLower^);
-              ToLower(cmLower^);
-              ToLower(flLower^);
-
-              IF Json.ObjSelect(command, buildStep, cmLower) THEN
-                Out.String("Selected command: "); Out.String(command(Json.Str).str^); Out.Ln;
-                IF Json.ObjSelect(file, buildStep, flLower) THEN
-                  Out.String("Selected file: "); Out.String(file(Json.Str).str^); Out.Ln;
+              IF d^.Type = vpkSettings.https THEN
+                (* Handle HTTPS build steps *)
+                IF Json.ObjSelect(command, buildStep, cm) & Json.ObjSelect(file, buildStep, fl) THEN
                   IF (command IS Json.Str) & (file IS Json.Str) THEN
                     IF k = NIL THEN k := StringList.Create() END;
                     IF v = NIL THEN v := StringList.Create() END;
                     k.AppendString(k, command(Json.Str).str^);
                     v.AppendString(v, file(Json.Str).str^);
-                    Out.String("Appended command: "); Out.String(command(Json.Str).str^); Out.Ln;
-                    Out.String("Appended file: "); Out.String(file(Json.Str).str^); Out.Ln;
                   ELSE
-                    Out.String("Command and file must be strings"); Out.Ln;
+                    Out.String("command and file must be strings"); Out.Ln;
                     HALT(5);
                   END;
                 ELSE
-                  Out.String("Failed to select 'file' from build step"); Out.Ln;
+                  Out.String("Failed to select 'command' or 'file' from build step"); Out.Ln;
                 END;
-              ELSE
-                Out.String("Failed to select 'command' from build step"); Out.Ln;
+              ELSIF d^.Type = vpkSettings.git THEN
+                (* Handle Git build steps *)
+                NEW(cmLower, Strings.Length(cm^) + 1);
+                NEW(flLower, Strings.Length(fl^) + 1);
+                COPY(cm^, cmLower^);
+                COPY(fl^, flLower^);
+                ToLower(cmLower^);
+                ToLower(flLower^);
+                IF Json.ObjSelect(command, buildStep, cmLower) & Json.ObjSelect(file, buildStep, flLower) THEN
+                  IF (command IS Json.Str) & (file IS Json.Str) THEN
+                    IF k = NIL THEN k := StringList.Create() END;
+                    IF v = NIL THEN v := StringList.Create() END;
+                    k.AppendString(k, command(Json.Str).str^);
+                    v.AppendString(v, file(Json.Str).str^);
+                  ELSE
+                    Out.String("command and file must be strings"); Out.Ln;
+                    HALT(5);
+                  END;
+                ELSE
+                  Out.String("Failed to select 'command' or 'file' from build step"); Out.Ln;
+                END;
               END;
               buildArray := buildArray.next;
             END;
@@ -112,6 +106,92 @@ BEGIN
 END getBuildInfo;
 
 
+PROCEDURE fetchHttpsFiles(someObj: Json.Obj; VAR httpsRemote: vpkdepTree.RemoteHttps);
+VAR
+  filesArray, fileObjValue: Json.Value;
+  fileObj, authObj: Json.Obj;
+  urlValue, authTypeValue, md5Value, authCredsValue, userValue, passwordValue: Json.Value;
+  url, authType, authCr, user, password, md5: Json.jString;
+  httpsFile: vpkdepTree.File;
+BEGIN
+
+  IF httpsRemote^.Files = NIL THEN
+    httpsRemote^.Files := List.Create();
+  END;
+
+  WHILE someObj # NIL DO
+    IF someObj.value IS Json.Arr THEN
+      filesArray := someObj.value(Json.Arr);
+      WHILE filesArray # NIL DO
+        fileObjValue := filesArray(Json.Arr).value;
+        IF fileObjValue IS Json.Obj THEN
+          fileObj := fileObjValue(Json.Obj);
+          NEW(httpsFile);
+          httpsFile^.auth := FALSE; (* default *)
+          (* extract url *)
+          NEW(url, Strings.Length(vpkSettings.rmtFileURL) + 1);
+          COPY(vpkSettings.rmtFileURL, url^);
+          IF Json.ObjSelect(urlValue, fileObj, url) & (urlValue IS Json.Str) THEN
+            COPY(urlValue(Json.Str).str^, httpsFile^.URI);
+          END;
+          (* extract authtype *)
+          NEW(authType, Strings.Length(vpkSettings.rmtFileAuthType) + 1);
+          COPY(vpkSettings.rmtFileAuthType, authType^);
+          IF Json.ObjSelect(authTypeValue, fileObj, authType) & (authTypeValue IS Json.Str) THEN
+            IF authTypeValue(Json.Str).str^ = vpkSettings.rmtFileAuthValBasic THEN
+              httpsFile^.auth := TRUE;
+              (* extract auth credentials *)
+              NEW(authCr, Strings.Length(vpkSettings.rmtFileAuthCreds) + 1);
+              COPY(vpkSettings.rmtFileAuthCreds, authCr^);
+              IF Json.ObjSelect(authCredsValue, fileObj, authCr) & (authCredsValue IS Json.Obj) THEN
+                authObj := authCredsValue(Json.Obj);
+                NEW(user, Strings.Length(vpkSettings.rmtFileAuthUsr) + 1);
+                COPY(vpkSettings.rmtFileAuthUsr, user^);
+                IF Json.ObjSelect(userValue, authObj, user) & (userValue IS Json.Str) THEN
+                  COPY(userValue(Json.Str).str^, httpsFile^.username);
+                END;
+                NEW(password, Strings.Length(vpkSettings.rmtFileAuthPwd) + 1);
+                COPY(vpkSettings.rmtFileAuthPwd, password^);
+                IF Json.ObjSelect(passwordValue, authObj, password) & (passwordValue IS Json.Str) THEN
+                  COPY(passwordValue(Json.Str).str^, httpsFile^.password);
+                END;
+              END;
+            ELSE
+              httpsFile^.auth := FALSE;
+            END;
+          END;
+          (* extract md5 *)
+          NEW(md5, Strings.Length(vpkSettings.rmtFileMD5) + 1);
+          COPY(vpkSettings.rmtFileMD5, md5^);
+          IF Json.ObjSelect(md5Value, fileObj, md5) & (md5Value IS Json.Str) THEN
+            COPY(md5Value(Json.Str).str^, httpsFile^.md5);
+            Out.String("found md5 "); Out.String(httpsFile^.md5); Out.Ln;
+          END;
+          httpsRemote^.Files.Append(httpsRemote^.Files, httpsFile);
+        END;
+        filesArray := filesArray(Json.Arr).next;
+      END;
+    ELSE
+      Out.String("Value for key Files is not an array"); Out.Ln;
+    END;
+    someObj := someObj.next;
+  END;
+END fetchHttpsFiles;
+
+PROCEDURE fetchGitDetails(someObj: Json.Obj; VAR gitRemote: vpkdepTree.RemoteGit; branchKey, remoteKey: Json.jString);
+BEGIN
+  WHILE someObj # NIL DO
+    IF someObj IS Json.Obj THEN
+      IF someObj.name^ = branchKey^ THEN
+        COPY(someObj.value(Json.Str).str^, gitRemote^.branch);
+      ELSIF someObj.name^ = remoteKey^ THEN
+        COPY(someObj.value(Json.Str).str^, gitRemote^.URI);
+      END;
+    END;
+    someObj := someObj.next;
+  END;
+END fetchGitDetails;
+
 PROCEDURE getURIandType*(VAR d: vpkdepTree.Tdep);
 VAR
   jsonstr, errstr: strUtils.pstring;
@@ -120,14 +200,14 @@ VAR
   err: ARRAY ErrmessSize OF CHAR;
   b, fndRemSec: BOOLEAN;
   key, val, remote, keyLower: Json.jString;
-  httpsRemote: vpkdepTree.RemoteHttps;
+  httpsRemote, httpsRemote2: vpkdepTree.RemoteHttps;
   gitRemote: vpkdepTree.RemoteGit;
 BEGIN
   jsonstr := NIL;
   vpkStorage.json2pstring(d.name^, jsonstr);
   IF jsonstr # NIL THEN
     NEW(errstr, ErrmessSize);
-    b := Json.Parse(tree, jsonstr^, err);
+    b := Json.Parse(tree, jsonstr^, errstr^);
     IF b THEN
       IF tree IS Json.Obj THEN
         rootObj := tree(Json.Obj);
@@ -167,6 +247,7 @@ BEGIN
                   IF val^ = vpkSettings.rmtTypHttpsVal THEN
                     NEW(httpsRemote); d^.rmt := httpsRemote;
                     d^.Type := vpkSettings.https;
+                    httpsRemote^.Files := List.Create();
                     Out.String("Set remote type to HTTPS"); Out.Ln;
                   ELSIF val^ = vpkSettings.rmtTypGitVal THEN
                     NEW(gitRemote); d^.rmt := gitRemote;
@@ -194,7 +275,16 @@ BEGIN
                   Out.String("Unhandled key: "); Out.String(key^); Out.Ln;
                 END;
               ELSE
-                Out.String("Value for key "); Out.String(key^); Out.String(" is not a string"); Out.Ln;
+                IF keyLower^ = "files" THEN
+                  IF (d^.rmt IS vpkdepTree.RemoteHttps) THEN
+                    httpsRemote2 := d^.rmt(vpkdepTree.RemoteHttps);  (* Separate the cast *)
+                    fetchHttpsFiles(rootObj, httpsRemote2);
+                  ELSE
+                    Out.String("Files section found but remote type is not HTTPS"); Out.Ln;
+                  END;
+                ELSE
+                  Out.String("Value for key "); Out.String(key^); Out.String(" is not a string"); Out.Ln;
+                END;
               END;
               rootObj := rootObj.next;
             END;
@@ -208,7 +298,7 @@ BEGIN
         Out.String("JSON root is not an object."); Out.Ln;
       END;
     ELSE
-      Out.String("JSON parsing failed: "); Out.String(err); Out.Ln;
+      Out.String("JSON parsing failed: "); Out.String(errstr^); Out.Ln;
     END;
   ELSE
     Out.String("No JSON string provided."); Out.Ln;
@@ -246,21 +336,21 @@ BEGIN
         UNTIL (rootObj = NIL) OR foundDepSection;
         IF foundDepSection THEN
           WHILE rootObj # NIL DO
-              depsValue := rootObj.value;
-              IF depsValue IS Json.Obj THEN
-                singleDep := depsValue(Json.Obj);
-                WHILE singleDep # NIL DO
-                  IF singleDep IS Json.Obj THEN
-                    depObj := singleDep(Json.Obj);
-                    depName := depObj.name;
-                    depVersion := depObj.value(Json.Str).str;
-                    IF depstrlist = NIL THEN depstrlist := StringList.Create() END;
-                    depstrlist.AppendString(depstrlist, depName^);
-                    singleDep := depObj.next;  (* Move to the next dependency *)
-                  END;
-                END;  (* End of inner WHILE loop for dependencies *)
-                RETURN depstrlist.Count;
-              END;  (* End of IF depsValue IS Json.Obj *)
+            depsValue := rootObj.value;
+            IF depsValue IS Json.Obj THEN
+              singleDep := depsValue(Json.Obj);
+              WHILE singleDep # NIL DO
+                IF singleDep IS Json.Obj THEN
+                  depObj := singleDep(Json.Obj);
+                  depName := depObj.name;
+                  depVersion := depObj.value(Json.Str).str;
+                  IF depstrlist = NIL THEN depstrlist := StringList.Create() END;
+                  depstrlist.AppendString(depstrlist, depName^);
+                  singleDep := depObj.next;  (* Move to the next dependency *)
+                END;
+              END;  (* End of inner WHILE loop for dependencies *)
+              RETURN depstrlist.Count;
+            END;  (* End of IF depsValue IS Json.Obj *)
             rootObj := rootObj.next;  (* Move to the next JSON object *)
           END;  (* End of WHILE rootObj # NIL loop *)
         ELSE
