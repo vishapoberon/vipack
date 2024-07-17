@@ -48,7 +48,7 @@ BEGIN
               NEW(fl, Strings.Length(vpkSettings.bldFile) + 1);    (* +1 for 0X *)
               COPY(vpkSettings.bldCommand, cm^);
               COPY(vpkSettings.bldFile, fl^);
-              IF d^.Type = vpkSettings.https THEN
+              IF (d^.Type = vpkSettings.https) OR (d^.Type = vpkSettings.http) THEN
                 (* Handle HTTPS build steps *)
                 IF Json.ObjSelect(command, buildStep, cm) & Json.ObjSelect(file, buildStep, fl) THEN
                   IF (command IS Json.Str) & (file IS Json.Str) THEN
@@ -105,8 +105,8 @@ BEGIN
   RETURN b;
 END getBuildInfo;
 
-
-PROCEDURE fetchHttpsFiles(someObj: Json.Obj; VAR httpsRemote: vpkdepTree.RemoteHttps);
+(*PROCEDURE fetchHttpsFiles(someObj: Json.Obj; VAR httpsRemote: vpkdepTree.RemoteHttps);*)
+PROCEDURE fetchHttpsFiles(someObj: Json.Obj; VAR Remote: vpkdepTree.Remote);
 VAR
   filesArray, fileObjValue: Json.Value;
   fileObj, authObj: Json.Obj;
@@ -114,11 +114,24 @@ VAR
   url, authType, authCr, user, password, md5: Json.jString;
   httpsFile: vpkdepTree.File;
 BEGIN
+  IF Remote IS vpkdepTree.RemoteHttp THEN
+    IF Remote(vpkdepTree.RemoteHttp)^.Files = NIL THEN
+      Remote(vpkdepTree.RemoteHttp)^.Files := List.Create();
+    END
+  ELSIF Remote IS vpkdepTree.RemoteHttps THEN
+    IF Remote(vpkdepTree.RemoteHttps)^.Files = NIL THEN
+      Remote(vpkdepTree.RemoteHttps)^.Files := List.Create();
+    END
 
+  ELSE
+    Out.String("HTTP or HTTPS protocols expected, check package description"); Out.Ln;
+    HALT(11);
+  END;
+  (*
   IF httpsRemote^.Files = NIL THEN
     httpsRemote^.Files := List.Create();
   END;
-
+  *)
   WHILE someObj # NIL DO
     IF someObj.value IS Json.Arr THEN
       filesArray := someObj.value(Json.Arr);
@@ -167,7 +180,12 @@ BEGIN
             COPY(md5Value(Json.Str).str^, httpsFile^.md5);
             Out.String("found md5 "); Out.String(httpsFile^.md5); Out.Ln;
           END;
-          httpsRemote^.Files.Append(httpsRemote^.Files, httpsFile);
+          (*httpsRemote^.Files.Append(httpsRemote^.Files, httpsFile);*)
+          IF Remote IS vpkdepTree.RemoteHttp THEN
+            Remote(vpkdepTree.RemoteHttp)^.Files.Append(Remote(vpkdepTree.RemoteHttp)^.Files, httpsFile);
+          ELSIF Remote IS vpkdepTree.RemoteHttps THEN
+            Remote(vpkdepTree.RemoteHttps)^.Files.Append(Remote(vpkdepTree.RemoteHttps)^.Files, httpsFile);
+          END;
         END;
         filesArray := filesArray(Json.Arr).next;
       END;
@@ -201,6 +219,8 @@ VAR
   b, fndRemSec: BOOLEAN;
   key, val, remote, keyLower: Json.jString;
   httpsRemote, httpsRemote2: vpkdepTree.RemoteHttps;
+  httpRemote, httpRemote2: vpkdepTree.RemoteHttp;
+  tmpRemote: vpkdepTree.Remote;
   gitRemote: vpkdepTree.RemoteGit;
 BEGIN
   jsonstr := NIL;
@@ -249,6 +269,11 @@ BEGIN
                     d^.Type := vpkSettings.https;
                     httpsRemote^.Files := List.Create();
                     Out.String("Set remote type to HTTPS"); Out.Ln;
+                  ELSIF val^ = vpkSettings.rmtTypHttpVal THEN
+                    NEW(httpRemote); d^.rmt := httpRemote;
+                    d^.Type := vpkSettings.http;
+                    httpRemote^.Files := List.Create();
+                    Out.String("Set remote type to HTTP"); Out.Ln;
                   ELSIF val^ = vpkSettings.rmtTypGitVal THEN
                     NEW(gitRemote); d^.rmt := gitRemote;
                     d^.Type := vpkSettings.git;
@@ -278,9 +303,14 @@ BEGIN
                 IF keyLower^ = "files" THEN
                   IF (d^.rmt IS vpkdepTree.RemoteHttps) THEN
                     httpsRemote2 := d^.rmt(vpkdepTree.RemoteHttps);  (* Separate the cast *)
-                    fetchHttpsFiles(rootObj, httpsRemote2);
+                    tmpRemote := httpsRemote2;
+                    fetchHttpsFiles(rootObj, tmpRemote);
+                  ELSIF (d^.rmt IS vpkdepTree.RemoteHttp) THEN
+                    httpRemote2 := d^.rmt(vpkdepTree.RemoteHttp);
+                    tmpRemote := httpRemote2;
+                    fetchHttpsFiles(rootObj, tmpRemote);
                   ELSE
-                    Out.String("Files section found but remote type is not HTTPS"); Out.Ln;
+                    Out.String("Files section found but remote type is not HTTP(S)"); Out.Ln;
                   END;
                 ELSE
                   Out.String("Value for key "); Out.String(key^); Out.String(" is not a string"); Out.Ln;

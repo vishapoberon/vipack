@@ -1,7 +1,7 @@
 MODULE vpkSyncer;
 IMPORT Strings, Out,
        strUtils, List,
-       vpkSettings, vpkEnv, vpkConf, vpkGit, vpkdepTree, vpkTools, vpkHttps;
+       vpkSettings, vpkEnv, vpkConf, vpkGit, vpkdepTree, vpkTools, vpkHttps, vpkHttp;
 
 PROCEDURE mkTreePath(VAR path: ARRAY OF CHAR);
 BEGIN
@@ -53,7 +53,11 @@ BEGIN
       Out.String("Remote type is HTTPS"); Out.Ln;
       (* full dst will be determined in vpkHttps.fetchFiles for each file *)
       vpkHttps.fetchFiles(dep, dst);
-    ELSE
+    ELSIF dep^.rmt IS vpkdepTree.RemoteHttp THEN
+      Out.String("Remote type is HTTP"); Out.Ln;
+      (* full dst will be determined in vpkHttps.fetchFiles for each file *)
+      vpkHttp.fetchFiles(dep, dst);
+     ELSE
       Out.String("TODO: neither git nor https url"); Out.Ln;
       Out.String("not handled");
       Out.Ln;

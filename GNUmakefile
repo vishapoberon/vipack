@@ -61,6 +61,7 @@ buildThis:
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkConf.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkdepTree.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkMD5Checker.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkHttp.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkHttps.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkSyncer.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkDot.Mod

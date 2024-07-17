@@ -55,6 +55,7 @@ buildThis:
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkTime.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkLogger.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkHttp.Mod
+	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkHtts.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkEnv.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkGit.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkCharacterStack.Mod
