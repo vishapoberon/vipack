@@ -174,6 +174,7 @@ BEGIN
 
   COPY("", package); COPY("", prefix); COPY("", pkgTree);
   deps := FALSE; sync := FALSE;
+  fetch := FALSE; ask := FALSE;
 
   fopt := opts.createOpt();
   fopt := opts.findOpt("-d", foptions);
