@@ -240,7 +240,7 @@ BEGIN
           NEW(keyLower, LEN(rootObj.name^) + 1);
           COPY(rootObj.name^, keyLower^);
           ToLower(keyLower^);
-          IF keyLower^ = "remote" THEN
+          IF keyLower^ = "remote" THEN (* TODO, get rid of hardcoded string literals, decide with case *)
             fndRemSec := TRUE;
           ELSE
             rootObj := rootObj.next;
@@ -263,7 +263,7 @@ BEGIN
                 val := rootObj.value(Json.Str).str;
                 Out.String("Processing key: "); Out.String(key^); Out.Ln;
                 Out.String("Value: "); Out.String(val^); Out.Ln;
-                IF keyLower^ = "type" THEN (* type *)
+                IF keyLower^ = "type" THEN (* type *) (* TODO, get rid of hardcoded string literals, decide with case *)
                   IF val^ = vpkSettings.rmtTypHttpsVal THEN
                     NEW(httpsRemote); d^.rmt := httpsRemote;
                     d^.Type := vpkSettings.https;
@@ -282,14 +282,14 @@ BEGIN
                   ELSE
                     Out.String("Unhandled remote type: "); Out.String(val^); Out.Ln; HALT(5);
                   END;
-                ELSIF keyLower^ = "tag" THEN
+                ELSIF keyLower^ = "tag" THEN (* TODO, get rid of hardcoded string literals, decide with case *)
                   IF d^.rmt # NIL THEN
                     COPY(val^, d^.rmt(vpkdepTree.RemoteGit)^.tag); (* Use the tag field appropriately *)
                     Out.String("Set tag to "); Out.String(val^); Out.Ln;
                   ELSE
                     Out.String("d^.rmt is NIL when setting tag"); Out.Ln;
                   END;
-                ELSIF keyLower^ = "path" THEN
+                ELSIF keyLower^ = "path" THEN (* TODO, get rid of hardcoded string literals, decide with case *)
                   IF d^.rmt # NIL THEN
                     COPY(val^, d^.rmt^.URI);
                     Out.String("Set URI to "); Out.String(val^); Out.Ln;
@@ -300,7 +300,7 @@ BEGIN
                   Out.String("Unhandled key: "); Out.String(key^); Out.Ln;
                 END;
               ELSE
-                IF keyLower^ = "files" THEN
+                IF keyLower^ = "files" THEN (* TODO, get rid of hardcoded string literals, decide with case *)
                   IF (d^.rmt IS vpkdepTree.RemoteHttps) THEN
                     httpsRemote2 := d^.rmt(vpkdepTree.RemoteHttps);  (* Separate the cast *)
                     tmpRemote := httpsRemote2;
