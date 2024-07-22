@@ -367,20 +367,22 @@ BEGIN
         IF foundDepSection THEN
           WHILE rootObj # NIL DO
             depsValue := rootObj.value;
-            IF depsValue IS Json.Obj THEN
-              singleDep := depsValue(Json.Obj);
-              WHILE singleDep # NIL DO
-                IF singleDep IS Json.Obj THEN
-                  depObj := singleDep(Json.Obj);
-                  depName := depObj.name;
-                  depVersion := depObj.value(Json.Str).str;
-                  IF depstrlist = NIL THEN depstrlist := StringList.Create() END;
-                  depstrlist.AppendString(depstrlist, depName^);
-                  singleDep := depObj.next;  (* Move to the next dependency *)
-                END;
-              END;  (* End of inner WHILE loop for dependencies *)
-              RETURN depstrlist.Count;
-            END;  (* End of IF depsValue IS Json.Obj *)
+            IF depsValue # NIL THEN
+              IF depsValue IS Json.Obj THEN
+                singleDep := depsValue(Json.Obj);
+                WHILE singleDep # NIL DO
+                  IF singleDep IS Json.Obj THEN
+                    depObj := singleDep(Json.Obj);
+                    depName := depObj.name;
+                    depVersion := depObj.value(Json.Str).str;
+                    IF depstrlist = NIL THEN depstrlist := StringList.Create() END;
+                    depstrlist.AppendString(depstrlist, depName^);
+                    singleDep := depObj.next;  (* Move to the next dependency *)
+                  END;
+                END;  (* End of inner WHILE loop for dependencies *)
+                RETURN depstrlist.Count;
+              END;  (* End of IF depsValue IS Json.Obj *)
+            END;
             rootObj := rootObj.next;  (* Move to the next JSON object *)
           END;  (* End of WHILE rootObj # NIL loop *)
         ELSE
