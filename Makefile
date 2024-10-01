@@ -1,7 +1,7 @@
 .POSIX:
 DEPEND = github.com/norayr/lists github.com/norayr/Internet github.com/norayr/opts github.com/norayr/skprLogger github.com/norayr/skprJson
 
-VOC = /opt/voc/bin/voc
+VOC = voc
 #mkfile_path = $(abspath $(lastword $(MAKEFILE_LIST)))
 #mkfile_dir_path = $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 #mkfile_path = $(abspath $(lastword $(MAKEFILE_LIST)))
