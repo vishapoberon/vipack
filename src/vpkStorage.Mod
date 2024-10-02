@@ -1,6 +1,6 @@
 MODULE vpkStorage;
 IMPORT Files, Out, Strings,
-strUtils, vpkLogger, vpkEnv, vpkFiles;
+strUtils, vpkLogger, vpkEnv, UnixFS;
 
 PROCEDURE WriteString(VAR r : Files.Rider; str : ARRAY OF CHAR);
 BEGIN
@@ -61,14 +61,14 @@ END stringToFile;
 
 PROCEDURE json2pstring*(VAR json: ARRAY OF CHAR; VAR pstr: strUtils.pstring);
 VAR
-  fi: vpkFiles.fileInfo;
+  fi: UnixFS.fileInfo;
 BEGIN
   pstr := NIL;
   vpkEnv.getTreeDir(fi.name);
   Strings.Append("/", fi.name);
   Strings.Append(json, fi.name);
   Strings.Append(".json", fi.name);
-  IF vpkFiles.Exists(fi) THEN
+  IF UnixFS.Exists(fi) THEN
     fileToString(fi.name, pstr);
   END
 END json2pstring;

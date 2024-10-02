@@ -1,5 +1,5 @@
 MODULE vpkEnv;
-IMPORT Files, Platform, Strings, Out, vpkSettings, vpkFiles, strTypes;
+IMPORT Files, Platform, Strings, Out, vpkSettings, UnixFS, strTypes;
 
 VAR
   conf-, confDir- : ARRAY 256 OF CHAR;
@@ -20,8 +20,8 @@ END getGraphName;
 
 PROCEDURE createIfNotThere*(VAR fileName: ARRAY OF CHAR);
 BEGIN
-    IF ~vpkFiles.ExistsByName(fileName) THEN
-      IF ~vpkFiles.mkDir(fileName) THEN
+    IF ~UnixFS.ExistsByName(fileName) THEN
+      IF ~UnixFS.mkDir(fileName) THEN
         Out.String("failed to create directory "); Out.String(fileName); Out.Ln; HALT(1);
       END;
     END;
@@ -172,10 +172,10 @@ END getConfFile;
 
 PROCEDURE checkConfig*(): BOOLEAN;
 VAR
-  file : vpkFiles.fileInfo;
+  file : UnixFS.fileInfo;
 BEGIN
   file.name := conf;
-  RETURN vpkFiles.Exists(file);
+  RETURN UnixFS.Exists(file);
 END checkConfig;
 
 PROCEDURE setTreeDir*(VAR path: ARRAY OF CHAR);
@@ -200,21 +200,21 @@ END getTreeDir;
 
 PROCEDURE checkEnv*;
 VAR
- file : vpkFiles.fileInfo;
+ file : UnixFS.fileInfo;
  tmp  : ARRAY 256 OF CHAR;
 BEGIN
   file.name := conf;
-  IF ~vpkFiles.Exists(file) THEN
+  IF ~UnixFS.Exists(file) THEN
     (* Checking if ~/.vipack directory already exists *)
     file.name := confDir;
-    IF ~vpkFiles.Exists(file) THEN (* exists!!! *)
+    IF ~UnixFS.Exists(file) THEN (* exists!!! *)
       Out.String("Creating directory "); Out.String(confDir);Out.Ln;
-      IF ~vpkFiles.mkDir(confDir) THEN
+      IF ~UnixFS.mkDir(confDir) THEN
         Out.String("failed to create "); Out.String(confDir); Out.String(" directory"); Out.Ln;
         HALT(1);
       END;
     ELSE
-      IF ~(vpkFiles.dir IN file.attr) THEN
+      IF ~(UnixFS.dir IN file.attr) THEN
         Out.String(confDir); Out.String(" exists, but is not a directory"); Out.Ln;
         HALT(1);
       END;

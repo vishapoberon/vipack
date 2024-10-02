@@ -1,4 +1,4 @@
-DEPEND = github.com/norayr/strutils github.com/norayr/base64 github.com/norayr/dbg github.com/norayr/Internet github.com/norayr/http github.com/norayr/mbedtls github.com/norayr/lists github.com/norayr/opts github.com/norayr/skprLogger codeberg.org/sts-q/vishaps-ssqJson
+DEPEND = github.com/norayr/unixFileSystem github.com/norayr/strutils github.com/norayr/base64 github.com/norayr/dbg github.com/norayr/Internet github.com/norayr/http github.com/norayr/mbedtls github.com/norayr/lists github.com/norayr/opts github.com/norayr/skprLogger codeberg.org/sts-q/vishaps-ssqJson
 
 VOC = voc
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
@@ -52,7 +52,6 @@ buildThis:
 	@echo "building vipack"
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkTools.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkSettings.Mod
-	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkLinuxFiles.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkTime.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/vpkLogger.Mod
 	cd $(BUILD) && $(VOC) -s $(mkfile_dir_path)/src/unix/vpkEnv.Mod
