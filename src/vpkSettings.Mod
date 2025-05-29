@@ -28,9 +28,9 @@ TYPE
    END;
 
 BEGIN
-  vpkConfDir   := ".vipack";
-  vpkConfFile  := "vipackConf.json";
-  vpkTreeDir   := "vipackTree";
+  vpkConfDir   := ".vipak";
+  vpkConfFile  := "vipak.json";
+  vpkTreeDir   := "vipatsar";
   vpkPkgDir    := "vpkLocal";
   vpkDepDir    := "deps";
   vpkBldDir    := "build";
@@ -58,8 +58,8 @@ BEGIN
   bldType           := "Build";
   bldCommand        := "Command";
   bldFile           := "File";
-  defTreeVal        := "https://github.com/vishaps/vipackTree";
-  (*defTreeVal      := "git@github.com:vishaps/vipackTree";*)
+  defTreeVal        := "https://codeberg.org/vishapoberon/vipatsar";
+  (*defTreeVal      := "git@codeberg.org:vishapoberon/vipatsar";*)
   confTreeVal       := defTreeVal;
   defTypVal         := rmtTypGitVal;
 

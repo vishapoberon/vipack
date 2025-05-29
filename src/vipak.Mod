@@ -1,4 +1,4 @@
-MODULE vipack;
+MODULE vipak;
 IMPORT  Texts, Strings, Oberon, Out,
   vpkConf, vpkLogger, vpkSyncer, vpkInstaller, vpkdepTree, opts, StringList;
 (*
@@ -230,7 +230,7 @@ BEGIN
   vpkLogger.Log("HelpText");
   Out.String("Vipack sync - syncing git tree and local tree"); Out.Ln;
   Out.String("vipackConf.json path -> $HOME/.vipack/vipackConf.json"); Out.Ln;
-  Out.String("vipackTree path -> $HOME/.vipack/vipackTree")
+  Out.String("vipak tree path -> $HOME/.vipak/vipatsar")
 END help;
 
 PROCEDURE  main();
@@ -268,4 +268,4 @@ END main;
 
 BEGIN
   main
-END vipack.
+END vipak.
